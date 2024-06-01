@@ -1,0 +1,9 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+rasters/
+zipped_sf/
+rasters
+zipped_sf
+Melbourne dwelling data.gpkg
