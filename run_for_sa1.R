@@ -79,7 +79,7 @@ run_for_sa1 <- function(sa) {
   print('simplified')
   
   #find road network
-  road_network_in_sa = st_intersects( (road_network), (current_sa_sf))
+  road_network_in_sa = st_intersects( (road_network), st_buffer(current_sa_sf, 0.00035))
   road_network_in_sa = road_network[lengths(road_network_in_sa) > 0 ,]
   road_network_in_sa = road_network_in_sa %>% filter(!is.na(ROAD_TYPE))
   #make it wider
@@ -91,7 +91,8 @@ run_for_sa1 <- function(sa) {
   guess_of_roads <- st_difference(st_union(current_sa_sf), st_union(dwellings_in_sa)) 
   
   #get the overlap between the guess and the buffer
-  roads <- st_intersection(guess_of_roads, buffered_roads) %>% st_union()
+  roads <- st_intersection(guess_of_roads, buffered_roads) %>%
+    st_union()
   
   roads <- st_collection_extract(roads, "POLYGON") %>%
     st_union() %>%
@@ -125,7 +126,13 @@ run_for_sa1 <- function(sa) {
   
   other_land = st_geometry(current_sa_sf) %>%
     st_difference(st_geometry(roads)) %>%
-    st_difference(st_geometry(st_union(dwellings_in_sa))) %>%
+    st_difference(st_geometry(st_union(dwellings_in_sa)))
+  
+  if(class(other_land)[1] == "sfc_GEOMETRYCOLLECTION") {
+    other_land = st_collection_extract(other_land, "POLYGON")
+  }
+  
+  other_land = other_land %>%
     st_union() %>%
     st_as_sf() %>%
     mutate(land_type = 'other')

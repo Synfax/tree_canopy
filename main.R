@@ -19,11 +19,13 @@ pacman::p_load(
   furrr
 )
 
+#source files
 source('run_for_sa1.R')
 source('mapping_functions.R')
 source('run.R')
 
 
+#load dwelling Data
 dwelling_data <-read_sf('Melbourne dwelling data.gpkg', query = "SELECT geom,lat,lon,zone_short,sa1_code_2021,
                             dwellings_est,sa2_code_2021,sa4_code_2021,cbd_dist,
                               lga_name_2022,feature_preventing_development,zoning_permits_housing,zone_short,prox_walk_time_s_tram,
@@ -31,7 +33,7 @@ dwelling_data <-read_sf('Melbourne dwelling data.gpkg', query = "SELECT geom,lat
   mutate(lga_name_2022 = str_remove_all(lga_name_2022, "\\s*\\(.*?\\)\\s*")) %>% 
   st_set_geometry('geom')
 
-
+#load shapefiles for SA1 and SA3 regions - download from ABS or my Google Drive
 sa1_sf <- read_sf('SA1_2021/SA1_2021_AUST_GDA2020.shp')
 sa3_sf <- read_sf('SA3_2021/SA3_2021_AUST_GDA2020.shp')
 
@@ -39,20 +41,24 @@ sa3_sf <- read_sf('SA3_2021/SA3_2021_AUST_GDA2020.shp')
 # state_level_zoning <- read_sf('Order_A723U7/ll_gda2020/esrishape/whole_of_dataset/victoria/VMPLAN/PLAN_ZONE.shp')
 # state_level_zoning = state_level_zoning %>% filter(ZONE_DESC == 'TRANSPORT ZONE 2 - PRINCIPAL ROAD NETWORK')
 
+#load the road network LINESTRINGS - download from Google Drive
 road_network <- read_sf('Order_SHQC22/ll_gda2020/esrishape/user_polygon/user_polygon-0/VMTRANS/TR_ROAD_ALL.shp') %>%
   st_transform(., 7844) %>%
   dplyr::select(c('ROAD_TYPE', 'geometry'))
 
-#settings for canopy
+#settings for canopy model
 threshold <- 0
 union <- TRUE
 res <- 5
 
+#turn off spherical geo
 sf_use_s2(FALSE)
 
+#initialise global dataframes ()
 results_df <- data.frame()
 robust_df <- data.frame()
 
+#run the model
 run()
 
 
