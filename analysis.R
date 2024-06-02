@@ -1,12 +1,16 @@
 
-gz <- results_df
-
 file_list <- list.files('sa3_results/')
 agg_results <- data.frame()
 
 for(file in file_list) {
   agg_results <<- rbind(agg_results, readRDS(paste0('sa3_results/',file)))
 }
+
+#fix oddities 
+agg_results = agg_results %>%
+  as.data.frame() %>%
+  rowwise() %>%
+  mutate(tree_coverage_percent = ifelse(total_area < 0.001 && tree_coverage_percent > 1, 1, tree_coverage_percent))
 
 
 agg_results = agg_results %>%
@@ -22,27 +26,27 @@ pretty_results <- agg_results %>%
   dplyr::select(c('land_type', 'pc_trees', 'pc_land'))
 
 
-##map tree coverage by SA1
-
-gy <- results_df %>%
+##map total tree coverage by SA1
+gy <- agg_results %>%
   st_drop_geometry() %>%
   group_by(sa1) %>%
   summarise(across(c(total_area, tree_coverage_area),sum)) %>%
   mutate(tree_pc = tree_coverage_area/total_area) %>%
-  rename("SA1_CODE21" = sa1)
-
-gyz <- gy %>%
+  rename("SA1_CODE21" = sa1) %>%
   dplyr::left_join(sa1_sf, by = 'SA1_CODE21') %>%
   st_as_sf()
 
-treePal <- colorNumeric(palette = "Greens", domain = gyz$tree_pc)
+mapCoverage(gy, gy$tree_pc, 'Greens')
 
-leaflet() %>%
-  addProviderTiles('CartoDB.Positron') %>%
-  addPolygons(data = gyz,
-              color = ~treePal(tree_pc),
-              fillOpacity = 0.8) %>%
-  addLegend(position = "bottomright",
-            pal = treePal,
-            values = gyz$tree_pc,
-            title = "Tree Coverage (%)")
+#map private tree coverage by SA1
+
+agg_sf <- agg_results %>%
+  st_drop_geometry() %>%
+  rename("SA1_CODE21" = sa1) %>%
+  dplyr::left_join(sa1_sf, by = 'SA1_CODE21') %>%
+  st_as_sf()
+
+mapCoverage(agg_sf, unlist(agg_sf %>%
+                         st_drop_geometry() %>%
+                         filter(land_type == 'private') %>%
+                         select(tree_coverage_percent)), 'viridis', title = 'private tree coverage')

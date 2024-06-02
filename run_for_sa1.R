@@ -4,7 +4,8 @@ run_for_sa1 <- function(sa) {
   
   print(sa)
   
-  current_sa_sf <- sa1_sf %>% filter(SA1_CODE21 == sa)
+  current_sa_sf <- sa1_sf %>%
+    filter(SA1_CODE21 == sa)
   
   dwellings_in_sa <- dwelling_data_current %>% filter(sa1_code_2021 == sa)
   

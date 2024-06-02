@@ -46,3 +46,19 @@ st_parallel <- function(sf_df, sf_func, n_cores, ...){
   # Return result
   return(result)
 }
+
+mapCoverage = function(sf, variable, palette = "Greens", title = "Tree Coverage (%)") {
+  
+  treePal <- colorNumeric(palette = palette, domain = variable)
+  
+  leaflet() %>%
+    addProviderTiles('CartoDB.Positron') %>%
+    addPolygons(data = sf,
+                fillColor = ~treePal(variable),
+                fillOpacity = 0.5,
+                opacity = 0) %>%
+    addLegend(position = "bottomright",
+              pal = treePal,
+              values = variable,
+              title = title) 
+}
