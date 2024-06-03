@@ -21,6 +21,7 @@ pacman::p_load(
 
 #source files
 source('run_for_sa1.R')
+source('r_alt/run_for_sa1_alt.R')
 source('mapping_functions.R')
 source('run.R')
 
@@ -44,7 +45,9 @@ sa3_sf <- read_sf('SA3_2021/SA3_2021_AUST_GDA2020.shp')
 #load the road network LINESTRINGS - download from Google Drive
 road_network <- read_sf('Order_SHQC22/ll_gda2020/esrishape/user_polygon/user_polygon-0/VMTRANS/TR_ROAD_ALL.shp') %>%
   st_transform(., 7844) %>%
-  dplyr::select(c('ROAD_TYPE', 'geometry'))
+  dplyr::select(c('ROAD_TYPE', 'geometry')) %>%
+  filter(!is.na(ROAD_TYPE)) %>%
+  st_union()
 
 #settings for canopy model
 threshold <- 0
@@ -60,6 +63,5 @@ robust_df <- data.frame()
 
 #run the model
 run()
-
 
 

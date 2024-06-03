@@ -12,8 +12,12 @@ mapthisline <- function(x) {
 
 st_parallel <- function(sf_df, sf_func, n_cores, ...){
   
+  eachArg = ifelse(nrow(sf_df)/n_cores > 1, nrow(sf_df)/n_cores, 1)
+  
+  print(eachArg)
+  
   # Create a vector to split the data set up by.
-  split_vector <- rep(1:n_cores, each = nrow(sf_df) / n_cores, length.out = nrow(sf_df))
+  split_vector <- base::rep(1:n_cores, eachArg, length.out = nrow(sf_df))
   
   # Perform GIS analysis
   
@@ -22,10 +26,14 @@ st_parallel <- function(sf_df, sf_func, n_cores, ...){
     parallel::parLapply(cl = cl, ., function(x) sf_func(x, ...))
   
   # Define the output_class. If length is greater than two, then grab the second variable.
+  if(purrr::is_empty(split_results)) { print('empty split results - one input has zero rows') }
+  
   output_class <- class(split_results[[1]])
-  if (length(output_class) == 2){
-    output_class <- output_class[2]
+  
+  if (length(output_class) > 1 ){
+    output_class <- output_class[length(output_class)]
   }
+  
   
   # Combine results back together. Method of combining depends on the output from the function.
   if (output_class == "matrix"){

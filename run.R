@@ -15,6 +15,7 @@ run <- function() {
   cl <<- makeCluster(4)
   clusterEvalQ(cl, { library(sf) })
   clusterEvalQ(cl, sf_use_s2(FALSE) )
+  clusterExport(cl, "sa3_sf")
   
   for(sa3 in sa3_list) {
     
@@ -23,6 +24,12 @@ run <- function() {
       st_drop_geometry() %>% 
       select(SA3_NAME21) %>%
       unlist()
+    
+    #cutting out road network
+    #road_network_in_sa3 <- st_parallel(road_network, st_intersection, 4, y=sa3_sf )
+    road_network_in_sa3 <- st_intersection(road_network, sa3_sf) %>%
+      st_as_sf()
+    print('road network cut')
     
     if(!file.exists(paste0('sa3_results/',sa3,'.Rdata'))) {
       
@@ -39,16 +46,13 @@ run <- function() {
       sa_list <- setdiff(sa_list, existing_results)
       
       for(sa in sa_list) {
-        run_for_sa1(sa)
+        run_for_sa1_alt(sa)
       }
       
       saveRDS(results_df %>% st_drop_geometry() , paste0('sa3_results/',sa3,'.Rdata'))
       
       results_df <<- data.frame()
       robust_df <<- data.frame()
-      
-      #plan(multisession, workers = 4)
-      #furrr::future_walk(sa_list, run_for_sa1, .progress = TRUE)
       
       
     } else {

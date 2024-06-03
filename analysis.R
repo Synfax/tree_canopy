@@ -50,3 +50,5 @@ mapCoverage(agg_sf, unlist(agg_sf %>%
                          st_drop_geometry() %>%
                          filter(land_type == 'private') %>%
                          select(tree_coverage_percent)), 'viridis', title = 'private tree coverage')
+
+
