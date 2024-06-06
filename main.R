@@ -27,15 +27,15 @@ source('run.R')
 
 
 #load dwelling Data
-dwelling_data <-read_sf('Melbourne dwelling data.gpkg', query = "SELECT geom,lat,lon,zone_short,sa1_code_2021,
+dwelling_data_2 <-read_sf('Melbourne dwelling data.gpkg', query = "SELECT geom,lat,lon,zone_short,sa1_code_2021,
                             dwellings_est,sa2_code_2021,sa4_code_2021,cbd_dist,
-                              lga_name_2022,feature_preventing_development,zoning_permits_housing,zone_short,prox_walk_time_s_tram,
-                            prox_walk_time_s_train,prox_dist_m_tram,prox_dist_m_train,traffic_pollution,lot_size,zone_short,sa3_code_2021,heritage_status,heritage,vacant_in_2016 FROM 'Melbourne dwelling data'") %>% 
+                              lga_name_2022,feature_preventing_development,sa2_name_2021,zoning_permits_housing,zone_short,address,lot_size,zone_short,sa3_code_2021,heritage_status,heritage FROM 'Melbourne dwelling data'") %>% 
   mutate(lga_name_2022 = str_remove_all(lga_name_2022, "\\s*\\(.*?\\)\\s*")) %>% 
   st_set_geometry('geom')
 
 #load shapefiles for SA1 and SA3 regions - download from ABS or my Google Drive
 sa1_sf <- read_sf('SA1_2021/SA1_2021_AUST_GDA2020.shp')
+sa2_sf <- read_sf('SA2_2021/SA2_2021_AUST_GDA2020.shp')
 sa3_sf <- read_sf('SA3_2021/SA3_2021_AUST_GDA2020.shp')
 
 #not needed because it only had the big roads 
