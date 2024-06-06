@@ -8,7 +8,7 @@ for(file in file_list) {
 
 agg_sf <- agg_results %>%
   as.data.frame() %>%
-  dplyr::left_join(dwelling_data_2, by = c('lat','lon')) %>%
+  dplyr::left_join(dwelling_data, by = c('lat','lon')) %>%
   rowwise() %>%
   mutate(coverage_pc = ifelse(is.nan(coverage / total_area), 0, (coverage / total_area)*100)) %>%
   mutate(coverage_pc = ifelse(total_area < 0.001 && coverage_pc > 1, 1, coverage_pc)) %>%
@@ -18,15 +18,17 @@ agg_sf <- agg_results %>%
 agg_df <- agg_sf %>%
   st_drop_geometry() 
 
+#create dictionaries between sa1 and sa2/lga to fill in missing values for 'roads' and 'other' land uses
 sa1_sa2_map =  with(agg_df, setNames(sa2_code_2021, sa1_code_2021))
 sa1_lga_map = with(agg_df, setNames(lga_name_2022, sa1_code_2021))
 
+#fill in these missing values
 agg_df <- agg_df %>%
   rowwise() %>%
   mutate(sa2_code_2021 = ifelse(is.na(sa2_code_2021), sa1_sa2_map[as.character(sa1)], sa2_code_2021),
          lga_name_2022 = ifelse(is.na(lga_name_2022), sa1_lga_map[as.character(sa1)], lga_name_2022))
 
-st_write(agg_sf, 'sf_exports/test.gpkg', driver = "GPKG", append = FALSE)
+#st_write(agg_sf, 'sf_exports/test.gpkg', driver = "GPKG", append = FALSE)
 
 #mapCoverage(agg_sf, unlist(agg_sf %>% st_drop_geometry() %>% select(coverage_pc)), 'Greens', 'Tree coverage per dwelling (%)')
 
@@ -50,21 +52,9 @@ mm_lgas <- c('Brimbank', 'Merri-bek', 'Banyule', 'Darebin', 'Yarra', 'Moonee Val
 
 agg_df <- agg_df %>% filter(lga_name_2022 %in% mm_lgas)
 
-# calculate street tree coverage by sa2
-street_tree_per_sa2 <- street_tree_coverage() %>%
-  as.data.frame() %>%
-  left_join(sa2_sf, by = 'SA2_NAME21') %>%
-  st_set_geometry('geometry')
-
-mapCoverage(street_tree_per_sa2, unlist(street_tree_per_sa2 %>%
-                                          st_drop_geometry() %>%
-                                          select(tree_percentage)), 'Greens', 'Street Tree Coverage (%)')
-
-tibble(street_tree_per_sa2)
-
-
-
-
+#saving objects for quarto to reach them
+saveRDS(agg_df, 'r_objects/agg_df.Rdata')
+saveRDS(sa2_sf, 'r_objects/sa2_sf.Rdata')
 
 
   

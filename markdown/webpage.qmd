@@ -1,0 +1,42 @@
+---
+title: "Tree Data"
+author: "Paul S"
+date: "6/6/24"
+format: 
+  html:
+    fig-width: 8
+    fig-height: 4
+    code-fold: true
+---
+
+## Street Trees
+
+@fig-airquality displays tree coverage over roads by Statistical Area 2
+
+```{r}
+#| label: fig-airquality
+#| fig-cap: "Tree coverage by SA2"
+#| warning: false
+
+library(tidyverse)
+library(sf)
+library(leaflet)
+
+agg_df <- readRDS('../r_objects/agg_df.Rdata')
+sa2_sf <- readRDS('../r_objects/sa2_sf.Rdata') %>% st_set_geometry('geometry')
+
+source('../r_alt/functions.r')
+source('../r/mapping_functions.r')
+
+street_tree_per_sa2 <- street_tree_coverage() %>%
+  as.data.frame() %>%
+  left_join(sa2_sf, by = 'SA2_NAME21') %>%
+  st_set_geometry('geometry')
+
+mapCoverage(street_tree_per_sa2, unlist(street_tree_per_sa2 %>%
+                                          st_drop_geometry() %>%
+                                          select(tree_percentage)), 'Greens', 'Street Tree Coverage (%)')
+
+street_tree_per_sa2 %>% st_drop_geometry %>% select(SA2_NAME21, tree_percentage) %>% tibble()
+
+```

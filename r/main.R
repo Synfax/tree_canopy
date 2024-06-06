@@ -27,8 +27,8 @@ source('run.R')
 
 
 #load dwelling Data
-dwelling_data_2 <-read_sf('Melbourne dwelling data.gpkg', query = "SELECT geom,lat,lon,zone_short,sa1_code_2021,
-                            dwellings_est,sa2_code_2021,sa4_code_2021,cbd_dist,
+dwelling_data <-read_sf('Melbourne dwelling data.gpkg', query = "SELECT geom,lat,lon,zone_short,sa1_code_2021,
+                            dwellings_est,sa2_code_2021,sa4_code_2021,cbd_dist,feature_type,
                               lga_name_2022,feature_preventing_development,sa2_name_2021,zoning_permits_housing,zone_short,address,lot_size,zone_short,sa3_code_2021,heritage_status,heritage FROM 'Melbourne dwelling data'") %>% 
   mutate(lga_name_2022 = str_remove_all(lga_name_2022, "\\s*\\(.*?\\)\\s*")) %>% 
   st_set_geometry('geom')
@@ -62,6 +62,6 @@ results_df <- data.frame()
 robust_df <- data.frame()
 
 #run the model
-run()
+#run()
 
 
