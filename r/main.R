@@ -16,14 +16,20 @@ pacman::p_load(
   lwgeom,
   parallel,
   future,
-  furrr
+  furrr,
+  quarto,
+  rmarkdown,
+  knitr,
+  reactablefmtr
 )
 
 #source files
-source('run_for_sa1.R')
+source('r/run_for_sa1.R')
 source('r_alt/run_for_sa1_alt.R')
-source('mapping_functions.R')
-source('run.R')
+source('r/mapping_functions.R')
+source('r/run.R')
+source('r_alt/alt_analysis.R')
+source('markdown/webpage.qmd')
 
 
 #load dwelling Data
@@ -63,5 +69,9 @@ robust_df <- data.frame()
 
 #run the model
 #run()
+
+#if the model has already been run, then you can just run the analysis part.
+
+
 
 

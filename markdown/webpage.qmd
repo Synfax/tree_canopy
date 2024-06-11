@@ -21,22 +21,115 @@ format:
 library(tidyverse)
 library(sf)
 library(leaflet)
+library(knitr)
+library(reactablefmtr)
 
 agg_df <- readRDS('../r_objects/agg_df.Rdata')
-sa2_sf <- readRDS('../r_objects/sa2_sf.Rdata') %>% st_set_geometry('geometry')
+sa2_sf <- readRDS('../r_objects/sa2_sf.Rdata') %>%
+  #rename(sa2_code_2021 = "SA2_CODE21") %>%
+  st_set_geometry('geometry')
 
 source('../r_alt/functions.r')
 source('../r/mapping_functions.r')
 
-street_tree_per_sa2 <- street_tree_coverage() %>%
+street_tree_per_sa2 <- coverage(exp = expression(zone_short == 'roads'), type = 'street') %>%
   as.data.frame() %>%
   left_join(sa2_sf, by = 'SA2_NAME21') %>%
   st_set_geometry('geometry')
 
+reserve_trees_per_sa2 <- coverage(exp = expression(feature_type == 'reserve'), type = 'reserve') %>%
+  as.data.frame() %>%
+  left_join(sa2_sf, by = 'SA2_NAME21')
+
 mapCoverage(street_tree_per_sa2, unlist(street_tree_per_sa2 %>%
                                           st_drop_geometry() %>%
-                                          select(tree_percentage)), 'Greens', 'Street Tree Coverage (%)')
+                                          select(street_percentage)), 'Greens', 'Street Tree Coverage (%)')
 
-street_tree_per_sa2 %>% st_drop_geometry %>% select(SA2_NAME21, tree_percentage) %>% tibble()
+
+#weird bubble plot
+street_tree_per_sa2 %>%
+  left_join(reserve_trees_per_sa2, by = 'SA2_NAME21') %>%
+  st_drop_geometry() %>%
+  select(c('SA2_NAME21','street_percentage', 'reserve_percentage')) %>%
+  mutate(across(where(is.numeric), ~ round(.x, 1))) %>%
+  reactable(
+    defaultColDef = colDef(
+      cell = bubble_grid(., colors = c("#EDF8E9", "#006D2C")
+                         ),
+      align = 'center'
+    ),
+    theme = sandstone()
+  )
+  
+  
+#bar chart
+street_tree_per_sa2 %>%
+  st_drop_geometry %>%
+  select(SA2_NAME21, street_percentage) %>%
+  mutate(street_percentage = round(street_percentage, 3)) %>%
+  reactable(
+  pagination = TRUE,
+  defaultColDef = colDef(
+    cell = data_bars(.,
+                     text_position = "above",
+                     fill_color = c("#EDF8E9", "#006D2C"), 
+                     #fill_gradient = TRUE, 
+                     #fill_color_ref = viridi(5),
+                     background = "lightgrey", 
+                     max_value = 100, 
+                     brighten_text = FALSE,
+                     bar_height = 20
+                     )
+  ),
+  theme = sandstone()
+)
 
 ```
+
+## Interactions with Missing Middle
+
+YM recently released Housing Targets, a data-driven model which allocates housing targets by council.
+
+This page calculates how much tree cover might be lost in the upzoning of residential lots, and then calculating how to offset this loss by increasing coverage of street trees
+```{r}
+
+years <- 10
+
+targets <- read.csv('../council_targets.csv') [,1:2] %>%
+  as.data.frame() %>%
+  mutate(Target = sub(',', '', Target))
+
+target_df <- data.frame()
+
+for(lga in targets$LGA) {
+  home_target <- (targets %>% filter(LGA == lga))$Target
+ 
+  target_df <<- rbind(target_df, lga_targets(lga, as.numeric(home_target)*years))
+}
+
+colnames(target_df) = c('LGA', 'initial_coverage', 'final_coverage')
+
+target_df <- target_df %>%
+  rowwise() %>%
+  mutate(percentage_point_change = as.numeric(final_coverage) - as.numeric(initial_coverage),
+                                  percentage_change = ((as.numeric(final_coverage)/as.numeric(initial_coverage))-1)*100 ) %>%
+  arrange(-percentage_change) %>%
+  mutate(percentage_change = round(percentage_change, 3))
+
+target_df %>% reactable(theme = sandstone())
+```
+
+##Zoning
+
+Zoning is very important
+
+```{r}
+
+coverage(exp = expression(!(zone_short %in% c('roads','other'))),group = 'zone_short') %>%
+  tibble
+
+
+```
+
+##Regressions
+
