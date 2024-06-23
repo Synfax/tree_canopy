@@ -1,22 +1,22 @@
 coverage = function(exp = expression(!is.na(zone_short)), type = 'tree', group = 'sa2_code_2021') {
   return_df <- agg_df %>%
     rowwise() %>%
-    mutate(zone_short = ifelse(is.na(zone_short), land_type, zone_short)) %>%
-    filter(eval(exp)) %>%
+#   mutate(zone_short = ifelse(is.na(zone_short), land_type, zone_short)) %>%
+    dplyr::filter(eval(exp)) %>%
     group_by(!!as.name(group)) %>%
     summarise(across(c(coverage,total_area), sum)) %>%
     mutate( "{type}_percentage" := (coverage/total_area)*100 )
   
-  if(group == 'sa2_code_2021') {
-    return_df = return_df %>%
-      left_join(sa2_sf %>%
-                  st_drop_geometry() %>%
-                  select(sa2_code_2021, distance, SA2_NAME21), by = 'sa2_code_2021') %>%
-      select(SA2_NAME21, !!paste0(type,'_percentage'), distance) %>%
-      arrange(!!paste0(type,'_percentage')) 
-  }
+  # if(group == 'sa2_code_2021') {
+  #   return_df = return_df %>%
+  #     left_join(sa2_sf %>%
+  #                 st_drop_geometry() %>%
+  #                 select(sa2_code_2021, distance, SA2_NAME21), by = 'sa2_code_2021') %>%
+  #     select(SA2_NAME21, !!paste0(type,'_percentage'), distance) 
+  #     
+  # }
   
-  return(return_df)
+  return(return_df %>% arrange(!!paste0(type,'_percentage')) )
 }
 
 lga_targets <- function(lga_name, home_target) {

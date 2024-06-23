@@ -1,5 +1,7 @@
 library('devtools')
 library('pacman')
+devtools::install_github("dmurdoch/leaflet@crosstalk4")
+library(leaflet)
 
 pacman::p_load(
   chmloader,
@@ -10,7 +12,6 @@ pacman::p_load(
   classInt,
   tidyverse,
   tidyterra,
-  leaflet,
   htmlwidgets,
   raster,
   lwgeom,
@@ -20,7 +21,11 @@ pacman::p_load(
   quarto,
   rmarkdown,
   knitr,
-  reactablefmtr
+  reactablefmtr,
+  crosstalk,
+  htmltools,
+  DT,
+  update = TRUE
 )
 
 #source files
@@ -28,8 +33,8 @@ source('r/run_for_sa1.R')
 source('r_alt/run_for_sa1_alt.R')
 source('r/mapping_functions.R')
 source('r/run.R')
-source('r_alt/alt_analysis.R')
-source('markdown/webpage.qmd')
+#source('r_alt/alt_analysis.R')
+#source('markdown/webpage.qmd')
 
 
 #load dwelling Data
@@ -43,6 +48,7 @@ dwelling_data <-read_sf('Melbourne dwelling data.gpkg', query = "SELECT geom,lat
 sa1_sf <- read_sf('SA1_2021/SA1_2021_AUST_GDA2020.shp')
 sa2_sf <- read_sf('SA2_2021/SA2_2021_AUST_GDA2020.shp')
 sa3_sf <- read_sf('SA3_2021/SA3_2021_AUST_GDA2020.shp')
+sal_sf <- read_sf('SAl_2021/SAL_2021_AUST_GDA2020.shp')
 
 #not needed because it only had the big roads 
 # state_level_zoning <- read_sf('Order_A723U7/ll_gda2020/esrishape/whole_of_dataset/victoria/VMPLAN/PLAN_ZONE.shp')

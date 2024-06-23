@@ -4,10 +4,92 @@ author: "Paul S"
 date: "6/6/24"
 format: 
   html:
+    theme: zephyr
     fig-width: 8
     fig-height: 4
     code-fold: true
+    page-layout: full
 ---
+```{r, results='hide', warning=FALSE,message=FALSE}
+devtools::install_github("dmurdoch/leaflet@crosstalk4")
+library(tidyverse)
+library(sf)
+library(leaflet)
+library(knitr)
+library(reactablefmtr)
+library(htmltools)
+library(crosstalk)
+library(DT)
+
+agg_df <- readRDS('../r_objects/agg_df.Rdata')
+sa2_sf <- readRDS('../r_objects/sa2_sf.Rdata') %>%
+  #rename(sa2_code_2021 = "SA2_CODE21") %>%
+  st_set_geometry('geometry')
+
+source('../r_alt/functions.r')
+source('../r/mapping_functions.r')
+```
+
+## Tree coverage
+
+Insert Lit Review here
+
+``` {r}
+
+trees_per_sa2 <- coverage() %>%
+  left_join(sa2_sf, by = 'sa2_code_2021') %>%
+  st_set_geometry('geometry') %>%
+  dplyr::select(SA2_NAME21, tree_percentage,distance) %>%
+  mutate(tree_percentage = round(tree_percentage, 3)) %>%
+  as('Spatial')
+
+sa2_distance_map = with(as.data.frame(trees_per_sa2), setNames(distance, SA2_NAME21))
+  
+#bar chart
+sd_map = SharedData$new(trees_per_sa2)
+sd_df = SharedData$new(as.data.frame(trees_per_sa2@data), group = sd_map$groupName())
+
+  #mapCoverage(trees_per_sa2_cw, trees_per_sa2_cw$data()$tree_percentage , 'Greens', 'Tree Coverage (%)')
+
+  treePal <- colorNumeric(palette = 'Greens', domain = as.data.frame(sd_df$data())$tree_percentage)
+    
+  leaflet(sd_map) %>%
+    addProviderTiles('CartoDB.Positron') %>%
+    addPolygons(fillColor = ~treePal(tree_percentage),
+                fillOpacity = 0.5,
+                opacity = 0)  %>%
+    addLegend(position = "bottomright",
+              pal = treePal,
+              values = sd_df$data()$tree_percentage,
+              title = 'title')
+  
+  filter_slider("distance", "Distance to CBD", sd_df, ~distance, min = 0, max = 35000, width = '50%')
+       
+  reactable(sd_df,
+  defaultSorted = list('tree_percentage' = "desc"),
+  pagination = TRUE,
+  theme = sandstone(),
+  columns = list(
+    tree_percentage = colDef(
+      name = 'Tree Coverage (%)',
+      cell = data_bars(trees_per_sa2,
+                       text_position = "above",
+                       fill_color = c("#EDF8E9", "#006D2C"),
+                       #fill_gradient = TRUE,
+                       #fill_color_ref = viridi(5),
+                       background = "lightgrey",
+                       max_value = 100,
+                       brighten_text = FALSE,
+                       bar_height = 20
+                       )
+    ),
+    distance = colDef(show = FALSE)
+  )
+)
+
+
+
+```
 
 ## Street Trees
 
@@ -18,71 +100,44 @@ format:
 #| fig-cap: "Tree coverage by SA2"
 #| warning: false
 
-library(tidyverse)
-library(sf)
-library(leaflet)
-library(knitr)
-library(reactablefmtr)
 
-agg_df <- readRDS('../r_objects/agg_df.Rdata')
-sa2_sf <- readRDS('../r_objects/sa2_sf.Rdata') %>%
-  #rename(sa2_code_2021 = "SA2_CODE21") %>%
-  st_set_geometry('geometry')
+street_tree_per_sa2 <- coverage(exp = expression(zone_short == 'roads'), type = 'street', group = 'sa2_name_2021')
 
-source('../r_alt/functions.r')
-source('../r/mapping_functions.r')
+reserve_trees_per_sa2 <- coverage(exp = expression(feature_type == 'reserve'), type = 'reserve', group = 'sa2_name_2021') 
 
-street_tree_per_sa2 <- coverage(exp = expression(zone_short == 'roads'), type = 'street') %>%
-  as.data.frame() %>%
-  left_join(sa2_sf, by = 'SA2_NAME21') %>%
-  st_set_geometry('geometry')
+resi_trees_per_sa2 <- coverage(exp = expression(zoning_permits_housing == 'Housing permitted'), type = 'residential', group = 'sa2_name_2021') 
 
-reserve_trees_per_sa2 <- coverage(exp = expression(feature_type == 'reserve'), type = 'reserve') %>%
-  as.data.frame() %>%
-  left_join(sa2_sf, by = 'SA2_NAME21')
-
-mapCoverage(street_tree_per_sa2, unlist(street_tree_per_sa2 %>%
-                                          st_drop_geometry() %>%
-                                          select(street_percentage)), 'Greens', 'Street Tree Coverage (%)')
-
-
-#weird bubble plot
-street_tree_per_sa2 %>%
-  left_join(reserve_trees_per_sa2, by = 'SA2_NAME21') %>%
-  st_drop_geometry() %>%
-  select(c('SA2_NAME21','street_percentage', 'reserve_percentage')) %>%
+#combine into one and clean
+combined_df <- street_tree_per_sa2 %>%
+  left_join(reserve_trees_per_sa2, by = 'sa2_name_2021') %>%
+  left_join(resi_trees_per_sa2, by = 'sa2_name_2021') %>%
+  dplyr::select(c('sa2_name_2021','street_percentage', 'reserve_percentage', 'residential_percentage')) %>%
+  rowwise() %>%
+  mutate(distance = sa2_distance_map[sa2_name_2021]) %>%
   mutate(across(where(is.numeric), ~ round(.x, 1))) %>%
-  reactable(
-    defaultColDef = colDef(
-      cell = bubble_grid(., colors = c("#EDF8E9", "#006D2C")
-                         ),
-      align = 'center'
-    ),
-    theme = sandstone()
-  )
-  
-  
-#bar chart
-street_tree_per_sa2 %>%
-  st_drop_geometry %>%
-  select(SA2_NAME21, street_percentage) %>%
-  mutate(street_percentage = round(street_percentage, 3)) %>%
-  reactable(
-  pagination = TRUE,
-  defaultColDef = colDef(
-    cell = data_bars(.,
-                     text_position = "above",
-                     fill_color = c("#EDF8E9", "#006D2C"), 
-                     #fill_gradient = TRUE, 
-                     #fill_color_ref = viridi(5),
-                     background = "lightgrey", 
-                     max_value = 100, 
-                     brighten_text = FALSE,
-                     bar_height = 20
-                     )
-  ),
-  theme = sandstone()
-)
+  mutate(across(ends_with('percentage'), ~ ifelse(is.na(.x), 0, .x) )) %>%
+  ungroup() %>%
+  as.data.frame()
+
+sd_combined = SharedData$new((combined_df))
+
+filter_slider("distance", "Distance to CBD", sd_combined, ~distance, min = 0, max = 35000, width = '50%')
+     
+```
+Note: the table below is sorted by street tree coverage by default. Click other column names to sort them.
+```{r}  
+#weird bubble plot  
+reactable(sd_combined, defaultColDef = colDef(
+  cell = bubble_grid(combined_df, shape = 'circles', colors = c("#EDF8E9", "#006D2C")),
+  align = 'center',
+  vAlign = 'center'),
+  columns = list(distance = colDef(show = F),
+                 sa2_name_2021 = colDef(name = 'SA2'),
+                 street_percentage = colDef(name = 'Streets'),
+                 reserve_percentage = colDef(name = 'Parks'),
+                 residential_percentage = colDef(name = 'Residential')),
+  theme = sandstone(),
+  defaultSortOrder = 'desc')
 
 ```
 
@@ -119,17 +174,40 @@ target_df <- target_df %>%
 target_df %>% reactable(theme = sandstone())
 ```
 
-##Zoning
+## Zoning
 
 Zoning is very important
 
 ```{r}
 
 coverage(exp = expression(!(zone_short %in% c('roads','other'))),group = 'zone_short') %>%
-  tibble
+  
+  reactable(
+    defaultSorted = list('tree_percentage' = "desc"),
+    pagination = TRUE,
+    theme = sandstone(),
+    columns = list(
+    tree_percentage = colDef(
+      name = 'Coverage %',
+      cell = data_bars(.,
+      text_position = "above",
+                       fill_color = c("#EDF8E9", "#006D2C"),
+                       #fill_gradient = TRUE,
+                       #fill_color_ref = viridi(5),
+                       background = "lightgrey",
+                       max_value = 100,
+                       brighten_text = FALSE,
+                       bar_height = 20
+    )),
+    coverage = colDef(show = F),
+    total_area = colDef(show = F),
+    zone_short = colDef(name = 'Zone type')
+  ))
 
 
 ```
 
-##Regressions
+## Regressions
+aaa
+todo: mix with Census data
 

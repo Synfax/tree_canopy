@@ -12,7 +12,7 @@ agg_sf <- agg_results %>%
   rowwise() %>%
   mutate(coverage_pc = ifelse(is.nan(coverage / total_area), 0, (coverage / total_area)*100)) %>%
   mutate(coverage_pc = ifelse(total_area < 0.001 && coverage_pc > 1, 1, coverage_pc)) %>%
-  select(!(starts_with('prox'))) %>%
+  dplyr::select(!(starts_with('prox'))) %>%
   st_set_geometry('geom')
 
 agg_df <- agg_sf %>%
@@ -22,13 +22,15 @@ agg_df <- agg_sf %>%
 #create dictionaries between sa1 and sa2/lga to fill in missing values for 'roads' and 'other' land uses
 sa1_sa2_map =  with(agg_df, setNames(sa2_code_2021, sa1_code_2021))
 sa1_lga_map = with(agg_df, setNames(lga_name_2022, sa1_code_2021))
+sa2_sa2_map = with(agg_df, setNames(sa2_name_2021, sa2_code_2021))
 
 #fill in these missing values
 agg_df <- agg_df %>%
   rowwise() %>%
   mutate(zone_short = ifelse(is.na(zone_short), land_type, zone_short),
          sa2_code_2021 = ifelse(is.na(sa2_code_2021), sa1_sa2_map[as.character(sa1)], sa2_code_2021),
-         lga_name_2022 = ifelse(is.na(lga_name_2022), sa1_lga_map[as.character(sa1)], lga_name_2022))
+         lga_name_2022 = ifelse(is.na(lga_name_2022), sa1_lga_map[as.character(sa1)], lga_name_2022),
+         sa2_name_2021 = ifelse(is.na(sa2_name_2021), sa2_sa2_map[as.character(sa2_code_2021)], sa2_name_2021))
 
 #st_write(agg_sf, 'sf_exports/test.gpkg', driver = "GPKG", append = FALSE)
 
@@ -45,18 +47,19 @@ sa2_sf = sa2_sf %>%
   dplyr::arrange(distance) %>%
   rename( sa2_code_2021 = SA2_CODE21)
 # 
-# sa2_within_distance = unique(sa2_sf %>%
+  # sa2_within_distance = unique(sa2_sf %>%
 #                                st_drop_geometry() %>%
 #                                filter(distance < 20000) %>%
 #                                select(sa2_code_2021)) %>% unlist()
 
 mm_lgas <- c('Brimbank', 'Merri-bek', 'Banyule', 'Darebin', 'Yarra', 'Moonee Valley', 'Manningham', 'Maribyrnong', 'Melbourne', 'Hobsons Bay', 'Port Phillip', 'Boroondara', 'Stonnington', 'Glen Eira', 'Bayside', 'Monash', 'Whitehorse', 'Maroondah', 'Manningham', 'Kingston')
 
-agg_df <- agg_df %>% filter(lga_name_2022 %in% mm_lgas)
+agg_df <- agg_df %>%
+  filter(lga_name_2022 %in% mm_lgas)
 
 #saving objects for quarto to reach them
 saveRDS(agg_df, 'r_objects/agg_df.Rdata')
 saveRDS(sa2_sf, 'r_objects/sa2_sf.Rdata')
 
 
-  
+
