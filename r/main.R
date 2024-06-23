@@ -6,6 +6,7 @@ library(leaflet)
 pacman::p_load(
   chmloader,
   terra,
+  ggtext,
   sf,
   stars,
   maptiles,
@@ -48,7 +49,8 @@ dwelling_data <-read_sf('Melbourne dwelling data.gpkg', query = "SELECT geom,lat
 sa1_sf <- read_sf('SA1_2021/SA1_2021_AUST_GDA2020.shp')
 sa2_sf <- read_sf('SA2_2021/SA2_2021_AUST_GDA2020.shp')
 sa3_sf <- read_sf('SA3_2021/SA3_2021_AUST_GDA2020.shp')
-sal_sf <- read_sf('SAl_2021/SAL_2021_AUST_GDA2020.shp')
+sal_sf <- read_sf('SAl_2021/SAL_2021_AUST_GDA2020.shp') %>%
+  mutate(SAL_NAME21 = gsub(" \\(Vic\\.\\)", "", SAL_NAME21))
 
 #not needed because it only had the big roads 
 # state_level_zoning <- read_sf('Order_A723U7/ll_gda2020/esrishape/whole_of_dataset/victoria/VMPLAN/PLAN_ZONE.shp')

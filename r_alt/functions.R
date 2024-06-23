@@ -1,11 +1,12 @@
 coverage = function(exp = expression(!is.na(zone_short)), type = 'tree', group = 'sa2_code_2021') {
   return_df <- agg_df %>%
     rowwise() %>%
-#   mutate(zone_short = ifelse(is.na(zone_short), land_type, zone_short)) %>%
     dplyr::filter(eval(exp)) %>%
+    dplyr::filter(!is.na(!!as.name(group))) %>%
     group_by(!!as.name(group)) %>%
     summarise(across(c(coverage,total_area), sum)) %>%
     mutate( "{type}_percentage" := (coverage/total_area)*100 )
+  
   
   # if(group == 'sa2_code_2021') {
   #   return_df = return_df %>%
@@ -57,3 +58,6 @@ lga_targets <- function(lga_name, home_target) {
  
   return(c(lga_name, round(road_percentage * 100, 3), round(new_road_percentage * 100, 3)))
 }
+
+v = function(x) {View(x)}
+adf = function(x) {as.data.frame(x)}
