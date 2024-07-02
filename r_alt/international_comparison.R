@@ -1,9 +1,9 @@
 
-coordinates <- list( c(2.3514, 48.8575) , c(16.3713,48.2081 ) , c(0.1276,51.5072), c(74.0060, 40.7128) )
+coordinates <- list( c(2.3514, 48.8575) , c(16.3713,48.2081 ) , c(0.1276,51.5072), c(74.0060, 40.7128), c(144.9631,37.8136) )
 
-crss <- c(27561, 31287, 29901, 32118  )
+crss <- c(27561, 31287, 29901, 32118, 28355)
 
-cities <- c('paris', 'vienna', 'london', 'newyork') 
+cities <- c('paris', 'vienna', 'london', 'newyork', 'melbourne') 
 
 radius <- 10000
 
@@ -21,13 +21,18 @@ city_df = tibble(coords = coordinates, coordinateref = crss, city = cities) %>%
 
 city_df$coordinateref = as.numeric(city_df$coordinateref)
 
-city_df = city_df[-c(1:2),]
+city_df = city_df[-c(1:4),]
 
 city_df = city_df %>%
   rowwise() %>%
   mutate(res = runCity(lng, lat, coordinateref, city) )
 
 runCity <- function(longit, latit, local_crs, cur_city) {
+  
+  longit = city_df$lng[1]
+  latit = city_df$lat[1]
+  local_crs = city_df$coordinateref[1]
+  cur_city = city_df$city[1]
   
   local_coords = c(as.numeric(longit),as.numeric(latit))
 
