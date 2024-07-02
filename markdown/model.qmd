@@ -1,0 +1,279 @@
+---
+title: "Tree Data Documentation"
+author: "Paul S"
+date: "6/6/24"
+format: 
+  html:
+    theme: zephyr
+    fig-width: 8
+    fig-height: 8
+    code-fold: true
+    page-layout: full
+---
+
+```{r, results='hide', warning=FALSE,message=FALSE}
+
+
+
+library(tidyverse)
+library(stars)
+library(sf)
+library(raster)
+library(leaflet)
+
+threshold <- 0
+union <- TRUE
+res <- 5
+
+
+```
+
+This page will walk through a step by step version of the model used to determine tree coverage.
+
+## Canopy Cover
+
+```{r, warning=FALSE}
+    #variables aren't loaded every routine, this is just for demo purposes :)
+
+    sa1_sf <- readRDS('../data/sa1_sf.Rdata')
+    road_network <- readRDS('../data/road_network.Rdata')
+    dwelling_data <- readRDS('../data/dwelling_data.Rdata')
+    
+    #hard coded for demo
+    sa = 20601110623 
+```
+
+We first download the raster file using chmloader::download_chm, and provide the function the bounding box of the SA1 we are currently analysing. This returns a raster image, with each pixel having height about the canopy. Pixels with canopy heights below the threshold (default zero) are filtered out. The map below displays this cleaned raster.
+
+```{r, warning=FALSE, message = FALSE}
+    #filter for current sa
+    current_sa_sf <- sa1_sf %>%
+      filter(SA1_CODE21 == sa)
+    
+    dwellings_in_sa <- dwelling_data %>%
+      st_intersection(current_sa_sf)
+    
+    bounding = st_as_sfc(st_bbox(current_sa_sf)) %>%
+      st_transform(crs = 4326)
+    
+    file_name = paste0('../rasters/',res,'res_sa1/',sa,'.tif')
+    
+    if(file.exists(file_name)) {
+      #print('running from file')
+      
+      chm <- raster(file_name)
+      var = paste0('X',sa)
+      
+    } else {
+      print('downloading from api')
+      chm <- chmloader::download_chm(bounding, filename = file_name, res = res)
+      var = paste0(sa,'.tif')
+    }
+    #print('downloaded')
+    
+    
+    
+    chm_stars = st_as_stars(chm, nx = chm@ncols, ny = chm@nrow, n = (chm@ncols * chm@nrows), downsample = 0)
+    chm_simplified = st_as_sf(chm_stars, merge = TRUE)
+    
+    
+    
+    #TODO: tweak this value
+    chm_simplified = chm_simplified %>%
+      filter( !!as.name(var) > threshold) 
+    chm_simplified <- st_transform(st_as_sf(chm_simplified), 7844) %>%
+      rename(canopy_height = var)
+    
+    #terra::plot(chm_simplified)
+    
+    dom <- chm_simplified %>%
+      st_drop_geometry() %>%
+      dplyr::select(canopy_height) %>%
+      unlist()
+    
+    pal <- colorFactor('Greens', dom )
+    
+    chm_simplified %>%
+      leaflet() %>%
+      addPolygons(color  = ~pal(canopy_height), fillOpacity = 1) %>%
+      addProviderTiles('CartoDB.Positron') %>%
+      addLegend(position = "bottomright",
+              pal = pal,
+              values = dom,
+              title = "Canopy Height (m)") 
+    
+```
+
+The raster is then simplified further into a single layer to remove the canopy heights themselves. The polygon is further refined by only selecting canopy coverage within the current SA1.
+
+```{r, warning=FALSE, message=F}
+    
+    #cut it out
+    #chm_simplified <- st_intersection(chm_simplified, current_sa_sf)
+    
+    #see if CHM is empty otherwise this will cause problems
+    chm_is_empty = ifelse(nrow(chm_simplified) > 0, F, T) 
+    
+    if(!chm_is_empty) {
+      
+      #chm_simplified <- st_parallel(chm_simplified, st_intersection, 4, y = current_sa_sf)
+      chm_simplified <- st_intersection(chm_simplified, current_sa_sf)
+      #union into one
+      if(union && nrow(chm_simplified) > 0){
+        #chm_simplified = st_parallel(chm_simplified, st_union, 4)
+        chm_simplified = st_union(chm_simplified)
+      }
+    }
+    
+    chm_simplified %>%
+      st_as_sf() %>%
+      leaflet() %>%
+      addPolygons(color  = 'green', fillOpacity = 1) %>%
+      addProviderTiles('CartoDB.Positron') %>%
+      addPolygons(data = current_sa_sf, fillOpacity = 0, color = 'black')
+    
+      
+```
+
+## Road Network
+
+Now we turn our attention to the road network, which the state government does not provide polygons for. I use two methods to infer the road network, and then take the union of the two as a robustness measure.
+
+Instead of polygons, the Victorian government provides linestrings along the centres of roads, but that does not give information about their width. Here is what that road lines looks like in the data.
+
+```{r, warning=FALSE, message = F}
+    
+    sf_use_s2(FALSE)
+    
+    print('simplified')
+    
+    #find road network
+    #road_network_in_sa = st_parallel(road_network_in_sa3, st_intersection, 4 , y= st_buffer(current_sa_sf, 0.00035))
+    road_network_in_sa = st_intersection(road_network, st_buffer(current_sa_sf, 0.00035))
+    #road_network_in_sa = road_network_in_sa3[lengths(road_network_in_sa) > 0 ,] 
+    
+    plot(road_network_in_sa, main = "Road Linestrings")
+```
+
+As a best guess, I buffer out each of these strings by \~20 metres, which is too largefor small roads, and too small for large roads, however this buffered polygon should cover all road surfaces, despite inevitably covering private land as well. This 'buffered roads' polygon is our first estimate of where roads are.
+
+```{r, warning=FALSE, message=FALSE}
+    
+    #make it wider
+    buffered_roads = st_buffer(road_network_in_sa, 0.00035)
+    #buffered_roads = st_parallel(buffered_roads, st_union)
+    
+    plot(buffered_roads, main = "Buffered Roads")
+    
+```
+
+Another way of guessing where roads are is to look at where private dwellings are not. For example, in suburban areas, the areas between private lots are typically roads, so we can just take the difference between dwellings and the broader SA1 shapefile.
+
+Shown below is this difference.
+
+```{r, warning=FALSE, message = FALSE}
+    
+    #guess where roads are (between lots)
+    #there was an st_union before dwellings here - changing it with removing s2
+    guess_of_roads <- st_difference(current_sa_sf %>% st_union(), st_union(dwellings_in_sa)) 
+    
+    plot(guess_of_roads, main = "Where private dwellings are not - Guess of Roads")
+```
+
+Now, we combine our two guesses for where roads are, and find a polygon that is the intersection of both our methods. In the end, our roads polygon is a) within 20 metres of a road linestring from the VicGov, and b) not overlapping with any property boundaries.
+
+```{r, warning=FALSE, message= FALSE}
+    #get the overlap between the guess and the buffer
+    roads <- st_intersection(guess_of_roads, buffered_roads) %>%
+      st_union()
+    
+    roads <- st_collection_extract(roads, "POLYGON") %>%
+      st_union() %>%
+      st_as_sf() %>%
+      mutate(land_type = 'roads') %>%
+      rename(geom = 'x')
+    
+
+    plot(roads, main = "Final guess of roads")
+```
+
+## Dwellings themselves
+
+Now, we also need to categorise dwellings into 'private land', or 'public land', which is done using the 'Feature Preventing Development' flag in the dwelling dataset.
+
+```{r, warning = FALSE, message = FALSE}
+
+pal <- colorFactor("viridis", dwellings_in_sa$feature_preventing_development) 
+    
+    map <- leaflet() %>%
+      addProviderTiles('CartoDB.Positron') %>%
+      addPolygons(data = dwellings_in_sa, color = ~pal(feature_preventing_development)) %>%
+      addLegend(position = "bottomright",
+              pal = pal,
+              values = dwellings_in_sa$feature_preventing_development,
+              title = "Is the lot reserved for public use?") 
+
+    map
+```
+
+## Final Map
+
+Now, with a polygon for trees, a polygon for dwellings, and a polygon for the road network, we can combine it into one map for visulaisation.
+
+```{r, warning=FALSE, message = FALSE}
+    
+    other_land = st_geometry(current_sa_sf) %>%
+      st_difference(st_geometry(roads)) %>%
+      st_difference(st_geometry(st_union(dwellings_in_sa)))
+    
+    if(class(other_land)[1] == "sfc_GEOMETRYCOLLECTION") {
+      other_land = st_collection_extract(other_land, "POLYGON")
+    }
+    
+    other_land = other_land %>%
+      st_union() %>%
+      st_as_sf() %>%
+      mutate(land_type = 'other') %>%
+      rename(geom = 'x')
+    
+    #now need to trim guess_of_roads to only within x metres of an actual road line.
+    
+    pal <- colorFactor("viridis", dwellings_in_sa$feature_preventing_development) 
+    
+    map <- leaflet() %>%
+      addProviderTiles('CartoDB.Positron') %>%
+      addPolygons(data = dwellings_in_sa, color = ~pal(feature_preventing_development)) %>% 
+      addPolygons(data = roads, color = 'darkgray', fillColor = 'grey', fillOpacity = 1) %>% 
+      addPolygons(data = chm_simplified, color = 'green', fillColor = 'darkgreen', fillOpacity = 1) %>%
+      addPolygons(data = current_sa_sf, color = 'black', fillOpacity = 0)
+    
+    map
+    
+```
+
+## Calculate Overlaps
+
+Now, with the map complete, we iterate through each lot in the SA1 and measure its overlap with the tree layer. This is then amended to the full database for further analysis.
+
+```{r, warning=FALSE, message = FALSE}
+    
+    test_df <- dwellings_in_sa %>%
+      bind_rows(roads) %>%
+      bind_rows(other_land) %>%
+      rowwise() %>%
+      mutate(total_area = st_area(geom) %>%
+               as.numeric() %>%
+               ifelse(purrr::is_empty(.), 0, .),
+             coverage = st_intersection(geom, chm_simplified) %>%
+               st_union() %>%
+               st_area() %>%
+               as.numeric() %>%
+               ifelse(purrr::is_empty(.), 0, .),
+             sa1 = sa) %>%
+      dplyr::select(c(lat, lon, coverage, total_area, sa1, land_type))
+    
+    #results_df <<- rbind(results_df, test_df)
+
+
+    (test_df[1:10,])
+```

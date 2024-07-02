@@ -68,8 +68,30 @@ sal_sf = sal_sf %>%
 
 mm_lgas <- c('Brimbank', 'Merri-bek', 'Banyule', 'Darebin', 'Yarra', 'Moonee Valley', 'Manningham', 'Maribyrnong', 'Melbourne', 'Hobsons Bay', 'Port Phillip', 'Boroondara', 'Stonnington', 'Glen Eira', 'Bayside', 'Monash', 'Whitehorse', 'Maroondah', 'Manningham', 'Kingston')
 
+metro_lgas <- c('Melbourne','Boroondara','Merri-bek',
+                'Brimbank',
+                'Greater Dandenong',
+                'Kingston',
+                'Darebin',
+                'Frankston',
+                'Port Phillip',
+                'Monash',
+                'Moonee Valley',
+                'Knox',
+                'Stonnington',
+                'Whitehorse',
+                'Glen Eira',
+                'Yarra',
+                'Hobsons Bay',
+                'Manningham',
+                'Maribyrnong',
+                'Banyule',
+                'Bayside',
+                'Maroondah')
+
 #filter to MM LGAS
-#agg_df <- agg_df %>% filter(lga_name_2022 %in% mm_lgas)
+agg_df <- agg_df %>%
+  filter(lga_name_2022 %in% metro_lgas)
 
 #saving objects for quarto to reach them
 saveRDS(agg_df, 'r_objects/agg_df.Rdata')

@@ -7,16 +7,6 @@ coverage = function(exp = expression(!is.na(zone_short)), type = 'tree', group =
     summarise(across(c(coverage,total_area), sum)) %>%
     mutate( "{type}_percentage" := (coverage/total_area)*100 )
   
-  
-  # if(group == 'sa2_code_2021') {
-  #   return_df = return_df %>%
-  #     left_join(sa2_sf %>%
-  #                 st_drop_geometry() %>%
-  #                 select(sa2_code_2021, distance, SA2_NAME21), by = 'sa2_code_2021') %>%
-  #     select(SA2_NAME21, !!paste0(type,'_percentage'), distance) 
-  #     
-  # }
-  
   return(return_df %>% arrange(!!paste0(type,'_percentage')) )
 }
 
@@ -39,24 +29,47 @@ lga_targets <- function(lga_name, home_target) {
   lost_tree_coverage = coverage_per_sqm * area
   
   #find road network coverage
-  road_summary = agg_df %>%
+  public_summary = agg_df %>%
     as.data.frame() %>%
     filter(lga_name_2022 == lga_name) %>%
-    filter(zone_short == 'roads') %>%
+    filter(zone_short == 'roads' | feature_preventing_development == TRUE) %>%
     summarise(across(c(coverage, total_area), sum))
   
   #calculate percentages
-  road_percentage = road_summary$coverage / road_summary$total_area
-  new_road_percentage = (road_summary$coverage + lost_tree_coverage) / road_summary$total_area
-  percent_growth_needed <- ((new_road_percentage/road_percentage)-1)*100
-  
+  # road_percentage = road_summary$coverage / road_summary$total_area
+  # new_road_percentage = (road_summary$coverage + lost_tree_coverage) / road_summary$total_area
+  # percent_growth_needed <- ((new_road_percentage/road_percentage)-1)*100
+  # 
   #print(paste0('Original coverage was ', round(road_percentage * 100, 3), '%. ',
               #'This needs to rise to ', round(new_road_percentage * 100,3), '%'))
   
   #print(paste0('This is a ', round(new_road_percentage - road_percentage, 3), ' percentage point rise, or a ',
               #round(percent_growth_needed,3), ' % change'))
  
-  return(c(lga_name, round(road_percentage * 100, 3), round(new_road_percentage * 100, 3)))
+  #return( c(lga_name, round(road_percentage * 100, 3), round(new_road_percentage * 100, 3)) )
+  
+  return( c(lga_name, round(lost_tree_coverage,1), round(public_summary$coverage - lost_tree_coverage , 1), round((public_summary$coverage), 1)) )
+}
+
+manipulateRents <- function(rents) {
+  
+  return(rents %>%
+    group_by(SAL_NAME21) %>%
+    select(!c('Not stated', 'Not applicable', 'Total')) %>%
+    mutate(across( starts_with("$"), ~ as.numeric(.) )) %>%
+    mutate(total = sum(across(where(is.numeric)))) %>%
+    mutate(across(starts_with('$'), ~ .x / total )) %>%
+    select(!total) %>%
+    pivot_longer(cols = starts_with('$')) %>%
+    mutate(csum = cumsum(value)) %>%
+    filter(csum > 0.5) %>%
+    arrange(csum) %>%
+    slice_head(n = 1) %>%
+    ungroup() %>%
+    rename(median_band = name) %>%
+    rowwise() %>%
+    mutate(SAL_NAME21 = gsub(" \\(Vic\\.\\)", "", SAL_NAME21)) )
+
 }
 
 v = function(x) {View(x)}

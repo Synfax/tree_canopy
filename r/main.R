@@ -81,5 +81,6 @@ robust_df <- data.frame()
 #if the model has already been run, then you can just run the analysis part.
 
 
-
-
+saveRDS(sa1_sf, 'data/sa1_sf.Rdata')
+saveRDS(road_network, 'data/road_network.Rdata')
+saveRDS(dwelling_data, 'data/dwelling_data.Rdata')

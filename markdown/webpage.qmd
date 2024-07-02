@@ -10,6 +10,7 @@ format:
     code-fold: true
     page-layout: full
 ---
+
 ```{r, results='hide', warning=FALSE,message=FALSE}
 devtools::install_github("dmurdoch/leaflet@crosstalk4")
 library(tidyverse)
@@ -24,6 +25,7 @@ library(crosstalk)
 library(patchwork)
 library(ggtext)
 library(DT)
+library(RColorBrewer)
 library(showtext)
 
 agg_df <- readRDS('../r_objects/agg_df.Rdata')
@@ -39,7 +41,12 @@ source('../r/mapping_functions.r')
 source('../themes/theme.r')
 ```
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
+
+grouping = 'SAL_NAME21'
+grouping_sf = sal_sf
+pretty_group_name = 'Suburb'
+
 
 sf_use_s2(FALSE)
 
@@ -96,13 +103,12 @@ directions <- random_suburb %>%
 
 ## Tree coverage
 
+Note: to see how the data is constructed, see the [Documentation](model.html).
+
 Insert Lit Review here
 
-``` {r, warning = FALSE}
+```{r, warning = FALSE}
 
-grouping = 'SAL_NAME21'
-grouping_sf = sal_sf
-pretty_group_name = 'Suburb'
 
 trees_grouped <- coverage(group = grouping) %>%
   left_join(grouping_sf, by = (grouping)) %>%
@@ -197,6 +203,7 @@ combined_df <- street_trees_grouped %>%
 sd_combined = SharedData$new((combined_df))
 
 ```
+
 Note: the table below is sorted by street tree coverage by default. Click other column names to sort them.
 
 Note: There might be innaccuracies in the street coverage data when using Suburbs as grouping unit, as not all Statistical Area 1s fit uniquely within a suburb. As such, SA1s are assigned into suburbs based on the one they have the highest overlap with.
@@ -228,6 +235,8 @@ reactable(sd_combined,
 YM recently released Housing Targets, a data-driven model which allocates housing targets by council.
 
 This page calculates how much tree cover might be lost in the upzoning of residential lots, and then calculating how to offset this loss by increasing coverage of street trees
+
+
 ```{r}
 mm_lgas <- c('Brimbank', 'Merri-bek', 'Banyule', 'Darebin', 'Yarra', 'Moonee Valley', 'Manningham', 'Maribyrnong', 'Melbourne', 'Hobsons Bay', 'Port Phillip', 'Boroondara', 'Stonnington', 'Glen Eira', 'Bayside', 'Monash', 'Whitehorse', 'Maroondah', 'Manningham', 'Kingston')
 
@@ -241,21 +250,33 @@ targets <- read.csv('../council_targets.csv') [,1:2] %>%
 target_df <- data.frame()
 
 for(lga in targets$LGA) {
-  home_target <- (targets %>% filter(LGA == lga))$Target
+  home_target <- as.numeric((targets %>% filter(LGA == lga))$Target) * years
  
-  target_df <<- rbind(target_df, lga_targets(lga, as.numeric(home_target)*years))
+  target_df <<- rbind(target_df, c( home_target ,lga_targets(lga, home_target)) ) 
 }
 
-colnames(target_df) = c('LGA', 'initial_coverage', 'final_coverage')
+colnames(target_df) = c('home_target','LGA', 'lost_coverage', 'initial_coverage', 'final_coverage')
 
 target_df <- target_df %>%
+  mutate(across(c('initial_coverage', 'final_coverage', 'lost_coverage'), ~ round(as.numeric(.x) / (10^4), 1) )) %>%
   rowwise() %>%
   mutate(percentage_point_change = as.numeric(final_coverage) - as.numeric(initial_coverage),
                                   percentage_change = ((as.numeric(final_coverage)/as.numeric(initial_coverage))-1)*100 ) %>%
   arrange(-percentage_change) %>%
-  mutate(percentage_change = round(percentage_change, 3))
+  mutate(percentage_change = round(percentage_change, 3)) %>%
+  dplyr::relocate(home_target, .after = LGA)
 
-target_df %>% reactable(theme = sandstone())
+target_df %>%
+  reactable(theme = sandstone(),
+            pagination = F,
+            columns = list(
+              percentage_point_change = colDef(show = F),
+              initial_coverage = colDef(name = "Coverage After Targets (Ha)"),
+              lost_coverage = colDef(name = "Lost Coverage (Ha)"),
+              final_coverage = colDef(name = "Public Coverage To Offset Density  (Ha)"),
+              percentage_change = colDef(name = "Percent Growth From Current Public Coverage"),
+              home_target = colDef(name = paste0(years,'yr Home Target'))
+            ))
 ```
 
 ## Zoning
@@ -292,17 +313,32 @@ coverage(exp = expression(!(zone_short %in% c('roads','other'))),group = 'zone_s
 ```
 
 ## Regressions
-aaa
-todo: mix with Census data
 
-Note: in the scatter plots below, suburbs with less than 500 lots suitable for residential development are excluded, alongside suburbs over 30km from the city.
-```{r}
+This section shows the interaction between public tree coverage and the cost of living in an area, depicted by both house prices and median rents. Public tree coverage is defined as:
+
+$$
+ \text{Public tree coverage} = \frac{\text{area of streets covered by trees + area of parks covered by trees}}{\text{area of streets + area of parks}}
+$$
+
+Data Note: Rents are using ABS data, which is only available in ranges. Therefore, median rents are defined as whatever bin the median observation falls into. Also note that the Census was in 2021, and therefore rents may be impacted by COVID, and may have changed since. House prices are from Housing Victoria, and are an average of the last 5 quarters median prices.
+
+TODO: Check Public Definitions
+
+```{r, message=FALSE, warning = FALSE}
 
 lot_sizes <- agg_df %>%
   filter(zoning_permits_housing == 'Housing permitted') %>%
   group_by(SAL_NAME21) %>%
   summarise(med_lot = median(lot_size, na.rm = TRUE), n = n()) %>%
   rowwise()
+
+rents = read_csv('../data/rents_by_sal.csv') %>%
+  manipulateRents() %>%
+  rowwise() %>%
+  mutate(median_band = gsub('\\$', '', median_band)) 
+
+
+public_coverage <- coverage(exp = expression(feature_preventing_development == TRUE | zone_short == 'roads'), type = 'public', group = grouping) %>% select('SAL_NAME21', 'public_percentage')
 
 house_price_data = readxl::read_xls('../data/Median-House-Price-3rd-Quarter.xls', skip = 1)[-c(1:5),1:6] 
 
@@ -322,36 +358,81 @@ house_price_data = house_price_data %>%
   rename(average_house_price = avg) %>%
   mutate(average_house_price = average_house_price / 10^6) %>%
   left_join(lot_sizes, by = 'SAL_NAME21') %>%
+  left_join(rents, by = 'SAL_NAME21') %>%
+  left_join(public_coverage, by = 'SAL_NAME21') %>%
   adf() %>%
-  filter(n > 500, distance < 30)
+  mutate(median_band = as.factor(median_band)) %>%
+  mutate(within15 = ifelse(distance < 15, T, F))
 
-house_price_data = house_price_data %>% left_join(directions, by = 'SAL_NAME21')
+#house_price_data = house_price_data %>% left_join(directions, by = 'SAL_NAME21')
 
-missing_suburbs = setdiff(combined_df$SAL_NAME21, house_price_data$SAL_NAME21)
+#missing_suburbs = setdiff(combined_df$SAL_NAME21, house_price_data$SAL_NAME21)
 #wtf
 
 house_interactable = SharedData$new(house_price_data)
 
 filter_slider("distance", "Distance to CBD", house_interactable, max = 30, ~distance, width = '75%')
 
-price_street_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = street_percentage, text = SAL_NAME21), axe) + xlab('Average House Price ($m)') + ylab('Street Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
+# price_street_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = street_percentage, text = SAL_NAME21), axe) + xlab('Average House Price ($m)') + ylab('Street Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
+# 
+# price_residential_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = residential_percentage, text = SAL_NAME21), axe) + xlab('Average House Price ($m)') + ylab('Residential Area Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
 
-price_residential_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = residential_percentage, text = SAL_NAME21), axe) + xlab('Average House Price ($m)') + ylab('Residential Area Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
+price_public_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = public_percentage, text = SAL_NAME21, fill = within15, stroke = NA), axe) + xlab('Average House Price ($m)') + ylab(' Tree Coverage of Public Areas (%)') + geom_point() + labs(caption = "Source: Housing Victoria") +  theme_minimal()
 
+rents_public_plot <- (ggplot(house_interactable, mapping = aes(x = median_band, y = public_percentage, text = SAL_NAME21)) + geom_boxplot(color = "#006D2C") + xlab('Median Rent (2021 dollars)') + ylab("Tree Coverage of Public Areas (%)") +  theme_minimal() + labs(caption = "Source: 2021 Census (ABS)") +  theme(axis.text.x = element_text(angle = 45)) ) 
 
 #bscols(widths = c(4,4), ggplotly(price_street_plot), ggplotly(price_residential_plot))
 #subplot(ggplotly(price_street_plot),ggplotly(price_residential_plot), titleY = T, titleX = T)
 
-colours <- brewer.pal(5, "Set1")
-names(colours) <- levels(house_price_data$direction)
-
-ggplot(house_price_data, mapping = aes(x = average_house_price, y = residential_percentage, color = direction, text = SAL_NAME21), axe) + xlab('Average House Price ($m)') + ylab('Residential Area Tree Coverage (%)') + geom_point() + scale_color_manual(name = "direction", values = colours) + theme_minimal()
-
+ggplotly(price_public_plot)
 
 ```
 
-Is this relationship driven by richer areas having larger residential lot sizes?
-```{r ggplot2, out.width="50%"}
+The above figure displays the relationship between house prices and public tree coverage. There is a tangible correlation between the two variables as suburbs with higher house prices tend to have more public tree coverage. This is not a statement of causation, merely correlation.
+
+The data is further split into two groups: suburbs within 15 kilometres of the city, and suburbs outside the 15km range. This split reveals two distinct spatial patterns.
+
+For 'inner' suburbs, the relationship is much steeper. For outer suburbs, the slope of a best fit line is much shallower.
+
+```{r}
+
+ggplotly(rents_public_plot)
+
+# sal_w_rents <- sal_sf %>%
+#   left_join(rents, by = 'SAL_NAME21') %>%
+#   arrange(median_band) %>%
+#   mutate(median_band = as.factor(median_band))
+# 
+# cols = brewer.pal(4, 'RdBu' )
+# cols = colorRampPalette(cols)(18)
+# rentPal =  colorFactor( cols  , domain = sal_w_rents$median_band)
+
+# sal_w_rents %>%
+#   leaflet() %>%
+#   addProviderTiles('CartoDB.Positron') %>%
+#   addPolygons(fillColor = ~rentPal(median_band), fillOpacity = 1, opacity = 0) %>%
+#   addLegend(position = "bottomright",
+#               pal = rentPal,
+#               values =sal_w_rents$median_band,
+#               title = 'title')
+
+
+
+#plot( house_price_data$median_band, house_price_data$public_percentage)
+
+
+#colours <- brewer.pal(5, "Set1")
+#names(colours) <- levels(house_price_data$direction)
+
+#ggplot(house_price_data, mapping = aes(x = average_house_price, y = residential_percentage, color = direction, text = SAL_NAME21), axe) + xlab('Average House Price ($m)') + ylab('Residential Area Tree Coverage (%)') + geom_point() + scale_color_manual(name = "direction", values = colours) + theme_minimal()
+
+
+```
+The graph above displays the relationship between median rents and public tree coverage. It is not possible to fit a line of best fit, given the categorical nature of rents.
+
+A slight relationship is clear, as median public coverage is increasing with median rents until median rents hit 500. After the '500-524' band, public coverage drops and the relationship no longer holds, although this is mostly due to expensive suburbs located close to the CBD such as Carlton and Fitzroy. 
+
+```{r}
 
 lot_df = house_price_data %>% filter(med_lot < 2000)
 
@@ -360,16 +441,13 @@ lotsize_street_plot <- ggplot(lot_df, mapping = aes(x = med_lot, y = street_perc
 lotsize_residential_plot <- ggplot(lot_df, mapping = aes(x = med_lot, y = residential_percentage, text = SAL_NAME21), axe) + xlab('Average Lot Size') + ylab('Residential Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
 
 
-ggplotly(lotsize_street_plot)
-ggplotly(lotsize_residential_plot)
+#ggplotly(lotsize_street_plot)
+#ggplotly(lotsize_residential_plot)
 
 #summary(lm(residential_percentage ~ med_lot, house_price_data)) 
 
 #summary(lm(street_percentage ~ med_lot, house_price_data))
 
 
-summary(lm(street_percentage ~ med_lot + average_house_price, lot_df))
+#summary(lm(public_percentage ~ med_lot + average_house_price + distance, lot_df))
 ```
-
-
-
