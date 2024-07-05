@@ -11,6 +11,7 @@ Order_SHQC22/
 SA1_2021/
 SA2_2021/
 SA3_2021/
+LGA_2022/
 archive/
 sf_exports/
 r_objects/
@@ -19,3 +20,4 @@ SAL_2021/
 NTC PWSS Results Data.xlsx
 r/ntc.R
 data/
+mesh_blocks/

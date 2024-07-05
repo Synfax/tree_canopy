@@ -36,6 +36,10 @@ sa2_sf <- readRDS('../r_objects/sa2_sf.Rdata') %>%
 sal_sf <- readRDS('../r_objects/sal_sf.Rdata') %>%
   st_set_geometry('geometry')
 
+lga_sf <- readRDS('../r_objects/lga_sf.Rdata') %>%
+  st_set_geometry('geometry') %>%
+  rename( "lga_name_2022" = LGA_NAME22)
+
 source('../r_alt/functions.r')
 source('../r/mapping_functions.r')
 source('../themes/theme.r')
@@ -179,28 +183,62 @@ This section displays how much of each land use type is covered by trees. For ex
 #| fig-cap: "Tree coverage by SA2"
 #| warning: false
 
+grouping = 'lga_name_2022'
+grouping_sf = lga_sf
+pretty_group_name = "Local Government Area"
 
-street_trees_grouped <- coverage(exp = expression(zone_short == 'roads'), type = 'street', group = grouping)
 
-reserve_trees_grouped <- coverage(exp = expression(feature_type == 'reserve'), type = 'reserve', group = grouping) 
+street_trees_grouped <- coverage(exp = expression(zone_short == 'roads'), type = 'street', group = grouping) %>%
+  rename("street_tree_coverage" = coverage, "total_street_area" = total_area )
 
-resi_trees_grouped <- coverage(exp = expression(zoning_permits_housing == 'Housing permitted'), type = 'residential', group = grouping) 
+reserve_trees_grouped <- coverage(exp = expression(feature_type == 'reserve'), type = 'reserve', group = grouping)  %>%
+  rename("reserve_tree_coverage" = coverage, "total_reserve_area" = total_area ) 
+
+resi_trees_grouped <- coverage(exp = expression(zoning_permits_housing == 'Housing permitted'), type = 'residential', group = grouping)  %>%
+  rename("residential_tree_coverage" = coverage, "total_residebtial_area" = total_area )
 
 #combine into one and clean
 combined_df <- street_trees_grouped %>%
   left_join(reserve_trees_grouped, by = grouping) %>%
   left_join(resi_trees_grouped, by = grouping) %>%
-  dplyr::select(c(grouping,'street_percentage', 'reserve_percentage', 'residential_percentage')) %>%
+  rowwise() %>%
+  mutate(total_coverage_area = sum(across(ends_with('_coverage')), na.rm = T), total_area =  sum(across(ends_with('_area')), na.rm = T)) %>%
+  mutate(total_coverage_pc = total_coverage_area / total_area ) %>%
+  mutate( weighted_street_pc = (street_tree_coverage / total_coverage_area) * total_coverage_pc,
+          weighted_reserve_pc = (reserve_tree_coverage / total_coverage_area) * total_coverage_pc,
+          weighted_resi_pc = (residential_tree_coverage / total_coverage_area) * total_coverage_pc
+        ) %>%
+  dplyr::select(c(grouping,'street_percentage', 'reserve_percentage', 'residential_percentage', 'weighted_street_pc', 'weighted_reserve_pc', 'weighted_resi_pc', 'total_coverage_pc')) %>%
   left_join(grouping_sf %>% st_drop_geometry() %>% select(grouping, distance), by = grouping) %>%
   rowwise() %>%
   # mutate(distance = distance_map[as.character(as.name(grouping))]) %>%
   mutate(distance = distance / 1000) %>%
-  mutate(across(where(is.numeric), ~ round(.x, 1))) %>%
-  mutate(across(ends_with('percentage'), ~ ifelse(is.na(.x), 0, .x) )) %>%
   ungroup() %>%
   as.data.frame()
+  # mutate(across(where(is.numeric), ~ round(.x, 1))) %>%
+  # mutate(across(ends_with('percentage'), ~ ifelse(is.na(.x), 0, .x) )) %>%
+  
 
 sd_combined = SharedData$new((combined_df))
+
+```
+
+GGplot Test
+
+```{r}
+
+combined_longer <- pivot_longer(combined_df,
+                                cols = c('weighted_street_pc', 'weighted_reserve_pc', 'weighted_resi_pc'),
+                                names_to = 'weights',
+                                values_to = "test")
+
+ggplot(combined_longer, aes(fill=weights, y = test, x= reorder(!!as.name(grouping), test) )) + 
+    geom_bar(position="stack", stat="identity") +
+  ylab('Total tree coverage (%)') +
+  xlab (pretty_group_name) +
+  scale_x_discrete(guide = guide_axis(angle = 0)) +
+  coord_flip() +
+  theme_minimal()
 
 ```
 
@@ -210,10 +248,12 @@ Note: There might be innaccuracies in the street coverage data when using Suburb
 
 ```{r}
 
+grouping = 'SAL_NAME21'
+grouping_sf = sal_sf
+pretty_group_name = 'Suburb'
+
 filter_slider("distance", "Distance to CBD", sd_combined, ~distance, min = 0, max = max(sd_combined$data()$distance), width = '75%')
      
-
-
 #weird bubble plot  
 reactable(sd_combined,
           defaultSorted = list('street_percentage' = "desc"),
@@ -238,6 +278,9 @@ This page calculates how much tree cover might be lost in the upzoning of reside
 
 
 ```{r}
+
+
+
 mm_lgas <- c('Brimbank', 'Merri-bek', 'Banyule', 'Darebin', 'Yarra', 'Moonee Valley', 'Manningham', 'Maribyrnong', 'Melbourne', 'Hobsons Bay', 'Port Phillip', 'Boroondara', 'Stonnington', 'Glen Eira', 'Bayside', 'Monash', 'Whitehorse', 'Maroondah', 'Manningham', 'Kingston')
 
 
@@ -450,4 +493,48 @@ lotsize_residential_plot <- ggplot(lot_df, mapping = aes(x = med_lot, y = reside
 
 
 #summary(lm(public_percentage ~ med_lot + average_house_price + distance, lot_df))
+```
+
+
+## International Comparisons
+
+```{r}
+cities = c('paris', 'vienna', 'london', 'newyork', 'melbourne', 'sydney', 'tokyo' )
+
+big_df <- data.frame()
+
+walk(cities, loadFiles)
+
+# big_df = big_df %>%
+#   filter(med_cov != 0, mean_cov != 0)
+
+big_df = big_df %>%
+  mutate(med_cov = 100 * med_cov, mean_cov = 100 * mean_cov)
+
+
+ggplot(big_df, mapping = aes(distance, cov, colour = city, group = city)) +
+  xlab("Distance to Centre (m)") +
+  ylab("Mean Tree Coverage (%)") +
+  labs(title = "Tree Coverage of Major Cities") +
+  geom_smooth(method = 'loess') +
+  theme_minimal()
+  
+# mean_plot <- ggplot(big_df, mapping = aes(distance, mean_cov, colour = city, group = city)) +
+#   xlab("Distance to Centre (m)") +
+#   ylab("Mean Tree Coverage (%)") +
+#   labs(title = "Tree Coverage of Major Cities") +
+#   geom_smooth(method = 'loess') +
+#   theme_minimal()
+# 
+# median_plot <- ggplot(big_df, mapping = aes(distance, med_cov, colour = city, group = city)) +
+#   xlab("Distance to Centre (m)") +
+#   ylab("Median Tree Coverage (%)") +
+#   labs(title = "Tree Coverage of Major Cities") +
+#   geom_smooth(method = 'loess') +
+#   theme_minimal()
+# 
+# ggplotly(mean_plot)
+# 
+# ggplotly(median_plot)
+
 ```

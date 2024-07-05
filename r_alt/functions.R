@@ -72,5 +72,37 @@ manipulateRents <- function(rents) {
 
 }
 
+loadFiles <- function(...) {
+  
+  filename = paste0('../city_comparisons/',...,'.Rdata')
+  
+  city_data <- readRDS(filename) %>%
+    st_set_geometry('geometry') %>%
+    st_transform(4326)
+  
+  leaflet(city_data) %>%
+    addProviderTiles('CartoDB.Positron') %>%
+    addPolygons()
+  
+  city_data = city_data %>%
+    st_drop_geometry() %>%
+    rowwise() %>%
+    mutate(city = as.character(...) )
+  
+  # %>%
+  #   mutate(distance = round(distance, 0))
+  
+  # city_data = city_data %>%
+  #   group_by(distance) %>%
+  #   summarise(mean_cov = mean(cov), med_cov = median(cov) ) %>%
+  #   
+  
+  #plot(city_data$distance, city_data$med_cov, type = 'l')
+  
+  #print(tibble(city_data))
+  
+  big_df <<- rbind(big_df, city_data)
+}
+
 v = function(x) {View(x)}
 adf = function(x) {as.data.frame(x)}

@@ -52,6 +52,10 @@ sa3_sf <- read_sf('SA3_2021/SA3_2021_AUST_GDA2020.shp')
 sal_sf <- read_sf('SAl_2021/SAL_2021_AUST_GDA2020.shp') %>%
   mutate(SAL_NAME21 = gsub(" \\(Vic\\.\\)", "", SAL_NAME21))
 
+lga_sf <- read_sf('LGA_2022/LGA_2022_AUST_GDA2020.shp') %>%
+  filter(STE_NAME21 == 'Victoria') %>%
+  mutate(LGA_NAME22 = gsub(" \\(Vic\\.\\)", "", LGA_NAME22))
+
 #not needed because it only had the big roads 
 # state_level_zoning <- read_sf('Order_A723U7/ll_gda2020/esrishape/whole_of_dataset/victoria/VMPLAN/PLAN_ZONE.shp')
 # state_level_zoning = state_level_zoning %>% filter(ZONE_DESC == 'TRANSPORT ZONE 2 - PRINCIPAL ROAD NETWORK')
@@ -66,7 +70,7 @@ road_network <- read_sf('Order_SHQC22/ll_gda2020/esrishape/user_polygon/user_pol
 #settings for canopy model
 threshold <- 0
 union <- TRUE
-res <- 5
+res <- 1
 
 #turn off spherical geo
 sf_use_s2(FALSE)
@@ -76,7 +80,7 @@ results_df <- data.frame()
 robust_df <- data.frame()
 
 #run the model
-#run()
+run(parallel = F)
 
 #if the model has already been run, then you can just run the analysis part.
 

@@ -1,9 +1,4 @@
-run_for_sa1_alt <- function(sa) {
-  
-
-  if( !(sa %in% results_df$sa1) ) {
-    
-    print(sa)
+run_for_sa1_alt <- function(sa , return_type = 'df') {
     
     current_sa_sf <- sa1_sf %>%
       filter(SA1_CODE21 == sa)
@@ -11,9 +6,9 @@ run_for_sa1_alt <- function(sa) {
     dwellings_in_sa <- dwelling_data_current %>%
       st_intersection(current_sa_sf)
     
-    clusterExport(cl, "current_sa_sf")
-    clusterExport(cl, "road_network_in_sa3")
-    clusterExport(cl, "dwellings_in_sa")
+    # clusterExport(cl, "current_sa_sf")
+    # clusterExport(cl, "road_network_in_sa3")
+    # clusterExport(cl, "dwellings_in_sa")
     
     bounding = st_as_sfc(st_bbox(current_sa_sf)) %>%
       st_transform(crs = 4326)
@@ -50,10 +45,12 @@ run_for_sa1_alt <- function(sa) {
     
     if(!chm_is_empty) {
       
-      chm_simplified <- st_parallel(chm_simplified, st_intersection, 4, y = current_sa_sf)
+      chm_simplified <- st_intersection(chm_simplified, current_sa_sf)
+      
       #union into one
       if(union && nrow(chm_simplified) > 0){
-        chm_simplified = st_parallel(chm_simplified, st_union, 4)
+        #chm_simplified = st_parallel(chm_simplified, st_union, 4)
+        chm_simplified = st_union(chm_simplified)
       }
     }
     
@@ -63,7 +60,10 @@ run_for_sa1_alt <- function(sa) {
     print('simplified')
     
     #find road network
-    road_network_in_sa = st_parallel(road_network_in_sa3, st_intersection, 4 , y= st_buffer(current_sa_sf, 0.00035))
+    
+    #road_network_in_sa = st_parallel(road_network_in_sa3, st_intersection, 4 , y= st_buffer(current_sa_sf, 0.00035))
+    road_network_in_sa = st_intersection(road_network, st_buffer(current_sa_sf, 0.00035))
+    
     #road_network_in_sa = road_network_in_sa3[lengths(road_network_in_sa) > 0 ,] 
     
     #make it wider
@@ -127,10 +127,21 @@ run_for_sa1_alt <- function(sa) {
              sa1 = sa) %>%
       select(c(lat, lon, coverage, total_area, sa1, land_type))
     
-    results_df <<- rbind(results_df, test_df)
-  }
-  else {
-    print('already in df')
-  }
-  # 
+    if(return_type == 'df') {
+      
+      if( !(sa %in% results_df$sa1) ) {
+      
+        results_df <<- rbind(results_df, test_df)
+      
+      }
+      else {
+        print('already in df')
+      }
+
+    }
+    
+    if(return_type == 'ret') {
+      return( sum(test_df$coverage) / sum(test_df$total_area) )
+    }
+ 
 }

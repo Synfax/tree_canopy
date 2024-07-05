@@ -60,6 +60,12 @@ sal_sf = sal_sf %>%
   mutate(distance = as.vector(st_distance(melbourne,centroid))) %>%
   dplyr::arrange(distance) 
 
+lga_sf = lga_sf %>%
+  filter(LGA_NAME22 %in% na.omit(unique(agg_df$lga_name_2022)))  %>%
+  mutate(centroid = st_centroid(geometry)) %>%
+  mutate(distance = as.vector(st_distance(melbourne,centroid))) %>%
+  dplyr::arrange(distance) 
+
 # 
 # sa2_within_distance = unique(sa2_sf %>%
 #                                st_drop_geometry() %>%
@@ -97,6 +103,5 @@ agg_df <- agg_df %>%
 saveRDS(agg_df, 'r_objects/agg_df.Rdata')
 saveRDS(sa2_sf, 'r_objects/sa2_sf.Rdata')
 saveRDS(sal_sf, 'r_objects/sal_sf.Rdata')
-
-
+saveRDS(lga_sf, 'r_objects/lga_sf.Rdata')
 

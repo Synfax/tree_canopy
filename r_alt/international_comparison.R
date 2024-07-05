@@ -1,31 +1,32 @@
+#build dataframes
+coordinates <- list( c(2.3514, 48.8575) , c(16.3713,48.2081 ) , c(0.1276,51.5072), c(74.0060, 40.7128), c(144.9631,-37.8136), c(139.6500,35.6764), c(151.2093,-33.8688) )
+crss <- c(27561, 31287, 29901, 32118, 28355, 30169, 28355)
+cities <- c('paris', 'vienna', 'london', 'newyork', 'melbourne', 'tokyo', 'sydney') 
 
-coordinates <- list( c(2.3514, 48.8575) , c(16.3713,48.2081 ) , c(0.1276,51.5072), c(74.0060, 40.7128), c(144.9631,-37.8136) )
-
-crss <- c(27561, 31287, 29901, 32118, 28355)
-
-cities <- c('paris', 'vienna', 'london', 'newyork', 'melbourne') 
-
+#settings
 radius <- 10000
-
 union <- TRUE
-
 cell_size <- 1000
-
 res <- 5
 threshold <- 0
 
+#start actual code
 city_df = tibble(coords = coordinates, coordinateref = crss, city = cities) %>%
   as.data.frame() %>%
   rowwise() %>%
   mutate(lng = coords[1], lat = coords[2])
 
-city_df$coordinateref = as.numeric(city_df$coordinateref)
-
-city_df = city_df[-c(1:4),]
+city_df = city_df %>% filter(city == 'melbourne')
 
 city_df = city_df %>%
   rowwise() %>%
   mutate(res = runCity(lng, lat, coordinateref, city) )
+
+#get water layer ready
+
+water_bodies <- read_sf('data/water_valid.shp')
+
+
 
 runCity <- function(longit, latit, local_crs, cur_city) {
   
@@ -42,11 +43,36 @@ runCity <- function(longit, latit, local_crs, cur_city) {
   centre = st_point(local_coords) %>%
     st_sfc(crs = 4326) 
   
+  sf_use_s2(F)
+
+  
   bounding = centre %>%
     st_transform(crs = local_crs) %>%
     st_buffer(dist = radius) %>%
     st_bbox() %>%
     st_as_sfc(crs = 4326)
+
+  water_bodies = st_transform(water_bodies, local_crs)
+  
+  water_bodies = water_bodies %>% filter(TYPE == 'Ocean or Sea')
+  
+  wbm = st_is_valid(water_bodies)
+  wb = water_bodies %>% filter( wbm )
+  
+  sf_use_s2(F)
+  
+  ww <- st_intersection(wb, bounding)
+  ww <- st_as_sf(ww) %>% select(SHAPE_Area)
+  ww = distinct(ww) %>%
+    arrange(SHAPE_Area)
+  
+  water_layer = ww[1,]
+  
+  ww %>%
+    st_transform('wgs84') %>%
+    leaflet() %>%
+    addProviderTiles('CartoDB.Positron') %>%
+    addPolygons()
   
   bounding %>%
     st_transform("wgs84") %>%
@@ -75,7 +101,7 @@ runCity <- function(longit, latit, local_crs, cur_city) {
   
   g_df <- g_df %>%
     rowwise() %>%
-    mutate(testx = list(analyseGridItem(geometry, ind, cur_city, centre)) )
+    mutate(testx = list(analyseGridItem(geometry, ind, cur_city, centre, water_layer)) )
   
   colnames(g_df)[3] <- 'Returns'
   
@@ -91,7 +117,12 @@ runCity <- function(longit, latit, local_crs, cur_city) {
 }
 
 
-analyseGridItem <- function(bbox, index, city, centre) {
+analyseGridItem <- function(bbox, index, city, centre, water) {
+  
+  bbox = grid[1,]
+  index = 1
+  city = 'melbourne'
+  
   
   print(index)
   
@@ -138,10 +169,45 @@ analyseGridItem <- function(bbox, index, city, centre) {
     addProviderTiles('CartoDB.Positron') %>%
     addPolygons()
   
-  coverage_pc = (chm_simplified %>% st_area()) / st_area(item_bbox)
+  
+  
+  coverage_pc <- ifelse(chm_is_empty, 0, (chm_simplified %>% st_area()) / st_area(item_bbox) %>% as.vector() )
   
   results <- c(as.numeric(coverage_pc), as.numeric(distance_to_centre))
   
   
   return(results)
+}
+
+surf_to_poly = function(obj) {
+  
+  out_geom_txt = obj |> 
+    sf::st_geometry() |> 
+    sf::st_as_text() |> 
+    gsub(pattern = "MULTISURFACE (", replacement = '', fixed = TRUE) |> 
+    gsub(pattern = "COMPOUNDCURVE (", replacement = '', fixed = TRUE) |> 
+    gsub(pattern = "CURVEPOLYGON (", replacement = '', fixed = TRUE)
+  
+  out = obj |> 
+    sf::st_set_geometry(
+      value = sf::st_as_sfc(
+        out_geom_txt, 
+        crs = sf::st_crs(obj)
+      )
+    )
+  
+  idx = which(sf::st_geometry_type(out) == "LINESTRING")
+  
+  out_greenlight = out[-idx, ]
+  out_redlight = out |> 
+    dplyr::slice(idx) |> 
+    sf::st_cast(to = "POLYGON") |> 
+    sf::st_cast(to = "MULTIPOLYGON")
+  
+  out = rbind(out_greenlight, out_redlight) |> 
+    sf::st_cast("MULTIPOLYGON") |> 
+    sf::st_make_valid()
+  
+  return(out)
+  
 }
