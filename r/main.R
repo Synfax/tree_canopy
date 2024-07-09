@@ -30,8 +30,7 @@ pacman::p_load(
 )
 
 #source files
-source('r/run_for_sa1.R')
-source('r_alt/run_for_sa1_alt.R')
+source('r/run_for_sa1_alt.R')
 source('r/mapping_functions.R')
 source('r/run.R')
 #source('r_alt/alt_analysis.R')
@@ -39,9 +38,9 @@ source('r/run.R')
 
 
 #load dwelling Data
-dwelling_data <-read_sf('Melbourne dwelling data.gpkg', query = "SELECT geom,lat,lon,zone_short,sa1_code_2021,
-                            dwellings_est,sa2_code_2021,sa4_code_2021,cbd_dist,feature_type,
-                              lga_name_2022,feature_preventing_development,sa2_name_2021,zoning_permits_housing,zone_short,address,lot_size,zone_short,sa3_code_2021,heritage_status,heritage FROM 'Melbourne dwelling data'") %>% 
+dwelling_data <-read_sf('Melbourne dwelling data.gpkg') %>% 
+  select(!starts_with('prox_')) %>%
+  select(!starts_with('dev_')) %>%
   mutate(lga_name_2022 = str_remove_all(lga_name_2022, "\\s*\\(.*?\\)\\s*")) %>% 
   st_set_geometry('geom')
 

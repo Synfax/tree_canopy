@@ -34,8 +34,6 @@ loadFiles <- function(...) {
   big_df <<- rbind(big_df, city_data)
 }
 
-big_df = big_df %>%
-  filter(med_cov != 0, mean_cov != 0)
 
 big_df = big_df %>%
   mutate(med_cov = 100 * med_cov, mean_cov = 100 * mean_cov)
