@@ -21,3 +21,4 @@ NTC PWSS Results Data.xlsx
 r/ntc.R
 data/
 mesh_blocks/
+*.DS_store
