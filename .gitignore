@@ -22,3 +22,9 @@ r/ntc.R
 data/
 mesh_blocks/
 *.DS_store
+markdown.zip
+tree_canopy.Rproj
+yimby.csv
+markdown/agg_sf.geojson
+tsgeojson.mbtiles
+markdown/fkd.dbf

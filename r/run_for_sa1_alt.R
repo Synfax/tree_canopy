@@ -4,7 +4,7 @@ run_for_sa1_alt <- function(sa , return_type = 'df') {
       filter(SA1_CODE21 == sa)
     
     dwellings_in_sa <- dwelling_data_current %>%
-      st_intersection(current_sa_sf)
+      filter(sa1_code_21 == sa)
     
     # clusterExport(cl, "current_sa_sf")
     # clusterExport(cl, "road_network_in_sa3")
@@ -125,7 +125,7 @@ run_for_sa1_alt <- function(sa , return_type = 'df') {
                as.numeric() %>%
                ifelse(purrr::is_empty(.), 0, .),
              sa1 = sa) %>%
-      select(c(lat, lon, coverage, total_area, sa1, land_type))
+      dplyr::select(c(lat, lon, coverage, total_area, sa1, land_type))
     
     if(return_type == 'df') {
       
