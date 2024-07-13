@@ -614,7 +614,7 @@ public_coverage <- coverage(exp = expression( zone_code %in% c('PPRZ', 'PCRZ') |
 
 public_coverage_sa2 <- coverage(exp = expression( zone_code %in% c('PPRZ', 'PCRZ') | zone_short == 'roads'), type = 'public', group = 'sa2_code_2021') %>% select('sa2_code_2021', 'public_percentage')
 
-house_price_data = readxl::read_xls('../data/Median-House-Price-3rd-Quarter.xls', skip = 1)[-c(1:5),1:6] 
+# house_price_data = readxl::read_xls('../data/Median-House-Price-3rd-Quarter.xls', skip = 1)[-c(1:5),1:6] 
 
 combined_df = create_combined_df(grouping, grouping_sf)
 
