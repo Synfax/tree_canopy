@@ -4,7 +4,7 @@ coverage = function(exp = expression(!is.na(zone_short)), type = 'tree', group =
     dplyr::filter(eval(exp)) %>%
     dplyr::filter(!is.na(!!as.name(group))) %>%
     group_by(!!as.name(group)) %>%
-    summarise(across(c(coverage,total_area), sum)) %>%
+    summarise(across(c(coverage,total_area), sum), n = n()) %>%
     mutate( "{type}_percentage" := (coverage/total_area)*100 )
   
   return(return_df %>% arrange(!!paste0(type,'_percentage')) )
@@ -48,13 +48,13 @@ lga_targets <- function(lga_name, home_target) {
  
   #return( c(lga_name, round(road_percentage * 100, 3), round(new_road_percentage * 100, 3)) )
   
-  return( c(lga_name, round(lost_tree_coverage,1), round(public_summary$coverage - lost_tree_coverage , 1), round((public_summary$coverage), 1)) )
+  return( c(lga_name, coverage_per_sqm , round(lost_tree_coverage,1), round(public_summary$coverage - lost_tree_coverage , 1), round((public_summary$coverage), 1)) )
 }
 
-manipulateRents <- function(rents) {
+manipulateRents <- function(rents, grouping) {
   
   return(rents %>%
-    group_by(SAL_NAME21) %>%
+    group_by(!!as.name(grouping)) %>%
     select(!c('Not stated', 'Not applicable', 'Total')) %>%
     mutate(across( starts_with("$"), ~ as.numeric(.) )) %>%
     mutate(total = sum(across(where(is.numeric)))) %>%
@@ -68,7 +68,7 @@ manipulateRents <- function(rents) {
     ungroup() %>%
     rename(median_band = name) %>%
     rowwise() %>%
-    mutate(SAL_NAME21 = gsub(" \\(Vic\\.\\)", "", SAL_NAME21)) )
+    mutate( "{grouping}" := gsub(" \\(Vic\\.\\)", "", !!as.name(grouping))) )
 
 }
 
@@ -102,6 +102,10 @@ loadFiles <- function(...) {
   #print(tibble(city_data))
   
   big_df <<- rbind(big_df, city_data)
+}
+
+suburbHousePriceData = function() {
+  
 }
 
 v = function(x) {View(x)}

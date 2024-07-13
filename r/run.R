@@ -12,6 +12,12 @@ run <- function(parallel = F) {
   
   sa3_list = sa3_sf$SA3_CODE21
   
+  # existing_files = list.files('sa3_results', pattern = '.Rdata')
+  # 
+  # existing_files =  gsub("\\.Rdata", "", existing_files)
+  # 
+  # sa3_list = setdiff(sa3_list, existing_files)
+  
   if(parallel) {
     cl <<- makeCluster(4)
     clusterEvalQ(cl, { library(sf) })
@@ -24,7 +30,7 @@ run <- function(parallel = F) {
     sa3_name <- sa3_sf %>%
       filter(SA3_CODE21 == sa3) %>%
       st_drop_geometry() %>% 
-      select(SA3_NAME21) %>%
+      dplyr::select(SA3_NAME21) %>%
       unlist()
     
     #cutting out road network

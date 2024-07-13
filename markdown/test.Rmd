@@ -1,0 +1,94 @@
+---
+title: "Tree Data"
+author: "Paul S"
+date: "6/6/24"
+format: 
+  html:
+    theme: zephyr
+    fig-width: 8
+    fig-height: 8
+    code-fold: true
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    page-layout: full
+---
+
+```{r}
+#options(java.parameters = c("-XX:+UseConcMarkSweepGC", "-Xmx8192m"))
+library(tidyverse)
+library(leaflet)
+library(sf)
+library(devtools)
+devtools::install_github('walkerke/mapgl')
+
+
+    ags = ags %>% st_transform('wgs84')
+    
+    st_write(ags, 'agg_sf.geojson')
+
+  # ags = readRDS('../r_objects/agg_sf.Rdata') %>% dplyr::select(coverage_pc)
+  # 
+  # # ts = ags %>%
+  # #   slice_sample(prop = 0.05) %>%
+  # 
+  # sf_use_s2(F)
+  #   
+  #  ts = ags %>%  mutate(coverage_pc = round((coverage_pc / 10), 0) * 10 ) %>%
+  #    group_by(coverage_pc) %>%
+  #    summarise(geometry = st_union(geom))
+  #  
+  #  ts = st_cast(ts, 'POLYGON') %>% st_union(by_feature = T)
+  #  
+  #  ts = st_transform(ts, 'wgs84')
+  #  
+  #  st_write(ts, 'tsgeojson.geojson')
+  # # 
+  # # saveRDS(ts, '../r_objects/testts.Rdata')
+  # # 
+  # ts = readRDS('../r_objects/testts.Rdata')
+  
+  # mapgl::maplibre(style = mapgl::carto_style('positron')) %>%
+  #     mapgl::fit_bounds(ts, animate = FALSE) %>%
+  #     mapgl::add_fill_layer(id = "a",
+  #                           source = ts,
+  #                           fill_color = mapgl::interpolate(
+  #                              column = "coverage_pc",
+  #                              values = c(0, 1),
+  #                              stops = c("lightgreen", "darkgreen"),
+  #                              na_color = "lightgrey"
+  #                            ),
+  #                            fill_opacity = 0.5)
+  
+    # mapgl::maplibre(style = mapgl::carto_style('positron'), access_token = "pk.eyJ1Ijoic3luZmF4IiwiYSI6ImNseWUxc3RzaDA5c2gybHBwOHB6NjN1ZnEifQ.jxTTKTVd7dUgp9V0_i9GNA") %>%
+    #   mapgl::fit_bounds(ts, animate = FALSE) %>%
+    #   mapgl::add_fill_layer(id = "a",
+    #                         source = ts,
+    #                         fill_color = mapgl::interpolate(
+    #                            column = "coverage_pc",
+    #                            values = c(0, 1),
+    #                            stops = c("lightgreen", "darkgreen"),
+    #                            na_color = "lightgrey"
+    #                          ),
+    #                          fill_opacity = 0.5)
+
+
+   mapgl::maplibre(style = mapgl::carto_style('positron')) %>%
+      mapgl::add_vector_source(id = "a", url = "http://paulspasojevic.com/vectors/{z}/{x}/{y}.pbf")
+
+   remotes::install_github("qfes/rdeck@*release")
+  library(rdeck)
+   
+   options(rdeck.mapbox_access_token = "pk.eyJ1Ijoic3luZmF4IiwiYSI6ImNseWUxaXd6OTA5N2EybW9uYXh5aHcxOGkifQ.lQ-i1ASbxkfCp5YttRLPQA")
+   
+   
+   serve_mvt('tsgeojson.mbtiles', port = 8765)
+   
+   rdeck::rdeck() %>%
+     rdeck::add_mvt_layer(data = "https://paulspasojevic.com/{z}/{x}/{y}.pbf")
+
+  
+   leaflet() %>% addTiles()
+   
+ 
+```

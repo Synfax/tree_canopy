@@ -7,11 +7,16 @@ format:
     theme: zephyr
     fig-width: 8
     fig-height: 8
-    code-fold: true
+    code-fold: false
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    self_contained: false
     page-layout: full
 ---
 
 ```{r, results='hide', warning=FALSE,message=FALSE}
+#| echo: false
 devtools::install_github("dmurdoch/leaflet@crosstalk4")
 library(tidyverse)
 library(sf)
@@ -22,13 +27,19 @@ library(reactablefmtr)
 library(plotly)
 library(htmltools)
 library(crosstalk)
+library(readxl)
 library(patchwork)
 library(ggtext)
 library(DT)
 library(RColorBrewer)
 library(showtext)
+devtools::install_github('walkerke/mapgl')
 
-agg_df <- readRDS('../r_objects/agg_df.Rdata')
+
+
+agg_df <- readRDS('../r_objects/agg_df.Rdata') %>%
+  mutate(sa1_code_2021 = sa1)
+
 sa2_sf <- readRDS('../r_objects/sa2_sf.Rdata') %>%
   #rename(sa2_code_2021 = "SA2_CODE21") %>%
   st_set_geometry('geometry')
@@ -40,13 +51,21 @@ lga_sf <- readRDS('../r_objects/lga_sf.Rdata') %>%
   st_set_geometry('geometry') %>%
   rename( "lga_name_2022" = LGA_NAME22)
 
+sa1_sf <- readRDS('../r_objects/sa1_sf.Rdata') %>%
+  st_set_geometry('geometry')
+
+uhi = readRDS('../r_objects/uhi.Rdata')
+
+mesh_blocks = readRDS('../r_objects/mesh_blocks.Rdata')
+
+
 source('../r/functions.r')
 source('../r/mapping_functions.r')
 source('../themes/theme.r')
 ```
 
 ```{r, warning=FALSE, message=FALSE}
-
+#| echo: false
 grouping = 'SAL_NAME21'
 grouping_sf = sal_sf
 pretty_group_name = 'Suburb'
@@ -86,22 +105,22 @@ random_suburb <- grouping_sf %>% select('SAL_NAME21', 'geometry', 'distance') %>
 # ))
 
 
-directions <- random_suburb %>%
-  rowwise() %>%
-  mutate(pt = st_sfc(st_point(c(lat,lng)), crs = 7844)) %>%
-  mutate(bearing = lwgeom::st_geod_azimuth( st_sfc(c(melbourne, pt)) )) %>%
-  mutate(bearing = as.numeric(units::set_units(bearing, "degrees")) )%>%
-  mutate(bearing = ifelse(bearing < 0, 360 + bearing, bearing)) %>%
-  mutate(direction = case_when(
-    bearing > 0 && bearing < 90 ~ "North East",
-    bearing > 90 && bearing < 180 ~ "South East",
-    bearing > 180 && bearing < 270 ~ "South West",
-    bearing > 270 && bearing < 360 ~ "North West"
-  )) %>%
-  rowwise() %>%
-  mutate(direction = ifelse(distance < 7500, "Inner", direction)) %>%
-  select(SAL_NAME21, direction) %>%
-  st_drop_geometry()
+# directions <- random_suburb %>%
+#   rowwise() %>%
+#   mutate(pt = st_sfc(st_point(c(lat,lng)), crs = 7844)) %>%
+#   mutate(bearing = lwgeom::st_geod_azimuth( st_sfc(c(melbourne, pt)) )) %>%
+#   mutate(bearing = as.numeric(units::set_units(bearing, "degrees")) )%>%
+#   mutate(bearing = ifelse(bearing < 0, 360 + bearing, bearing)) %>%
+#   mutate(direction = case_when(
+#     bearing > 0 && bearing < 90 ~ "North East",
+#     bearing > 90 && bearing < 180 ~ "South East",
+#     bearing > 180 && bearing < 270 ~ "South West",
+#     bearing > 270 && bearing < 360 ~ "North West"
+#   )) %>%
+#   rowwise() %>%
+#   mutate(direction = ifelse(distance < 7500, "Inner", direction)) %>%
+#   select(SAL_NAME21, direction) %>%
+#   st_drop_geometry()
 
 ```
 
@@ -112,16 +131,32 @@ Note: to see how the data is constructed, see the [documentation](model.html) an
 Insert Lit Review here
 
 ```{r, warning = FALSE}
-
+#| echo: false
 
 trees_grouped <- coverage(group = grouping) %>%
   left_join(grouping_sf, by = (grouping)) %>%
   st_set_geometry('geometry') %>%
-  dplyr::select(grouping, tree_percentage,distance, geometry) %>%
+  dplyr::select(grouping, tree_percentage,distance, geometry, n) %>%
+  filter( n > 10) %>%
   rowwise() %>%
-  mutate(tree_percentage = round(tree_percentage, 3)) %>%
+  mutate(tree_percentage = round(tree_percentage, 1)) %>%
   mutate(distance = distance / 1000) %>%
   as('Spatial')
+
+grouping = 'sa1_code_2021'
+grouping_sf = sa1_sf 
+
+trees_grouped_sa1 <- coverage(group = grouping) %>%
+  left_join(grouping_sf, by = (grouping)) %>%
+  st_set_geometry('geometry') %>%
+  rowwise() %>%
+  mutate(tree_percentage = round(tree_percentage, 1)) %>%
+  mutate(distance = distance / 1000) %>%
+  filter(n > 10)
+
+grouping = 'SAL_NAME21'
+grouping_sf = sal_sf
+pretty_group_name = 'Suburb'
 
 #bar chart
 sd_map = SharedData$new(trees_grouped)
@@ -129,10 +164,11 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
 
   #mapCoverage(trees_per_sa2_cw, trees_per_sa2_cw$data()$tree_percentage , 'Greens', 'Tree Coverage (%)')
 
-  treePal <- colorNumeric(palette = 'Greens', domain = as.data.frame(sd_df$data())$tree_percentage)
-    
-  leaflet(sd_map) %>%
-    setView(lng = 144.963115, lat = -37.814175, zoom = 10) %>%
+  #treePal <- colorNumeric(palette = 'Greens', domain = as.data.frame(sd_df$data())$tree_percentage)
+  treePal <- colorNumeric(palette = 'Greens', domain = trees_grouped_sa1$tree_percentage)
+  
+  map <- leaflet(trees_grouped_sa1) %>%
+    setView(lng = 144.963115, lat = -37.814175, zoom = 11) %>%
     addProviderTiles('CartoDB.Positron') %>%
     addPolygons(fillColor = ~treePal(tree_percentage),
                 fillOpacity = 0.5,
@@ -140,7 +176,22 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
     addLegend(position = "bottomright",
               pal = treePal,
               values = sd_df$data()$tree_percentage,
-              title = 'title')
+              title = 'Tree Coverage (%)')
+  
+  sf_use_s2(F)
+  
+
+  
+  map
+  
+```
+
+# How does your suburb compare?
+
+Note: you can adjust the distance slider from both directions to remove distanct surburbs!
+  
+```{r}
+#| echo: false  
   
   filter_slider("distance", "Distance to CBD", sd_df, ~distance, min = 0, max = max(sd_df$data()$distance) + 1, width = '75%')
   
@@ -152,6 +203,7 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
   pagination = TRUE,
   theme = sandstone(),
   columns = c(list(
+    n = colDef(show = F),
     #grouping = colDef(filterable = TRUE),
     tree_percentage = colDef(
       name = 'Tree Coverage (%)',
@@ -176,11 +228,22 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
 
 ## Coverage of streets, parks and residential areas
 
+This section breaks down total coverage into its component parts.
+
+Public is defined as PPRZ, PCRZ.
+
+Resi is all residential zones (neighbourhood residential, general, low density etc)
+
+Streets are defined as per the model documentation.
+
+Other is all other dwellings.
+
 <!-- This section displays how much of each land use type is covered by trees. For example, a value of 60 for 'Streets' means that 60% of total street area is under canopy coverage. Accordingly, if 'Parks' is a low number, it means parks are not shaded, not that there are few parks in a region, it is just likely they are open spaces. -->
 
-The plot below is a stacked bar chart which displays both the total coverage of streets, parks and residential areas for each LGA, as well as displaying how the total coverage is split between its three components.
+
 
 ```{r}
+#| echo: false
 #| label: fig-airquality
 #| fig-cap: "Tree coverage by SA2"
 #| warning: false
@@ -189,34 +252,91 @@ grouping = 'lga_name_2022'
 grouping_sf = lga_sf
 pretty_group_name = "Local Government Area"
 
+public_exp = expression( zone_code %in% c('PPRZ', 'PCRZ') )
+street_exp = expression(zone_short == 'roads')
+ resi_exp = expression(zone_short %in% c('General residential', 'Greenfield', 'Low density residential', 'Neighbourhood residential', 'Residential growth'))
+other_exp = expression( !(zone_short %in% c('General residential', 'Greenfield', 'Low density residential', 'Neighbourhood residential', 'Residential growth', 'roads')) && !(zone_code %in% c('PPRZ', 'PCRZ') ))
+  
+
 create_combined_df <- function(grouping, grouping_sf) {
-  street_trees_grouped <- coverage(exp = expression(zone_short == 'roads'), type = 'street', group = grouping) %>%
+  
+  
+  street_trees_grouped <- coverage(exp = street_exp, type = 'street', group = grouping) %>%
   rename("street_tree_coverage" = coverage, "total_street_area" = total_area )
 
-  reserve_trees_grouped <- coverage(exp = expression(feature_type == 'reserve'), type = 'reserve', group = grouping)  %>%
+  reserve_trees_grouped <- coverage(exp = public_exp, type = 'reserve', group = grouping)  %>%
     rename("reserve_tree_coverage" = coverage, "total_reserve_area" = total_area ) 
   
-  resi_trees_grouped <- coverage(exp = expression(zoning_permits_housing == 'Housing permitted'), type = 'residential', group = grouping)  %>%
-    rename("residential_tree_coverage" = coverage, "total_residebtial_area" = total_area )
+ 
+  resi_trees_grouped <- coverage(exp = resi_exp , type = 'residential', group = grouping)  %>%
+    rename("residential_tree_coverage" = coverage, "total_residential_area" = total_area )
+  
+  
+  other_trees_grouped <- coverage(exp = other_exp, group = grouping, type = 'other') %>%
+    rename('other_tree_coverage' = coverage, 'total_other_area' = total_area)
+  
+  street_agg =agg_df %>% filter(eval(street_exp)) %>% filter(lga_name_2022 == 'Banyule')
+  resi_agg= agg_df %>% filter(eval(resi_exp))%>% filter(lga_name_2022 == 'Banyule') 
+  public_agg= agg_df %>% filter(eval(public_exp))%>% filter(lga_name_2022 == 'Banyule')
+  other_agg =agg_df %>% filter(eval(other_exp))%>% filter(lga_name_2022 == 'Manningham')
+  
+  
+  #xzz <- xz %>% left_join(trees_grouped_lga, by = 'lga_name_2022')
+  
+  # 
+  # frame <- bind_rows(
+  #   street_agg, resi_agg, public_agg,other_agg
+  # )
+  # 
+  # hasShared = function(df1, df2) {
+  #   
+  #   df1 = other_agg
+  #   df2 = public_agg
+  #   
+  #   df1n = nrow(df1)
+  #   df2n = nrow(df2)
+  #   
+  #   cmb = bind_rows(df1,df2)
+  #   
+  #   n_dist_cmb = n_distinct(cmb)
+  #   
+  #   bl = (n_dist_cmb != (df1n + df2n))
+  #   
+  #   if(bl) {
+  #     
+  #   }
+  #   
+  # }
+  # 
+ # agg_sf %>% 
+ #   group_by(lon, lat) %>%
+ #   filter(n() > 1) %>% st_write('fkd.shp')
+ # 
+ # agg_results %>% group_by(lon, lat) %>%
+ #   filter(n() > 1) %>% v()
   
   #combine into one and clean
   combined_df <- street_trees_grouped %>%
     left_join(reserve_trees_grouped, by = grouping) %>%
     left_join(resi_trees_grouped, by = grouping) %>%
-    rowwise() %>%
-    mutate(total_coverage_area = sum(across(ends_with('_coverage')), na.rm = T), total_area =  sum(across(ends_with('_area')), na.rm = T)) %>%
+    left_join(other_trees_grouped, by = grouping) %>%
+    group_by(!!as.name(grouping)) %>%
+    mutate(total_area =  sum(across(ends_with('_area'))))  %>%
+    mutate(total_coverage_area = sum(across(ends_with('_coverage')))) %>%
     mutate(total_coverage_pc = total_coverage_area / total_area ) %>%
     mutate( weighted_street_pc = (street_tree_coverage / total_coverage_area) * total_coverage_pc,
             weighted_reserve_pc = (reserve_tree_coverage / total_coverage_area) * total_coverage_pc,
-            weighted_resi_pc = (residential_tree_coverage / total_coverage_area) * total_coverage_pc
+            weighted_resi_pc = (residential_tree_coverage / total_coverage_area) * total_coverage_pc,
+            weighted_other_pc = (other_tree_coverage / total_coverage_area) * total_coverage_pc,
           ) %>%
-    dplyr::select(c(grouping,'street_percentage', 'reserve_percentage', 'residential_percentage', 'weighted_street_pc', 'weighted_reserve_pc', 'weighted_resi_pc', 'total_coverage_pc')) %>%
+    dplyr::select(c(grouping,'street_percentage', 'reserve_percentage', 'residential_percentage', 'weighted_street_pc', 'weighted_reserve_pc', 'weighted_resi_pc', 'total_coverage_pc', 'other_percentage', 'weighted_other_pc')) %>%
     left_join(grouping_sf %>% st_drop_geometry() %>% select(grouping, distance), by = grouping) %>%
     rowwise() %>%
     # mutate(distance = distance_map[as.character(as.name(grouping))]) %>%
     mutate(distance = distance / 1000) %>%
     ungroup() %>%
-    as.data.frame()
+    as.data.frame() %>%
+    return()
     # mutate(across(where(is.numeric), ~ round(.x, 1))) %>%
     # mutate(across(ends_with('percentage'), ~ ifelse(is.na(.x), 0, .x) )) %>%
     
@@ -229,12 +349,13 @@ sd_combined = SharedData$new((combined_df))
 
 ```
 
-GGplot Test
+The plot below is a stacked bar chart which displays both the total coverage of streets, parks and residential areas for each LGA, as well as displaying how the total coverage is split between its three components.
 
 ```{r}
-
+#| echo: false
+#| 
 combined_longer <- pivot_longer(combined_df,
-                                cols = c('weighted_street_pc', 'weighted_reserve_pc', 'weighted_resi_pc'),
+                                cols = c('weighted_street_pc', 'weighted_reserve_pc', 'weighted_resi_pc', 'weighted_other_pc'),
                                 names_to = 'weights',
                                 values_to = "test")
 
@@ -244,25 +365,57 @@ stacked_chart <- ggplot(combined_longer, aes(fill=weights, y = test, x= reorder(
   xlab (pretty_group_name) +
   labs( fill = 'Land type') +
   scale_x_discrete(guide = guide_axis(angle = 0)) +
-  scale_fill_manual(labels = c('a','b','c'), values = c('#7CAE00', 'tomato', '#619CFF') ) +
+  scale_fill_manual(labels = c('a','b','c', 'd'), values = c('tomato', '#7CAE00', '#619CFF', 'grey') ) +
   coord_flip() +
   theme_minimal()
 
+#stacked_chart
 
 p1 <- plotly_build(stacked_chart)
-p1$x$data[[1]]$name = "Reserves"
-p1$x$data[[2]]$name = "Residential"
-p1$x$data[[3]]$name = "Streets"
+p1$x$data[[1]]$name = "Other"
+p1$x$data[[2]]$name = "Public"
+p1$x$data[[3]]$name = "Residential"
+p1$x$data[[4]]$name = 'Streets'
 
 p1
 
 ```
 
-<!-- Note: the table below is sorted by street tree coverage by default. Click other column names to sort them. -->
-
-<!-- Note: There might be innaccuracies in the street coverage data when using Suburbs as grouping unit, as not all Statistical Area 1s fit uniquely within a suburb. As such, SA1s are assigned into suburbs based on the one they have the highest overlap with. -->
+Similar to the plot above, the graphic below is scaled to 100%, which allows us to see how the different land types compose the coverage of each LGA.
 
 ```{r}
+#| echo: false
+
+stacked_chart_fill <- ggplot(combined_longer, aes(fill=weights, y = test, x= reorder(!!as.name(grouping), test) )) + 
+    geom_bar(position="fill", stat="identity") +
+  ylab('Total tree coverage (%)') +
+  xlab (pretty_group_name) +
+  labs( fill = 'Land type') +
+  scale_x_discrete(guide = guide_axis(angle = 0)) +
+  scale_fill_manual(labels = c('a','b','c', 'd'), values = c('tomato', '#7CAE00', '#619CFF', 'grey') ) +
+  coord_flip() +
+  theme_minimal()
+
+p2 <- plotly_build(stacked_chart_fill)
+p2$x$data[[1]]$name = "Other"
+p2$x$data[[2]]$name = "Public"
+p2$x$data[[3]]$name = "Residential"
+p2$x$data[[4]]$name = 'Streets'
+
+p2
+
+```
+
+## Who has the leafiest streets?
+```{r}
+#| echo: false
+
+street_coverage = coverage(exp = street_exp, group = 'SAL_NAME21', type = 'street') %>%
+  arrange(desc(street_percentage)) %>%
+  slice_head(n = 10)
+
+
+#ggplot(street_coverage, mapping = aes(x = SAL_NAME21, y = street_percentage)) + geom_bar(stat = 'identity') + theme_minimal()
 
 grouping = 'SAL_NAME21'
 grouping_sf = sal_sf
@@ -274,24 +427,66 @@ slider <- filter_slider("distance", "Distance to CBD", sd_combined, ~distance, m
 bubble <- reactable(sd_combined,
           defaultSorted = list('street_percentage' = "desc"),
           defaultColDef = colDef(
+            show = F,
   cell = bubble_grid(combined_df, shape = 'circles', colors = c("#EDF8E9", "#006D2C")),
   align = 'center',
   vAlign = 'center'),
-  columns = c(list(distance = colDef(show = F),
-                   weighted_reserve_pc = colDef(show = F),
-                   weighted_street_pc = colDef(show = F),
-                   weighted_resi_pc = colDef(show = F),
-                   total_coverage_area = colDef(show = F),
-                   total_coverage_pc = colDef(show = F),
-                 street_percentage = colDef(name = 'Streets'),
-                 reserve_percentage = colDef(name = 'Parks'),
-                 residential_percentage = colDef(name = 'Residential')),extra_cols),
+  columns = c(list(
+                 street_percentage = colDef(name = 'Streets', show = T),
+                 reserve_percentage = colDef(name = 'Parks', show = T),
+                 residential_percentage = colDef(name = 'Residential'), show = T),extra_cols),
   theme = sandstone(),
   defaultSortOrder = 'desc')
 
+#bubble
+
+
+# Render a bar chart with a label on the left
+bar_chart <- function(label, width = "100%", height = "1rem", fill = "#00bfc4", background = NULL) {
+  bar <- div(style = list(background = fill, width = width, height = height))
+  chart <- div(style = list(flexGrow = 1, marginLeft = "0.5rem", background = background), bar)
+  div(style = list(display = "flex", alignItems = "center"), label, chart)
+}
+
+reactable(
+  sd_combined,
+  defaultSorted = list('street_percentage' = "desc"),
+  theme = sandstone(),
+  defaultColDef = colDef(show = F),
+  columns = list(
+    lga_name_2022 = colDef(show = T, name = 'LGA'),
+    street_percentage = colDef(show = T,name = "Street Coverage (%)", align = "left", cell = function(value) {
+      width <- paste0(value / max(sd_combined$data()$street_percentage) * 100, "%")
+      bar_chart(round(value, 1), width = width, fill = "grey", background = "#e1e1e1")
+    }),
+    residential_percentage = colDef(show = T, name = "Residential Coverage (%)", align = "left", cell = function(value) {
+      width <- paste0(value / max(sd_combined$data()$residential_percentage) * 100, "%")
+      bar_chart(round(value, 1), width = width, fill = "#619CFF", background = "#e1e1e1")
+    }),
+    reserve_percentage = colDef(show = T, name = "Public Coverage (%)", align = "left", cell = function(value) {
+      width <- paste0(value / max(sd_combined$data()$reserve_percentage) * 100, "%")
+      bar_chart(round(value, 1), width = width, fill = "#7CAE00", background = "#e1e1e1")
+    }),
+    other_percentage = colDef(show = T, name = "Other Coverage (%)", align = "left", cell = function(value) {
+      width <- paste0(value / max(sd_combined$data()$other_percentage) * 100, "%")
+      bar_chart(round(value, 1), width = width, fill = "tomato", background = "#e1e1e1")
+    })
+  )
+) 
+
 ```
 
-## Interactions with Missing Middle
+<!-- Note: the table below is sorted by street tree coverage by default. Click other column names to sort them. -->
+
+<!-- Note: There might be innaccuracies in the street coverage data when using Suburbs as grouping unit, as not all Statistical Area 1s fit uniquely within a suburb. As such, SA1s are assigned into suburbs based on the one they have the highest overlap with. -->
+
+```{r}
+#| echo: false
+
+
+```
+
+# Interactions with Missing Middle
 
 YM recently released Housing Targets, a data-driven model which allocates housing targets by council.
 
@@ -299,15 +494,13 @@ This page calculates how much tree cover might be lost in the upzoning of reside
 
 
 ```{r}
-
-
-
+#| echo: false
 mm_lgas <- c('Brimbank', 'Merri-bek', 'Banyule', 'Darebin', 'Yarra', 'Moonee Valley', 'Manningham', 'Maribyrnong', 'Melbourne', 'Hobsons Bay', 'Port Phillip', 'Boroondara', 'Stonnington', 'Glen Eira', 'Bayside', 'Monash', 'Whitehorse', 'Maroondah', 'Manningham', 'Kingston')
 
 
 years <- 10
 
-targets <- read.csv('../council_targets.csv') [,1:2] %>%
+targets <- readRDS('../r_objects/targets.Rdata') %>%
   as.data.frame() %>%
   mutate(Target = sub(',', '', Target))
 
@@ -319,11 +512,12 @@ for(lga in targets$LGA) {
   target_df <<- rbind(target_df, c( home_target ,lga_targets(lga, home_target)) ) 
 }
 
-colnames(target_df) = c('home_target','LGA', 'lost_coverage', 'initial_coverage', 'final_coverage')
+colnames(target_df) = c('home_target','LGA', 'coverage_per_sqm', 'lost_coverage', 'initial_coverage', 'final_coverage')
 
 target_df <- target_df %>%
   mutate(across(c('initial_coverage', 'final_coverage', 'lost_coverage'), ~ round(as.numeric(.x) / (10^4), 1) )) %>%
   rowwise() %>%
+  mutate(coverage_per_sqm = round(as.numeric(coverage_per_sqm), 3)) %>%
   mutate(percentage_point_change = as.numeric(final_coverage) - as.numeric(initial_coverage),
                                   percentage_change = ((as.numeric(final_coverage)/as.numeric(initial_coverage))-1)*100 ) %>%
   arrange(-percentage_change) %>%
@@ -335,7 +529,8 @@ target_df %>%
             pagination = F,
             columns = list(
               percentage_point_change = colDef(show = F),
-              initial_coverage = colDef(name = "Coverage After Targets (Ha)"),
+              coverage_per_sqm = colDef(show = T, name = "Coverage/M^2 "),
+              initial_coverage = colDef(name = "Public Coverage After Targets (Ha)", show = F),
               lost_coverage = colDef(name = "Lost Coverage (Ha)"),
               final_coverage = colDef(name = "Public Coverage To Offset Density  (Ha)"),
               percentage_change = colDef(name = "Percent Growth From Current Public Coverage"),
@@ -343,14 +538,13 @@ target_df %>%
             ))
 ```
 
-## Zoning
+# Zoning
 
-This section breaks down canopy coverage by zone type. As expected, low density residential and civic land (parks) top the list. It is tempting to note that Greenfield is below industrial, however, Greenfield by definition has not had enough time for planted trees to grow large enough for canopy cover.
-
+This section breaks down canopy coverage by zone type. As expected, low density residential and civic land (generally parks) top the list. Since the sample is restricted to only LGAs analysed in the Housing Targets Report, there are no greenfield units.
 ```{r}
-
+#| echo: false
 coverage(exp = expression(!(zone_short %in% c('roads','other'))),group = 'zone_short') %>%
-  
+  mutate(tree_percentage = round(tree_percentage, 1)) %>%
   reactable(
     defaultSorted = list('tree_percentage' = "desc"),
     pagination = F,
@@ -369,99 +563,140 @@ coverage(exp = expression(!(zone_short %in% c('roads','other'))),group = 'zone_s
                        bar_height = 20
     )),
     coverage = colDef(show = F),
+    n = colDef(show = F),
     total_area = colDef(show = F),
     zone_short = colDef(name = 'Zone type')
   ))
 
+```
+There is a lot of variance among zones. The below box plots uses SA2s as units of observation.
+```{r, warning=FALSE, message=FALSE}
+#| echo: false
+
+#wtf are you doing here??? im a genius
+lga_bplot <-  agg_df %>% filter( !(zone_short %in% c('roads','other')) ) %>%
+  group_by(sa2_name_2021, zone_short) %>%
+  summarise(mean_pc = sum(coverage) / sum(total_area)) %>%
+  ggplot(mapping = aes(x = reorder(zone_short, -mean_pc, FUN = median), y = mean_pc, text = sa2_name_2021)) + geom_boxplot(color = "#006D2C") + xlab('Zone Type') + ylab(' Coverage (%) ') +  theme_minimal() + theme(axis.text.x = element_text(angle = 45)) 
+  
+ggplotly(lga_bplot)
 
 ```
 
-## Regressions
+# Relationships & Additional Plots
 
-This section shows the interaction between public tree coverage and the cost of living in an area, depicted by both house prices and median rents. Public tree coverage is defined as:
+This section shows the interaction between public tree coverage and the cost of living in an area, depicted by both detached house prices, the prices of units, and median rents. Public tree coverage is defined as:
 
 $$
  \text{Public tree coverage} = \frac{\text{area of streets covered by trees + area of parks covered by trees}}{\text{area of streets + area of parks}}
 $$
 
-Data Note: Rents are using ABS data, which is only available in ranges. Therefore, median rents are defined as whatever bin the median observation falls into. Also note that the Census was in 2021, and therefore rents may be impacted by COVID, and may have changed since. House prices are from Housing Victoria, and are an average of the last 5 quarters median prices.
+Data Note: Rents are using ABS data, which is only available in ranges. Therefore, median rents are defined as whatever bin the median observation falls into. Also note that the Census was in 2021, and therefore rents may be impacted by COVID, and may have changed since. This possibly explains the low rent numbers observed.
 
-TODO: Check Public Definitions
+House & unit prices are from Neoval.
 
 ```{r, message=FALSE, warning = FALSE}
-
+#| echo: false
 lot_sizes <- agg_df %>%
   filter(zoning_permits_housing == 'Housing permitted') %>%
   group_by(SAL_NAME21) %>%
   summarise(med_lot = median(lot_size, na.rm = TRUE), n = n()) %>%
   rowwise()
 
-rents = read_csv('../data/rents_by_sal.csv') %>%
-  manipulateRents() %>%
+
+rents = readRDS('../r_objects/rents.Rdata') %>%
+  manipulateRents(grouping = "sa2") %>%
   rowwise() %>%
-  mutate(median_band = gsub('\\$', '', median_band)) 
+  mutate(median_band = gsub('\\$', '', median_band)) %>%
+  rename(sa2_code_2021 = "sa2")
 
+public_coverage <- coverage(exp = expression( zone_code %in% c('PPRZ', 'PCRZ') | zone_short == 'roads'), type = 'public', group = grouping) %>% select('SAL_NAME21', 'public_percentage')
 
-public_coverage <- coverage(exp = expression(feature_preventing_development == TRUE | zone_short == 'roads'), type = 'public', group = grouping) %>% select('SAL_NAME21', 'public_percentage')
+public_coverage_sa2 <- coverage(exp = expression( zone_code %in% c('PPRZ', 'PCRZ') | zone_short == 'roads'), type = 'public', group = 'sa2_code_2021') %>% select('sa2_code_2021', 'public_percentage')
 
 house_price_data = readxl::read_xls('../data/Median-House-Price-3rd-Quarter.xls', skip = 1)[-c(1:5),1:6] 
 
 combined_df = create_combined_df(grouping, grouping_sf)
 
-house_price_data = house_price_data %>%
-  rowwise() %>%
-  mutate(avg = mean(as.numeric(
-    c(`Jul - Sep 2022...2`,
-      `Oct - Dec 2022`,
-      `Jan - Mar 2023`,
-      `Apr - Jun 2023...5`,
-      `Jul - Sep 2023...6`)), na.rm = TRUE)) %>% 
-  select(SUBURB, avg,) %>%
-  rename(SAL_NAME21 = SUBURB) %>%
-  mutate(SAL_NAME21 = str_to_title(SAL_NAME21)) %>%
-  left_join(combined_df, by = grouping) %>%
-  filter(!is.na(distance), !is.na(avg)) %>%
-  rename(average_house_price = avg) %>%
-  mutate(average_house_price = average_house_price / 10^6) %>%
-  left_join(lot_sizes, by = 'SAL_NAME21') %>%
-  left_join(rents, by = 'SAL_NAME21') %>%
-  left_join(public_coverage, by = 'SAL_NAME21') %>%
-  adf() %>%
-  mutate(median_band = as.factor(median_band)) %>%
-  mutate(within15 = ifelse(distance < 15, T, F))
+sa2_prices = readRDS('../r_objects/yimby.Rdata') %>%
+  filter(gcc_name == 'GREATER MELBOURNE') %>%
+  rename(sa2_code_2021 = "sa2_code") %>%
+  mutate(sa2_code_2021 = as.character(sa2_code_2021)) %>%
+  left_join(public_coverage_sa2, by = 'sa2_code_2021') %>%
+  left_join(rents, by = 'sa2_code_2021') %>%
+  left_join(sa2_sf, by = 'sa2_code_2021') %>%
+  mutate(within15 = ifelse(distance < 15000, T, F))
+
+# house_price_data = house_price_data %>%
+#   rowwise() %>%
+#   mutate(avg = mean(as.numeric(
+#     c(`Jul - Sep 2022...2`,
+#       `Oct - Dec 2022`,
+#       `Jan - Mar 2023`,
+#       `Apr - Jun 2023...5`,
+#       `Jul - Sep 2023...6`)), na.rm = TRUE)) %>% 
+#   select(SUBURB, avg,) %>%
+#   rename(SAL_NAME21 = SUBURB) %>%
+#   mutate(SAL_NAME21 = str_to_title(SAL_NAME21)) %>%
+#   left_join(combined_df, by = grouping) %>%
+#   filter(!is.na(distance), !is.na(avg)) %>%
+#   rename(average_house_price = avg) %>%
+#   mutate(average_house_price = average_house_price / 10^6) %>%
+#   left_join(lot_sizes, by = 'SAL_NAME21') %>%
+#   left_join(rents, by = 'SAL_NAME21') %>%
+#   left_join(public_coverage, by = 'SAL_NAME21') %>%
+#   adf() %>%
+#   mutate(median_band = as.factor(median_band)) %>%
+#   mutate(within15 = ifelse(distance < 15, T, F))
+
+
 
 #house_price_data = house_price_data %>% left_join(directions, by = 'SAL_NAME21')
 
 #missing_suburbs = setdiff(combined_df$SAL_NAME21, house_price_data$SAL_NAME21)
 #wtf
 
-house_interactable = SharedData$new(house_price_data)
-
-filter_slider("distance", "Distance to CBD", house_interactable, max = 30, ~distance, width = '75%')
+# house_interactable = SharedData$new(house_price_data)
+# 
+# filter_slider("distance", "Distance to CBD", house_interactable, max = 30, ~distance, width = '75%')
 
 # price_street_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = street_percentage, text = SAL_NAME21), axe) + xlab('Average House Price ($m)') + ylab('Street Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
 # 
 # price_residential_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = residential_percentage, text = SAL_NAME21), axe) + xlab('Average House Price ($m)') + ylab('Residential Area Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
 
-price_public_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = public_percentage, text = SAL_NAME21, fill = within15, stroke = NA), axe) + xlab('Average Detached House Price ($m)') + ylab(' Tree Coverage of Public Areas (%)') + geom_point() + labs(caption = "Source: Housing Victoria") +  theme_minimal()
+sa2_public_plot_house <- ggplot(sa2_prices %>% filter(property_type == 'HOUSE'), mapping = aes(x = arithmetic_mean, y = public_percentage, text = sa2_name, stroke = NA, fill = within15), axe) + xlab('Average Detached House Price ($m)') + ylab(' Tree Coverage of Public Areas (%)') + geom_point() + labs(caption = "Source: Neosec") +  theme_minimal()
 
-rents_public_plot <- (ggplot(house_interactable, mapping = aes(x = median_band, y = public_percentage, text = SAL_NAME21)) + geom_boxplot(color = "#006D2C") + xlab('Median Rent (2021 dollars)') + ylab("Tree Coverage of Public Areas (%)") +  theme_minimal() + labs(caption = "Source: 2021 Census (ABS)") +  theme(axis.text.x = element_text(angle = 45)) ) 
+sa2_public_plot_unit <- ggplot(sa2_prices %>% filter(property_type == 'UNIT'), mapping = aes(x = arithmetic_mean, y = public_percentage, text = sa2_name, stroke = NA, fill = within15), axe) + xlab('Average Unit Price ($m)') + ylab(' Tree Coverage of Public Areas (%)') + geom_point() + labs(caption = "Source: Neosec") +  theme_minimal()
+
+
+# price_public_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = public_percentage, text = SAL_NAME21, fill = within15, stroke = NA), axe) + xlab('Average Detached House Price ($m)') + ylab(' Tree Coverage of Public Areas (%)') + geom_point() + labs(caption = "Source: Housing Victoria") +  theme_minimal()
+
+rents_public_plot <- (ggplot(sa2_prices %>% filter(property_type == 'HOUSE'), mapping = aes(x = median_band, y = public_percentage, text = sa2_code_2021)) + geom_boxplot(color = "#006D2C") + xlab('Median Rent (2021 dollars)') + ylab("Tree Coverage of Public Areas (%)") +  theme_minimal() + labs(caption = "Source: 2021 Census (ABS)") +  theme(axis.text.x = element_text(angle = 45)) ) 
 
 #bscols(widths = c(4,4), ggplotly(price_street_plot), ggplotly(price_residential_plot))
 #subplot(ggplotly(price_street_plot),ggplotly(price_residential_plot), titleY = T, titleX = T)
 
-ggplotly(price_public_plot)
+ggplotly(sa2_public_plot_house)
+
+
 
 ```
 
-The above figure displays the relationship between house prices and public tree coverage. There is a tangible correlation between the two variables as suburbs with higher house prices tend to have more public tree coverage. This is not a statement of causation, merely correlation.
+The above figure displays the relationship between house prices and public tree coverage. There is a tangible correlation between the two variables as SA2s with higher house prices tend to have more public tree coverage. This is not a statement of causation, merely correlation.
 
-The data is further split into two groups: suburbs within 15 kilometres of the city, and suburbs outside the 15km range. This split reveals two distinct spatial patterns.
+The data is further split into two groups: SA2s within 15 kilometres of the city, and SA2s outside the 15km range. This split reveals two distinct spatial patterns.
 
-For 'inner' suburbs, the relationship is much steeper. For outer suburbs, the slope of a best fit line is much shallower.
+For 'inner' SA2s, the relationship is much steeper. For outer SA2s, the slope of a best fit line is much shallower.
 
 ```{r}
+#| echo: false
+ggplotly(sa2_public_plot_unit)
+```
 
+When looking at unit prices instead of detached homes, a positive pattern remains. However, the divergence between SA2s within 15km and outside of 15km does not seem to replicate in unit prices.
+
+```{r}
+#| echo: false
 ggplotly(rents_public_plot)
 
 # sal_w_rents <- sal_sf %>%
@@ -496,15 +731,15 @@ ggplotly(rents_public_plot)
 ```
 The graph above displays the relationship between median rents and public tree coverage. It is not possible to fit a line of best fit, given the categorical nature of rents.
 
-A slight relationship is clear, as median public coverage is increasing with median rents until median rents hit 500. After the '500-524' band, public coverage drops and the relationship no longer holds, although this is mostly due to expensive suburbs located close to the CBD such as Carlton and Fitzroy. 
+A slight relationship is clear, as median public coverage is increasing with median rents until median rents hit 500. After the '500-524' band, public coverage drops and the relationship no longer holds, although this is mostly due to expensive regions located close to the CBD such as Carlton and Fitzroy. 
 
 ```{r}
-
-lot_df = house_price_data %>% filter(med_lot < 2000)
-
-lotsize_street_plot <- ggplot(lot_df, mapping = aes(x = med_lot, y = street_percentage, text = SAL_NAME21), axe) + xlab('Average Lot Size') + ylab('Street Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
-
-lotsize_residential_plot <- ggplot(lot_df, mapping = aes(x = med_lot, y = residential_percentage, text = SAL_NAME21), axe) + xlab('Average Lot Size') + ylab('Residential Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
+#| echo: false
+# lot_df = house_price_data %>% filter(med_lot < 2000)
+# 
+# lotsize_street_plot <- ggplot(lot_df, mapping = aes(x = med_lot, y = street_percentage, text = SAL_NAME21), axe) + xlab('Average Lot Size') + ylab('Street Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
+# 
+# lotsize_residential_plot <- ggplot(lot_df, mapping = aes(x = med_lot, y = residential_percentage, text = SAL_NAME21), axe) + xlab('Average Lot Size') + ylab('Residential Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
 
 
 #ggplotly(lotsize_street_plot)
@@ -518,14 +753,39 @@ lotsize_residential_plot <- ggplot(lot_df, mapping = aes(x = med_lot, y = reside
 #summary(lm(public_percentage ~ med_lot + average_house_price + distance, lot_df))
 ```
 
+# SEIFA Scores
 
-## International Comparisons
+``` {r}
+
+# seifa_sa2 = readxl::read_xlsx('../data/seifa_sa2.xlsx', sheet = 'Table 1', skip = 5)
+#saveRDS(seifa_sa2, '../r_objects/seifa_sa2.Rdata')
+seifa_sa2 = readRDS('../r_objects/seifa_sa2.Rdata') %>%
+  rename(sa2_code_2021 = '2021 Statistical Area Level 2  (SA2) 9-Digit Code') %>%
+  rename(seifa_score = "Score...3") %>%
+  mutate(sa2_code_2021 = as.character(sa2_code_2021)) %>%
+  mutate(seifa_score = as.numeric(seifa_score)) %>%
+  left_join(sa2_prices, by = "sa2_code_2021") %>%
+  filter(!is.na(public_percentage), seifa_score > 800)
+
+seifa_plot <- ggplot(seifa_sa2, mapping = aes(x = seifa_score, y = public_percentage)) +
+  geom_point(color = "#006D2C") +
+  xlab('SEIFA Score') +
+  ylab('Tree Coverage of Public Areas (%)') +
+  labs(title = "SEIFA Scores against Public Tree Coverage") + 
+  theme_minimal() 
+
+ggplotly(seifa_plot)
+
+```
+
+# International Comparisons
 
 The plot below shows how Melbourne compares to other international examples. It displays how coverage changes as distance from the centre increases. Vienna is a clear winner, followed by Sydney and Paris. It is also worth noting that only a 20km by 20km box around the centre was computed for each city, hence these statistics focus on the inner core of cities.
 
 Note: this is using LOESS smoothing, as the scatter or line plots have significant variance. Grey bands denote a 95% confidence interval.
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
+#| echo: false
 cities = c('paris', 'vienna', 'london', 'newyork', 'melbourne', 'sydney', 'tokyo' )
 
 big_df <- data.frame()
@@ -570,5 +830,101 @@ ggplotly(int_comp)
 # ggplotly(mean_plot)
 # 
 # ggplotly(median_plot)
+
+```
+
+# Urban heat island
+
+```{r}
+#| echo: false
+
+uhi_df = uhi %>%
+  st_drop_geometry() %>%
+  rename(MB_CODE21 = 'MB_CODE16')
+
+sa1s_downloaded = list.files('../rasters/1res_sa1') %>%
+  gsub(".tif", "", .)
+
+if(is_empty(sa1s_downloaded)) {
+  sa1s_downloaded = readRDS('../r_objects/sa1s_downloaded.RData')
+}
+
+mb = mesh_blocks %>%
+  filter(SA1_CODE21 %in% sa1s_downloaded) %>%
+  dplyr::select(c(MB_CODE21, SA2_CODE21,  AREASQKM21)) %>%
+  left_join(uhi_df, by = 'MB_CODE21') %>%
+  st_drop_geometry() %>%
+  rowwise() %>%
+  mutate(area_anytree = ((PERSHRBTRE)/100) *  AREASQKM21) %>%
+  group_by(SA1_MAIN16) %>%
+  summarise( total_uhi_cov = sum(area_anytree) / sum(AREASQKM21), uhi = first(UHI18_M), sa2 = first(SA2_CODE21) ) %>%
+  rename(sa1 = 'SA1_MAIN16')
+
+sa1_summary <- agg_df %>%
+  group_by(sa1) %>%
+  summarise( ttl_cov = sum(coverage) / sum(total_area), ttl_cov_a = sum(coverage), ttl_area = sum(total_area)  )
+
+tt <- mb %>%
+  left_join(sa1_summary, by = 'sa1') %>% 
+  left_join(sa1_sf %>%
+  dplyr::select(sa1_code_2021, CHG_FLAG21, SA2_CODE21, AREASQKM21) %>%
+  st_drop_geometry() %>%
+  rename(sa1 = 'sa1_code_2021'), by = 'sa1') %>%
+  mutate(ttl_uhi_cov_a = total_uhi_cov * ttl_area ) %>%
+  filter(!is.na(ttl_cov ))
+
+#agg to SA2 and then check diffs? sa1s gonna be noisy regardless
+
+s2_agg <- tt %>% group_by(SA2_CODE21) %>%
+  summarise( sa2_cov = sum(ttl_cov_a) / sum(ttl_area), sa2_uhi_cov = sum(ttl_uhi_cov_a) / sum(ttl_area) ) %>%
+  mutate(diff = sa2_cov - sa2_uhi_cov)
+
+uhi_plot <- ggplot(tt %>% filter(CHG_FLAG21 == 0), mapping = aes(x = ttl_cov, y = uhi ) ) + 
+  geom_point(color = "#006D2C") +
+  xlab('Tree Coverage (%)') +
+  ylab('Urban Heat Island (deg)') +
+  labs(title = "Urban heat island against coverage per SA1") +
+  theme_minimal()
+
+ggplotly(uhi_plot)
+
+# unch = tt %>%
+#   filter(CHG_FLAG21 == 0) %>%
+#   mutate(diff = ttl_cov - total_uhi_cov) %>%
+#   dplyr::select(diff) 
+# 
+# hist(unlist(unch), xlab = "Difference (Paul - Vic)", main = "Difference between Paul's estimates and Victoria's for each SA1")
+
+
+
+
+```
+
+# For a bit of fun
+
+Which suburbs are mostly streets?
+
+Note: see the [documentation](model.html) to learn how I define a 'street'.
+```{r}
+#| echo: false
+
+
+grouping = 'SAL_NAME21'
+grouping_sf = sal_sf
+pretty_group_name = 'Suburb'
+
+streets <- coverage(exp = expression(zone_short == 'roads'), group = grouping) %>%
+  left_join(grouping_sf, by = grouping) %>%
+  rowwise() %>%
+  mutate(calc_area = st_area(geometry)) %>%
+  mutate(street_as_pc_of_total_area = total_area / calc_area) %>%
+  st_drop_geometry() %>%
+  dplyr::select(grouping, street_as_pc_of_total_area) %>%
+  arrange(desc(street_as_pc_of_total_area))
+
+tibble(streets)
+
+
+
 
 ```

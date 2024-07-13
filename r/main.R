@@ -39,8 +39,8 @@ source('r/run.R')
 
 #load dwelling Data
 dwelling_data <-read_sf('Melbourne dwelling data.gpkg') %>% 
-  select(!starts_with('prox_')) %>%
-  select(!starts_with('dev_')) %>%
+  dplyr::select(!starts_with('prox_')) %>%
+  dplyr::select(!starts_with('dev_')) %>%
   mutate(lga_name_2022 = str_remove_all(lga_name_2022, "\\s*\\(.*?\\)\\s*")) %>% 
   st_set_geometry('geom')
 

@@ -1,7 +1,46 @@
 #build dataframes
-coordinates <- list( c(2.3514, 48.8575) , c(16.3713,48.2081 ) , c(0.1276,51.5072), c(-74.0060, 40.7128), c(144.9631,-37.8136), c(139.752825,35.684874), c(151.2093,-33.8688) )
-crss <- c(27561, 31287, 29901, 32118, 28355, 30169, 28355)
-cities <- c('paris', 'vienna', 'london', 'newyork', 'melbourne', 'tokyo', 'sydney') 
+
+library(stars)
+library(raster)
+
+coordinates <- list( c(2.3514, 48.8575) 
+                     , c(16.3713,48.2081 ) 
+                     , c(0.1276,51.5072),
+                     c(-74.0060, 40.7128),
+                     c(144.9631,-37.8136),
+                     c(139.752825,35.684874),
+                     c(151.2093,-33.8688),
+                     c (12.5683, 55.6761),
+                     c(8.5417, 47.3769),
+                     c(-114.0719, 51.0447),
+                     c(6.1432.46.2044))
+
+crss <- c(27561,
+          31287,
+          29901,
+          32118,
+          28355, 
+          30169, 
+          28355,
+          23032,
+          21781,
+          3402,
+          21781)
+
+cities <- c('paris', 
+            'vienna',
+            'london',
+            'newyork',
+            'melbourne',
+            'tokyo',
+            'sydney',
+            'copenhagen',
+            'zurich',
+            'calgary',
+            'geneva') 
+
+
+
 
 #settings
 radius <- 10000
@@ -16,7 +55,7 @@ city_df = tibble(coords = coordinates, coordinateref = crss, city = cities) %>%
   rowwise() %>%
   mutate(lng = coords[1], lat = coords[2])
 
-city_df = city_df[-c(1:3),]
+city_df = city_df[-c(1:(nrow(city_df) -1 ) ),]
 
 city_df = city_df %>%
   rowwise() %>%
@@ -28,10 +67,10 @@ water_bodies_global <- read_sf('data/water_valid.shp')
 
 runCity <- function(longit, latit, local_crs, cur_city) {
   
-  # longit = city_df$lng[1]
-  # latit = city_df$lat[1]
-  # local_crs = city_df$coordinateref[1]
-  # cur_city = city_df$city[1]
+  longit = city_df$lng[1]
+  latit = city_df$lat[1]
+  local_crs = city_df$coordinateref[1]
+  cur_city = city_df$city[1]
 
   local_coords = c(as.numeric(longit),as.numeric(latit))
 
@@ -68,7 +107,7 @@ runCity <- function(longit, latit, local_crs, cur_city) {
   ww <- st_intersection(wb, bounding)
   
   ww <- st_as_sf(ww) %>%
-    select(SHAPE_Area)
+    dplyr::select(SHAPE_Area)
   
   ww = distinct(ww) %>%
     rowwise() %>%
@@ -146,10 +185,14 @@ runCity <- function(longit, latit, local_crs, cur_city) {
 
 analyseGridItem <- function(bbox, index, city, centre, water) {
 
-  # index = 20
+  # index = 1
   # bbox = grid[index,]
-  # city = 'tokyo'
+  # city = 'copenhagen'
   # water = wwu
+   
+  if( !dir.exists( paste0('rasters/international/', city)) ) {
+    dir.create( paste0('rasters/international/', city) )
+  }
   
   print(index)
   
@@ -162,6 +205,11 @@ analyseGridItem <- function(bbox, index, city, centre, water) {
     st_transform(4326)
   
   mp(item_bbox)
+  
+  
+  if( !dir.exists( paste0('rasters/international/',city, '/',  'rad', radius, 'cellsize',cell_size, res,'res/')) ) {
+    dir.create( paste0('rasters/international/',city, '/',  'rad', radius, 'cellsize',cell_size, res,'res/') )
+  }
   
   file_name = paste0('rasters/international/',city, '/',  'rad', radius, 'cellsize',cell_size, res,'res/',index,'.tif')
   
