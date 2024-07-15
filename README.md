@@ -22,6 +22,6 @@
 
 4. Within an R terminal, install the required R dependencies by running `source('markdown/install_dependencies.R')`.
 
-5. Within zsh/bash, render the report with the following command: `quarto render markdown/webpage.qmd`
+5. Within zsh/bash, render the report with the following command: `quarto render markdown/index.qmd`
 
 This should successfully render the page and associated files for full viewing of the report in your browser.
