@@ -14,13 +14,14 @@ SA3_2021/
 LGA_2022/
 archive/
 sf_exports/
-r_objects/
+r_objects/*
 markdown/webpage_files/
 SAL_2021/
 NTC PWSS Results Data.xlsx
 r/ntc.R
 data/
 mesh_blocks/
+*.DS_store
 markdown.zip
 tree_canopy.Rproj
 yimby.csv
