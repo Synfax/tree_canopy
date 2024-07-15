@@ -1,7 +1,5 @@
 ---
-title: "Tree Data"
-author: "Paul S & YIMBY Melbourne"
-date: "23/07/24"
+title: "Missing Middle Tree Canopy"
 ---
 
 ```{r, results='hide', warning=FALSE,message=FALSE}

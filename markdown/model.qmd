@@ -1,14 +1,5 @@
 ---
 title: "Tree Data Documentation"
-author: "Paul S"
-date: "6/6/24"
-format: 
-  html:
-    theme: zephyr
-    fig-width: 8
-    fig-height: 8
-    code-fold: true
-    page-layout: full
 ---
 
 ```{r, results='hide', warning=FALSE,message=FALSE}
