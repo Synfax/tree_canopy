@@ -4,8 +4,9 @@ project:
 
 website:
   title: "Missing Middle Tree Canopy"
+  favicon: images/favicon.jpeg
   sidebar:
-    style: "docked"
+    style: "floating"
     collapse-level: 1
     contents:
       - text: Missing Middle Tree Canopy
