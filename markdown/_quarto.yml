@@ -1,0 +1,49 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "Missing Middle Tree Canopy"
+  sidebar:
+    style: "docked"
+    collapse-level: 1
+    contents:
+      - text: Missing Middle Tree Canopy
+        href: index.qmd
+      - text: Model
+        href: model.qmd
+    tools:
+      - icon: twitter
+        href: "#"
+      - icon: instagram
+        href: "#"
+      - icon: linkedin
+        href: "#"
+      - icon: github
+        href: "#"
+      - icon: mail
+        href: "mailto:contact@yimby.melbourne"
+  search:
+    location: sidebar
+    type: textbox
+  open-graph:
+    image: images/tree-canopy-og.png
+    title: "Missing Middle Tree Canopy"
+    description: "The best time to plant a tree is 20 years ago. The second best time is when building more homes where people want to live."
+  twitter-card:
+    image: images/tree-canopy-og.png
+    title: "Missing Middle Tree Canopy"
+    description: "The best time to plant a tree is 20 years ago. The second best time is when building more homes where people want to live."
+    card-style: summary_large_image
+    site: "@yimbymelbourne"
+    creator: "@yimbymelbourne"
+
+format:
+  html:
+    theme: zephyr
+    css: styles.css
+    toc: true
+    toc-depth: 4
+    fig-width: 8
+    fig-height: 8
+    code-fold: false
