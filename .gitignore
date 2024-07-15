@@ -28,3 +28,6 @@ yimby.csv
 markdown/agg_sf.geojson
 tsgeojson.mbtiles
 markdown/fkd.dbf
+markdown/*.html
+markdown/_site
+markdown/.quarto
