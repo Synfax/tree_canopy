@@ -72,7 +72,7 @@ sa1_sf = sa1_sf %>%
 
 sal_sf = sal_sf %>%
  # filter(SAL_CODE21 %in% na.omit(unique(agg_df$SAL_CODE21)))  %>%
-  filter(STE_NAME21 == 'Victoria')
+  filter(STE_NAME21 == 'Victoria') %>%
   mutate(centroid = st_centroid(geometry)) %>%
   mutate(distance = as.vector(st_distance(melbourne,centroid))) %>%
   dplyr::arrange(distance) 
@@ -128,3 +128,6 @@ saveRDS(sa1_sf, 'r_objects/sa1_sf.Rdata')
 saveRDS(sal_sf, 'r_objects/sal_sf.Rdata')
 saveRDS(lga_sf, 'r_objects/lga_sf.Rdata')
 
+dupes <- agg_df %>% group_by(lat,lon) %>% filter(n() > 1) %>% arrange(lat)
+
+dp <- dupes[3:4,]
