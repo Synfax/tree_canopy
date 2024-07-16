@@ -23,7 +23,8 @@ packages <- c(
   "RColorBrewer",
   "showtext",
   "lwgeom",
-  "units"
+  "units",
+  "stars"
 )
 
 # Install packages
