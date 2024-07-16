@@ -13,7 +13,10 @@ coordinates <- list( c(2.3514, 48.8575)
                      c (12.5683, 55.6761),
                      c(8.5417, 47.3769),
                      c(-114.0719, 51.0447),
-                     c(6.1432.46.2044))
+                     c(6.1432,46.2044),
+                     c(-123.120,49.2827),
+                     c(135.5023,34.6937),
+                     c(174.7645,-36.8509))
 
 crss <- c(27561,
           31287,
@@ -25,7 +28,10 @@ crss <- c(27561,
           23032,
           21781,
           3402,
-          21781)
+          21781,
+          3402,
+          6684 ,
+          27200)
 
 cities <- c('paris', 
             'vienna',
@@ -37,7 +43,10 @@ cities <- c('paris',
             'copenhagen',
             'zurich',
             'calgary',
-            'geneva') 
+            'geneva',
+            'vancouver',
+            'osaka',
+            'auckland') 
 
 
 
@@ -55,7 +64,9 @@ city_df = tibble(coords = coordinates, coordinateref = crss, city = cities) %>%
   rowwise() %>%
   mutate(lng = coords[1], lat = coords[2])
 
-city_df = city_df[-c(1:(nrow(city_df) -1 ) ),]
+city_df = city_df[-c(1:(nrow(city_df) -3 ) ),]
+
+city_df = city_df %>% filter(city == 'auckland')
 
 city_df = city_df %>%
   rowwise() %>%
@@ -119,7 +130,7 @@ runCity <- function(longit, latit, local_crs, cur_city) {
     mutate(isNotEqlToBounding = !(bounding_area == area )) %>%
     filter(isNotEqlToBounding) %>%
     ungroup() %>%
-    filter(SHAPE_Area != 0.06180)
+    filter(SHAPE_Area != 0.06180, SHAPE_Area != 0.05493)
   
   wwu = st_union(ww)
 
