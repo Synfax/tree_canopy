@@ -1,9 +1,16 @@
 ---
-title: "Missing Middle Tree Canopy"
+title: "Missing Middle Street Trees"
+subtitle: "The second best time for planting."
 ---
+
+Over the next ten years:
+* Plant 62 new street trees per 100 new dwellings
+* Invest $1900 per dwelling in public greening
+* Grow 155 MCGs of new tree canopy 
 
 ```{r, results='hide', warning=FALSE,message=FALSE}
 #| echo: false
+#| label: setup-1
 devtools::install_github("dmurdoch/leaflet@crosstalk4")
 library(tidyverse)
 library(sf)
@@ -53,6 +60,7 @@ source('../themes/theme.r')
 
 ```{r, warning=FALSE, message=FALSE}
 #| echo: false
+#| label: setup-2
 grouping = 'SAL_NAME21'
 grouping_sf = sal_sf
 pretty_group_name = 'Suburb'
@@ -111,14 +119,36 @@ random_suburb <- grouping_sf %>% select('SAL_NAME21', 'geometry', 'distance') %>
 
 ```
 
-## Tree coverage
+## Executive summary
 
-Note: to see how the data is constructed, see the [documentation](model.html) and the [GitHub repository](https://github.com/Synfax/tree_canopy).
+Everyone loves trees. The year-round cooling and the shade in the summer, the organic form and the softening of the urban landscape. Not to mention the [real, tangible benefits](/benefits) that a strong tree canopy provides for our city and those who live here. 
 
-Insert Lit Review here
+People love street trees in particular. Unlike the private trees confined to individual backyards, the benefits of street trees are distributed to everyone. Whether walking the dog, cycling to work, or sitting by the window in the winter sun with your morning coffee—the presence of a robust street tree canopy only improves the day to day of city life.
+
+And so, because street trees are good, YIMBY Melbourne believes we should have more of them. 
+
+This report provides a pathway to increasing both the number of street trees and the overall tree canopy across our city. 
+
+This report has two key goals:
+
+1. To provide an overview of current tree distribution across Melbourne.
+2. To provide an evidence-based costing model for increasing tree canopy in the context of densifying Melbourne's missing middle.
+
+We also provide a brief literature review of street trees, informing the costs and considerations that underpin the model.
+
+### Policy context
+
+The Victorian Government is working to deliver around 400,000 new homes across Melbourne's missing middle over the coming decade. In our previous report, _[Missing Middle Housing Targets](https://targets.yimby.melbourne)_, we laid out a demand-driven model to determine where those homes ought to be built. 
+
+Our housing targets model is designed to be responsive to demand, and adjusted year by year—which is a [key difference between our model and the Victorian Government's](https://www.yimby.melbourne/post/housing-targets-aim-high-but-need-demand-to-back-them-up). In lieu of a crystal ball, this report assumes that 400,0000 homes will be delivered across Melbourne's Missing Middle at the 2024 rate for the full decade.  
+
+This report period of growth is exciting new opportunity for Melbourne to grow its street tree canopy, improving amenity and climate outcomes for both current and future residents, and making an important step toward the vision of a more liveable, sustainable, and affordable Melbourne as laid out in [our flagship report, Melbourne's Missing Middle](https://yimby.melbourne/missing-middle).
+
+## The current distribution of trees in Melbourne
 
 ```{r, warning = FALSE}
 #| echo: false
+#| label: full-canopy-map
 
 trees_grouped <- coverage(group = grouping) %>%
   left_join(grouping_sf, by = (grouping)) %>%
@@ -173,43 +203,63 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
   
 ```
 
-# How does your suburb compare?
-
-Note: you can adjust the distance slider from both directions to remove distanct surburbs!
-  
-```{r}
-#| echo: false  
-  
-  filter_slider("distance", "Distance to CBD", sd_df, ~distance, min = 0, max = max(sd_df$data()$distance) + 1, width = '75%')
-  
-  extra_cols = list()
-  extra_cols[[grouping]] <- colDef(name = pretty_group_name, filterable = T)
-         
-  reactable(sd_df,
-  defaultSorted = list('tree_percentage' = "desc"),
-  pagination = TRUE,
-  theme = sandstone(),
-  columns = c(list(
-    n = colDef(show = F),
-    #grouping = colDef(filterable = TRUE),
-    tree_percentage = colDef(
-      name = 'Tree Coverage (%)',
-      cell = data_bars(trees_grouped,
-                       text_position = "above",
-                       fill_color = c("#EDF8E9", "#006D2C"),
-                       #fill_gradient = TRUE,
-                       #fill_color_ref = viridi(5),
-                       background = "lightgrey",
-                       max_value = 100,
-                       brighten_text = FALSE,
-                       bar_height = 20
-                       )
-    ),
-    distance = colDef(show = FALSE)
-  ),extra_cols)
-)
+Melbourne's densest tree canopy traces our rivers, creeks, and major parks. This makes sense: these are places where a broad and abundant canopy is able to grow. 
+As is the case with much of Melbourne's key infrastructure, this chart makes it immediately clear that the west is underserved when compared with the east. Further analysis below demonstrates the social inequities directly associated with tree canopy.
 
 
+## Tree canopy in the world's most liveable cities
+
+The plot below shows how Melbourne compares to other international examples. It displays how coverage changes as distance from the centre increases. Vienna is a clear winner, followed by Sydney and Paris. It is also worth noting that only a 20km by 20km box around the centre was computed for each city, hence these statistics focus on the inner core of cities.
+
+Note: this is using LOESS smoothing, as the scatter or line plots have significant variance. Grey bands denote a 95% confidence interval.
+
+```{r, warning=FALSE, message=FALSE}
+#| echo: false
+#| fig-cap: "Note: this chart uses LOESS smoothing, as the scatter or line plots have significant variance. Grey bands denote a 95% confidence interval."
+cities = c('vienna', 'copenhagen', 'zurich', 'melbourne', 'calgary', 'geneva', 'sydney') # missing: 'vancouver', 'osaka', 'auckland'
+
+big_df <- data.frame()
+
+walk(cities, loadFiles)
+
+# big_df = big_df %>%
+#   filter(med_cov != 0, mean_cov != 0)
+
+# big_df = big_df %>%
+#   mutate(med_cov = 100 * med_cov, mean_cov = 100 * mean_cov)
+
+big_df = big_df %>% as.data.frame()
+
+big_df = big_df %>% filter(cov < 1)
+
+int_comp <- ggplot(big_df, mapping = aes(distance, cov, colour = city, group = city)) +
+  xlab("Distance to Centre (m)") +
+  ylab("Mean Tree Coverage (%)") +
+  labs(title = "Tree Coverage of Major Cities") +
+  geom_smooth(method = 'loess') +
+  theme_minimal()
+
+
+
+ggplotly(int_comp)
+  
+# mean_plot <- ggplot(big_df, mapping = aes(distance, mean_cov, colour = city, group = city)) +
+#   xlab("Distance to Centre (m)") +
+#   ylab("Mean Tree Coverage (%)") +
+#   labs(title = "Tree Coverage of Major Cities") +
+#   geom_smooth(method = 'loess') +
+#   theme_minimal()
+# 
+# median_plot <- ggplot(big_df, mapping = aes(distance, med_cov, colour = city, group = city)) +
+#   xlab("Distance to Centre (m)") +
+#   ylab("Median Tree Coverage (%)") +
+#   labs(title = "Tree Coverage of Major Cities") +
+#   geom_smooth(method = 'loess') +
+#   theme_minimal()
+# 
+# ggplotly(mean_plot)
+# 
+# ggplotly(median_plot)
 
 ```
 
@@ -765,60 +815,6 @@ ggplotly(seifa_plot)
 
 ```
 
-# International Comparisons
-
-The plot below shows how Melbourne compares to other international examples. It displays how coverage changes as distance from the centre increases. Vienna is a clear winner, followed by Sydney and Paris. It is also worth noting that only a 20km by 20km box around the centre was computed for each city, hence these statistics focus on the inner core of cities.
-
-Note: this is using LOESS smoothing, as the scatter or line plots have significant variance. Grey bands denote a 95% confidence interval.
-
-```{r, warning=FALSE, message=FALSE}
-#| echo: false
-cities = c('paris', 'vienna', 'london', 'newyork', 'melbourne', 'sydney', 'tokyo' )
-
-big_df <- data.frame()
-
-walk(cities, loadFiles)
-
-# big_df = big_df %>%
-#   filter(med_cov != 0, mean_cov != 0)
-
-# big_df = big_df %>%
-#   mutate(med_cov = 100 * med_cov, mean_cov = 100 * mean_cov)
-
-big_df = big_df %>% as.data.frame()
-
-big_df = big_df %>% filter(cov < 1)
-
-int_comp <- ggplot(big_df, mapping = aes(distance, cov, colour = city, group = city)) +
-  xlab("Distance to Centre (m)") +
-  ylab("Mean Tree Coverage (%)") +
-  labs(title = "Tree Coverage of Major Cities") +
-  geom_smooth(method = 'loess') +
-  theme_minimal()
-
-
-
-ggplotly(int_comp)
-  
-# mean_plot <- ggplot(big_df, mapping = aes(distance, mean_cov, colour = city, group = city)) +
-#   xlab("Distance to Centre (m)") +
-#   ylab("Mean Tree Coverage (%)") +
-#   labs(title = "Tree Coverage of Major Cities") +
-#   geom_smooth(method = 'loess') +
-#   theme_minimal()
-# 
-# median_plot <- ggplot(big_df, mapping = aes(distance, med_cov, colour = city, group = city)) +
-#   xlab("Distance to Centre (m)") +
-#   ylab("Median Tree Coverage (%)") +
-#   labs(title = "Tree Coverage of Major Cities") +
-#   geom_smooth(method = 'loess') +
-#   theme_minimal()
-# 
-# ggplotly(mean_plot)
-# 
-# ggplotly(median_plot)
-
-```
 
 # Urban heat island
 

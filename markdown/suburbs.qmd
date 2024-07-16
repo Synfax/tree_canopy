@@ -1,0 +1,44 @@
+---
+title: "Suburbs"
+---
+
+
+# How does your suburb compare?
+
+Note: you can adjust the distance slider from both directions to remove distanct surburbs!
+  
+```{r}
+#| echo: false  
+  
+  filter_slider("distance", "Distance to CBD", sd_df, ~distance, min = 0, max = max(sd_df$data()$distance) + 1, width = '75%')
+  
+  extra_cols = list()
+  extra_cols[[grouping]] <- colDef(name = pretty_group_name, filterable = T)
+         
+  reactable(sd_df,
+  defaultSorted = list('tree_percentage' = "desc"),
+  pagination = TRUE,
+  theme = sandstone(),
+  columns = c(list(
+    n = colDef(show = F),
+    #grouping = colDef(filterable = TRUE),
+    tree_percentage = colDef(
+      name = 'Tree Coverage (%)',
+      cell = data_bars(trees_grouped,
+                       text_position = "above",
+                       fill_color = c("#EDF8E9", "#006D2C"),
+                       #fill_gradient = TRUE,
+                       #fill_color_ref = viridi(5),
+                       background = "lightgrey",
+                       max_value = 100,
+                       brighten_text = FALSE,
+                       bar_height = 20
+                       )
+    ),
+    distance = colDef(show = FALSE)
+  ),extra_cols)
+)
+
+
+
+```

@@ -1,6 +1,9 @@
 project:
   type: website
   output-dir: _site
+  render:
+    - "*.qmd"
+    - "!model.qmd" # temporarily exclude model.qmd
 
 website:
   title: "Missing Middle Tree Canopy"
@@ -11,8 +14,18 @@ website:
     contents:
       - text: Missing Middle Tree Canopy
         href: index.qmd
-      - text: Model
-        href: model.qmd
+      - text: Benefits
+        href: benefits.qmd
+
+      - text: Costs
+        href: costs.qmd
+      - text: Suburbs
+        href: suburbs.qmd
+      - text: More data
+        href: more-data.qmd
+
+      # - text: Model
+      #   href: model.qmd
     tools:
       - icon: twitter
         href: "#"
