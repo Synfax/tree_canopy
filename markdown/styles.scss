@@ -1,3 +1,11 @@
+/*-- scss:functions --*/
+
+/*-- scss:defaults --*/
+$navbar-bg: #fdffee;
+$sidebar-bg: #fdffee;
+
+/*-- scss:rules --*/
+
 /* Base colors */
 :root {
   --hero-color: #10461b;
@@ -8,10 +16,6 @@
   --red-base: #ba1b21;
   --yellow-base: #f6ae00;
 }
-
-/* Typography */
-/* @import url("//fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&family=Inter:wght@100..900&display=swap");
-@import url("//fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap"); */
 
 @font-face {
   font-family: "Inter";
@@ -432,7 +436,3 @@ li.chapter:nth-child(n + 6):nth-child(-n + 27) ul {
 .book .book-summary ul.summary li span {
   padding: 5px 15px;
 }
-
-/* ^ TARGETS RULES | NEW RULES v */
-
-$navbar-bg: #fdffee;
