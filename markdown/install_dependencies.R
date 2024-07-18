@@ -17,14 +17,21 @@ packages <- c(
   "plotly",
   "htmltools",
   "crosstalk",
+  "readxl",
   "patchwork",
   "ggtext",
   "DT",
   "RColorBrewer",
   "showtext",
+  "shiny",
+  "shinyWidgets",
   "lwgeom",
   "units",
-  "stars"
+  "fixest",
+  "mapgl",
+  "crosstalk",
+  "reactable",
+  "pacman"
 )
 
 # Install packages
