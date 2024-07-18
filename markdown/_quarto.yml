@@ -4,9 +4,10 @@ project:
   render:
     - "*.qmd"
     - "!model.qmd" # temporarily exclude model.qmd
+    - "!international_model.qmd" # temporarily exclude international_model.qmd
 
 website:
-  title: "Missing Middle Tree Canopy"
+  title: "Missing Middle Street Trees"
   favicon: images/favicon.jpeg
   sidebar:
     style: "floating"
@@ -14,18 +15,22 @@ website:
     contents:
       - text: Missing Middle Tree Canopy
         href: index.qmd
-      - text: Benefits
+      - text: Benefits of street trees
         href: benefits.qmd
-
-      - text: Costs
+      - text: Selecting & costing street trees
         href: costs.qmd
-      - text: Suburbs
+      - text: Your suburb's tree canopy
         href: suburbs.qmd
-      - text: More data
+      - text: Additional data & analysis
         href: more-data.qmd
-
-      # - text: Model
-      #   href: model.qmd
+      # - section: "Model & methodology"
+      #   contents:
+      #     - text: Overview
+      #       href: model-overview.qmd
+      #     - text: Measuring Melbourne's street canopy
+      #       href: model.qmd
+      #     - text: Measuring international cities' tree canopy
+      #       href: international_model.qmd
     tools:
       - icon: twitter
         href: "#"
