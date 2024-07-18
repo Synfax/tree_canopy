@@ -1,3 +1,310 @@
 ---
-title: "Costs"
+title: "Selecting & costing street trees"
 ---
+
+## Selecting street trees 
+
+For our model and analysis, we utilise a 2006 list of Melbourne's 50 most populous street tree taxa, published in the Arboriculture & Urban Forestry journal in 2006, as part of _[An Analysis of the Street Tree Population of Greater Melbourne at the Beginning of the 21st Century](https://auf.isa-arbor.com/content/32/4/155)_. 
+
+From this list, we extracted the 20 most populous trees that met the following criteria: 
+
+- Is a native species,
+
+- Has an average mature height of at least 5 metres, and
+
+- Has an average mature canopy width of at least 5 metres
+
+<TODO: Foldable table >  
+
+This resulted in a selection of 20 trees with an average canopy width of 8.775m, and an average mature canopy of 13.8m<sup>2</sup>. 
+
+
+### A note on biodiversity
+
+The City of Melbourne’s [Urban Forest Diversity Guidelines](https://www.melbourne.vic.gov.au/SiteCollectionDocuments/urban-forest-diversity-guidelines.pdf) recommend that by 2040:
+
+- No more than 5% trees be of any one species,
+
+- No more than 10% trees be of any one genus, 
+
+- No more than 20% trees be of any one Family. 
+
+This means that at least 20 species of tree will be required to meet the biodiversity measure. 
+
+It is worth noting that while we have built our model with 20 distinct and popular street trees, our list falls far short of meeting City of Melbourne's contemporary Diversity Guidelines. 
+
+A whopping 16 of the 20 popular tree species that met our criteria are of the Myrtaceae family. In 2006, these 16 species alone comprised 34.9% of metropolitan Melbourne's total tree population.
+
+It is also worth noting that while we narrowed our selection exclusively to natives, it is unlikely that a native-only population is the best choice for our city. Imported species, particularly those which are deciduous, will likely remain beneficial as part of our city's future tree population.
+
+But we are not arborists, and selected our set of trees for the dual purposes of data modelling and costing. We opted to ignore exotics to keep our modelling simple. As such, we rely on the future work of our city's arborists to ensure that robust biodiversity is established and maintained across metropolitan Melbourne. 
+
+
+## Costing street trees
+
+```{=html}
+<table>
+  <tr>
+   <td colspan="4" ><strong>Tree costing model</strong>
+   </td>
+  </tr>
+  <tr>
+   <td>
+   </td>
+   <td>
+   </td>
+   <td>
+   </td>
+   <td>
+   </td>
+  </tr>
+  <tr>
+   <td>
+   </td>
+   <td>
+   </td>
+   <td><strong>Standard</strong>
+   </td>
+   <td><strong>Rain garden</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><strong>Establishment cost</strong>
+   </td>
+   <td>
+   </td>
+   <td><p style="text-align: right">
+$1,113.00</p>
+
+   </td>
+   <td><p style="text-align: right">
+$4,461.00</p>
+
+   </td>
+  </tr>
+  <tr>
+   <td><strong>Annual maintenance cost</strong>
+   </td>
+   <td>
+   </td>
+   <td><p style="text-align: right">
+$49.50</p>
+
+   </td>
+   <td><p style="text-align: right">
+$65.40</p>
+
+   </td>
+  </tr>
+  <tr>
+   <td><strong>Establishment cost buffer</strong>
+   </td>
+   <td><p style="text-align: right">
+5.00%</p>
+
+   </td>
+   <td>
+   </td>
+   <td>
+   </td>
+  </tr>
+  <tr>
+   <td><strong>Years of maintenance</strong>
+   </td>
+   <td><p style="text-align: right">
+30</p>
+
+   </td>
+   <td>
+   </td>
+   <td>
+   </td>
+  </tr>
+  <tr>
+   <td><strong>Cost per tree</strong>
+   </td>
+   <td>
+   </td>
+   <td><p style="text-align: right">
+$2,653.65</p>
+
+   </td>
+   <td><p style="text-align: right">
+$6,646.05</p>
+
+   </td>
+  </tr>
+  <tr>
+   <td><strong>Share of population</strong>
+   </td>
+   <td>
+   </td>
+   <td><p style="text-align: right">
+90%</p>
+
+   </td>
+   <td><p style="text-align: right">
+10%</p>
+
+   </td>
+  </tr>
+  <tr>
+   <td><strong>Canopy per tree (sqm)</strong>
+   </td>
+   <td><p style="text-align: right">
+12.42</p>
+
+   </td>
+   <td>
+   </td>
+   <td>
+   </td>
+  </tr>
+  <tr>
+   <td><strong>New trees per dwelling</strong>
+   </td>
+   <td><p style="text-align: right">
+0.62</p>
+
+   </td>
+   <td>
+   </td>
+   <td>
+   </td>
+  </tr>
+  <tr>
+   <td>
+   </td>
+   <td colspan="3" ><strong>Costs</strong>
+   </td>
+  </tr>
+  <tr>
+   <td>
+   </td>
+   <td><strong>Establishment</strong>
+   </td>
+   <td><strong>Maintenance</strong>
+   </td>
+   <td><strong>Total</strong>
+   </td>
+  </tr>
+  <tr>
+   <td><strong>Per tree</strong>
+   </td>
+   <td><p style="text-align: right">
+$1,447.80</p>
+
+   </td>
+   <td><p style="text-align: right">
+$1,605.09</p>
+
+   </td>
+   <td><p style="text-align: right">
+$3,052.89</p>
+
+   </td>
+  </tr>
+  <tr>
+   <td><strong>Per sqm canopy</strong>
+   </td>
+   <td><p style="text-align: right">
+$116.57</p>
+
+   </td>
+   <td><p style="text-align: right">
+$129.23</p>
+
+   </td>
+   <td><p style="text-align: right">
+$245.80</p>
+
+   </td>
+  </tr>
+  <tr>
+   <td><strong>Per new dwelling</strong>
+   </td>
+   <td><p style="text-align: right">
+<strong>$900.80</strong></p>
+
+   </td>
+   <td><p style="text-align: right">
+<strong>$998.66</strong></p>
+
+   </td>
+   <td><p style="text-align: right">
+<strong>$1,899.45</strong></p>
+
+   </td>
+  </tr>
+  <tr>
+   <td><strong>Per year (40k dwellings)</strong>
+   </td>
+   <td><p style="text-align: right">
+<strong>$36,031,801.93</strong></p>
+
+   </td>
+   <td><p style="text-align: right">
+<strong>$39,946,321.98</strong></p>
+
+   </td>
+   <td><p style="text-align: right">
+<strong>$75,978,123.91</strong></p>
+
+   </td>
+  </tr>
+</table>
+```
+
+Our model of street tree costings is built off of up-to-date existing models and evidence. It also relies on a set of assumptions at its core, the key ones of which we detail below. 
+
+
+### We account for 30 years of tree maintenance costs 
+
+Our model is informed primarily by 2023 analysis commissioned by [Living Melbourne](https://livingmelbourne.org.au/wp-content/uploads/2022/04/Priority-Urban-Greening-Analysis_FINAL-14_06_2023.pdf) using [Hort Innovation's tree costing modelling](https://www.horticulture.com.au/growers/help-your-business-grow/research-reports-publications-fact-sheets-and-more/tree-costing-tool-and-instruction-manual/), which calculated the establishment 30-year maintenance costs of new urban street trees. We also considered the [cost modelling published by Treenet](https://treenet.org/resource/developing-an-australian-street-tree-cost-model/#:~:text=Looking%20at%20the%20accumulated%20cost,associated%20with%20urban%20street%20trees), which calculates costs based on a 50-year model, and which also informs this project. 
+
+In both models, the cost of maintenance includes not only the basic per-tree requirements such as watering and fertilising, but also for the portion of trees which will fail to grow, and which may die prematurely. 
+
+
+### We know where the canopy is, but not where the trees are planted
+
+Because our dataset is built off satellite imagery and analysis, we know where the canopy is—but not where the trunks are. This means that while we can measure canopy, we can't count the trees, or know exactly where they are currently planted.
+
+This introduces an issue where 
+
+For simplicity's sake, we assume that 100% of private canopy is lost and 100% of nearby public canopy is retained when a given lot is redeveloped.
+
+
+### We overestimate establishment costs
+
+In order to account for any additional costs due to variances in planting processes required by a given infill development as Melbourne densifies, we overestimate establishment costs by 5%.
+
+
+### We underestimate each individual tree's canopy
+
+Of the select biodiverse trees our model considers as examples of trees suitable for inner-middle Melbourne, the average mature canopy area is 13.8 square metres. 
+
+To account for factors such as trimming around power lines and overlap between trees in the formation of a cohesive canopy, we reduce this by 10% to a final per-tree canopy area of 12.42 square metres.
+
+
+### We allocate rain garden planting to one in ten new trees
+
+An Australian study [published by Treenet in 2011](https://treenet.org/resource/the-use-of-trees-in-urban-stormwater-management/) found that rain gardens are most effective when strategically placed at low elevations where stormwater runoff can be directed. 
+
+Typically, this means rain gardens should be placed within areas with high proportions of concrete or bitumen coverage, and low proportions of permeable soil. This is why rain gardens are a focus for the City of Melbourne in particular—but less important, say, in an LGA like Manningham.
+
+It is beyond the scope of this report to undertake the significant modelling required to estimate the exact areas where rain garden trees will be required as Melbourne densifies. This will be the role of landscape architects on a project-by-project basis.
+
+For the purposes of this report, we assume that one in ten new street trees will feature rain garden planting. The remainder are assumed to be planted in the standard and less costly methods.
+
+
+## Paying for street trees
+
+Within this report, we are ambivalent about who pays for new street trees. This is because payment may come from a combination of sources, including developer contributions, government grant programs, and general budgetary expenditure. For instance, it may be that establishment costs are paid for by developers and councils, and maintenance paid for by the state government. 
+
+One thing we are not ambivalent about, however, is _when_ street trees should be paid for. 
+
+The costing models upon which this research relies demonstrate the importance of accounting for the full lifespan of a street tree—rather than just planting the tree and then expecting it to survive on its own. Research shows that active management of the urban forest makes a big difference to its overall success, and saves money in the long run. 
+
+As such, regardless of who's paying, both establishment and 30 years of ongoing maintenance costs should be paid up front, with the latter allocated to an ongoing tree maintenance capital fund, which can be topped up in the future if necessary.  
+
+This funding structure will enable responsible authorities to pay for ongoing costs, with any interest earned by the capital fund able to be spent on upgrades, or to account for climate shocks or disease outbreaks among Melbourne's street trees. 

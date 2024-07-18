@@ -4,58 +4,17 @@ subtitle: "The second best time for planting."
 ---
 
 Over the next ten years:
-* Plant 62 new street trees per 100 new dwellings
-* Invest $1900 per dwelling in public greening
-* Grow 155 MCGs of new tree canopy 
+
+- Plant 62 new street trees per 100 new dwellings
+
+- Invest $1900 per dwelling in public greening
+
+- Grow 155 MCGs of new tree canopy 
 
 ```{r, results='hide', warning=FALSE,message=FALSE}
 #| echo: false
-#| label: setup-1
-devtools::install_github("dmurdoch/leaflet@crosstalk4")
-library(tidyverse)
-library(sf)
-library(leaflet)
-library(stringr)
-library(knitr)
-library(reactablefmtr)
-library(plotly)
-library(htmltools)
-library(crosstalk)
-library(readxl)
-library(patchwork)
-library(ggtext)
-library(DT)
-library(RColorBrewer)
-library(showtext)
-devtools::install_github('walkerke/mapgl')
-
-
-
-agg_df <- readRDS('../r_objects/agg_df.Rdata') %>%
-  mutate(sa1_code_2021 = sa1)
-
-sa2_sf <- readRDS('../r_objects/sa2_sf.Rdata') %>%
-  #rename(sa2_code_2021 = "SA2_CODE21") %>%
-  st_set_geometry('geometry')
-
-sal_sf <- readRDS('../r_objects/sal_sf.Rdata') %>%
-  st_set_geometry('geometry')
-
-lga_sf <- readRDS('../r_objects/lga_sf.Rdata') %>%
-  st_set_geometry('geometry') %>%
-  rename( "lga_name_2022" = LGA_NAME22)
-
-sa1_sf <- readRDS('../r_objects/sa1_sf.Rdata') %>%
-  st_set_geometry('geometry')
-
-uhi = readRDS('../r_objects/uhi.Rdata')
-
-mesh_blocks = readRDS('../r_objects/mesh_blocks.Rdata')
-
-
-source('../r/functions.r')
-source('../r/mapping_functions.r')
-source('../themes/theme.r')
+#| label: load-_common
+source("_common.R")
 ```
 
 ```{r, warning=FALSE, message=FALSE}
@@ -144,7 +103,7 @@ Our housing targets model is designed to be responsive to demand, and adjusted y
 
 This report period of growth is exciting new opportunity for Melbourne to grow its street tree canopy, improving amenity and climate outcomes for both current and future residents, and making an important step toward the vision of a more liveable, sustainable, and affordable Melbourne as laid out in [our flagship report, Melbourne's Missing Middle](https://yimby.melbourne/missing-middle).
 
-## The current distribution of trees in Melbourne
+## The current distribution of trees across Melbourne
 
 ```{r, warning = FALSE}
 #| echo: false
@@ -204,19 +163,20 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
 ```
 
 Melbourne's densest tree canopy traces our rivers, creeks, and major parks. This makes sense: these are places where a broad and abundant canopy is able to grow. 
+
 As is the case with much of Melbourne's key infrastructure, this chart makes it immediately clear that the west is underserved when compared with the east. Further analysis below demonstrates the social inequities directly associated with tree canopy.
 
 
 ## Tree canopy in the world's most liveable cities
 
-The plot below shows how Melbourne compares to other international examples. It displays how coverage changes as distance from the centre increases. Vienna is a clear winner, followed by Sydney and Paris. It is also worth noting that only a 20km by 20km box around the centre was computed for each city, hence these statistics focus on the inner core of cities.
+Melbourne constantly appears in the top ten list of the world's most liveable cities. Meanwhile, a relative abundance of trees is a commonly referenced indicator of said liveability.
 
-Note: this is using LOESS smoothing, as the scatter or line plots have significant variance. Grey bands denote a 95% confidence interval.
+So what does canopy cover look like in the current list of top ten liveable cities? 
 
 ```{r, warning=FALSE, message=FALSE}
 #| echo: false
 #| fig-cap: "Note: this chart uses LOESS smoothing, as the scatter or line plots have significant variance. Grey bands denote a 95% confidence interval."
-cities = c('vienna', 'copenhagen', 'zurich', 'melbourne', 'calgary', 'geneva', 'sydney') # missing: 'vancouver', 'osaka', 'auckland'
+cities = c('vienna', 'copenhagen', 'zurich', 'melbourne', 'calgary', 'geneva', 'sydney', 'vancouver', 'osaka', 'auckland')
 
 big_df <- data.frame()
 
@@ -262,22 +222,19 @@ ggplotly(int_comp)
 # ggplotly(median_plot)
 
 ```
+This chart displays the tree canopy coverage of each city, in rings that start in the city centre and move out almost 15km. To see how this data was calculated, you can visit the [methodology page](/model). 
+
+Vienna and Zurich are the clear winners when it comes to tree canopy coverage. 
+
+Meanwhile, Calgary and Osaka have comparably little tree canopy coverage, and Melbourne sits around the middle of the pack. 
+
+But Melbourne deserves to be better than the middle of the pack, which is why this report lays out a model for increasing the city's tree canopy coverage by 10%—all while doubling our population.
+
+# Trees in Melbourne's Missing Middle
+
+Local councils included in this analysis are the 19 included within our previous report: [Missing Middle Housing Targets](https://targets.yimby.melbourne). These are the LGAs where dense development is viable at scale, and where we will therefore need to focus our efforts on maintaining and improving our street tree canopy. 
 
 ## Coverage of streets, parks and residential areas
-
-This section breaks down total coverage into its component parts.
-
-Public is defined as PPRZ, PCRZ.
-
-Resi is all residential zones (neighbourhood residential, general, low density etc)
-
-Streets are defined as per the model documentation.
-
-Other is all other dwellings.
-
-<!-- This section displays how much of each land use type is covered by trees. For example, a value of 60 for 'Streets' means that 60% of total street area is under canopy coverage. Accordingly, if 'Parks' is a low number, it means parks are not shaded, not that there are few parks in a region, it is just likely they are open spaces. -->
-
-
 
 ```{r}
 #| echo: false
@@ -394,7 +351,6 @@ sd_combined = SharedData$new((combined_df))
 
 ```
 
-The plot below is a stacked bar chart which displays both the total coverage of streets, parks and residential areas for each LGA, as well as displaying how the total coverage is split between its three components.
 
 ```{r}
 #| echo: false
@@ -424,7 +380,10 @@ p1
 
 ```
 
-Similar to the plot above, the graphic below is scaled to 100%, which allows us to see how the different land types compose the coverage of each LGA.
+
+Here, we break down what proportion of a local government’s tree coverage is on what type of land. The plot above is a stacked bar chart that displays the total tree canopy coverage for each local government area and how the total coverage is split between this report's [five main land classifications](/model).
+
+Manningham's tree coverage is greatly inflated by the existence of the Warrandyte state park. Meanwhile, Brimbank has few trees on any one of its land classifications.
 
 ```{r}
 #| echo: false
@@ -450,7 +409,13 @@ p2
 
 ```
 
-## Who has the leafiest streets?
+
+## Tree coverage and equity
+
+Trees are not just nice to look at—they also provide tangible benefits for people. People with access to street tree canopy are richer for it and, as we'll shortly demonstrate, have access to that canopy because they are richer in the first place.
+
+### 'Leafy' is a euphemism for wealthy suburbs
+
 ```{r}
 #| echo: false
 
@@ -464,6 +429,10 @@ street_coverage = coverage(exp = street_exp, group = 'SAL_NAME21', type = 'stree
 grouping = 'SAL_NAME21'
 grouping_sf = sal_sf
 pretty_group_name = 'Suburb'
+
+extra_cols = list()
+extra_cols[[grouping]] <- colDef(name = pretty_group_name, filterable = T)
+
 
 slider <- filter_slider("distance", "Distance to CBD", sd_combined, ~distance, min = 0, max = max(sd_combined$data()$distance), width = '75%')
      
@@ -520,124 +489,70 @@ reactable(
 
 ```
 
-<!-- Note: the table below is sorted by street tree coverage by default. Click other column names to sort them. -->
+There is a clear relationship between public tree coverage and the cost of housing. This is evident in both detached house and unit prices, as well as in rents. This is significant: not only can wealth buy you a large backyard, but it can also buy you direct access to suburbs with greener public realms.
 
-<!-- Note: There might be innaccuracies in the street coverage data when using Suburbs as grouping unit, as not all Statistical Area 1s fit uniquely within a suburb. As such, SA1s are assigned into suburbs based on the one they have the highest overlap with. -->
+This section shows the interaction between public tree coverage and socioeconomic status. We do this through SEIFA scores and the cost of housing in an area, as depicted by both detached house and unit prices, and median rents. 
+
+::: {.callout-caution collapse="true"}
+# About these datasets
+
+Rents are using ABS data, which is only available in ranges. Therefore, median rents are defined as whatever bin the median observation falls into. 
+
+The Census was in 2021, and therefore, rents may have been impacted by COVID-19 migration patterns and may have changed since. This may explain the low rent numbers observed.
+
+House & unit prices are sourced from Neoval.
+
+We have performed this analysis using the ABS’s SA2s from 2021.
+:::
+
+### Socio-economic status is linked with higher public tree canopy
+
+Using the ABS product [Socio-Economic Indexes for Areas (SEIFA)](https://www.abs.gov.au/websitedbs/censushome.nsf/home/seifa), we explore the relationship between public tree coverage and socio-economic status of an area.
+
+
+``` {r, message = FALSE, warning = FALSE}
+#| echo: false
+# seifa_sa2 = readxl::read_xlsx('../data/seifa_sa2.xlsx', sheet = 'Table 1', skip = 5)
+#saveRDS(seifa_sa2, '../r_objects/seifa_sa2.Rdata')
+seifa_sa2 = readRDS('../r_objects/seifa_sa2.Rdata') %>%
+  rename(sa2_code_2021 = '2021 Statistical Area Level 2  (SA2) 9-Digit Code') %>%
+  rename(seifa_score = "Score...3") %>%
+  mutate(sa2_code_2021 = as.character(sa2_code_2021)) %>%
+  mutate(seifa_score = as.numeric(seifa_score)) %>%
+  left_join(sa2_prices, by = "sa2_code_2021") %>%
+  filter(!is.na(public_percentage), seifa_score > 800)
+
+seifa_plot <- ggplot(seifa_sa2, mapping = aes(x = seifa_score, y = public_percentage)) +
+  geom_point(color = "#006D2C") +
+  xlab('SEIFA Score') +
+  ylab('Tree Coverage of Public Areas (%)') +
+  labs(title = "SEIFA Scores against Public Tree Coverage") + 
+  theme_minimal() 
+
+ggplotly(seifa_plot)
+
+```
+
+The results above suggest that the relationship between the two is non-linear, meaning that there are diminishing returns beyond a certain proportion of canopy coverage. 
 
 ```{r}
 #| echo: false
+seifa_log_plot <- ggplot(seifa_sa2, mapping = aes(x = seifa_score, y = log(public_percentage))) +
+  geom_point(color = "#006D2C") +
+  xlab('SEIFA Score') +
+  ylab('Log Tree Coverage of Public Areas (%)') +
+  labs(title = "SEIFA Scores against Log Public Tree Coverage") + 
+  theme_minimal() 
 
-
+ggplotly(seifa_log_plot)
 ```
 
-# Interactions with Missing Middle
+This is backed up further by the relationship's near-linearity when charted logarithmically, indicating that an increase in public canopy coverage from 10% to 20% is associated with a much larger SEIFA score change than an increase from 40% to 50%.
 
-YM recently released Housing Targets, a data-driven model which allocates housing targets by council.
+#### House prices and public tree coverage
 
-This page calculates how much tree cover might be lost in the upzoning of residential lots, and then calculating how to offset this loss by increasing coverage of street trees
+Next, we’ll explore the relationship between detached house prices and public tree coverage. As seen below, there is a tangible correlation between the two, as areas with higher house prices tend to have more public tree coverage.
 
-
-```{r}
-#| echo: false
-mm_lgas <- c('Brimbank', 'Merri-bek', 'Banyule', 'Darebin', 'Yarra', 'Moonee Valley', 'Manningham', 'Maribyrnong', 'Melbourne', 'Hobsons Bay', 'Port Phillip', 'Boroondara', 'Stonnington', 'Glen Eira', 'Bayside', 'Monash', 'Whitehorse', 'Maroondah', 'Manningham', 'Kingston')
-
-
-years <- 10
-
-targets <- readRDS('../r_objects/targets.Rdata') %>%
-  as.data.frame() %>%
-  mutate(Target = sub(',', '', Target))
-
-target_df <- data.frame()
-
-for(lga in targets$LGA) {
-  home_target <- as.numeric((targets %>% filter(LGA == lga))$Target) * years
- 
-  target_df <<- rbind(target_df, c( home_target ,lga_targets(lga, home_target)) ) 
-}
-
-colnames(target_df) = c('home_target','LGA', 'coverage_per_sqm', 'lost_coverage', 'initial_coverage', 'final_coverage')
-
-target_df <- target_df %>%
-  mutate(across(c('initial_coverage', 'final_coverage', 'lost_coverage'), ~ round(as.numeric(.x) / (10^4), 1) )) %>%
-  rowwise() %>%
-  mutate(coverage_per_sqm = round(as.numeric(coverage_per_sqm), 3)) %>%
-  mutate(percentage_point_change = as.numeric(final_coverage) - as.numeric(initial_coverage),
-                                  percentage_change = ((as.numeric(final_coverage)/as.numeric(initial_coverage))-1)*100 ) %>%
-  arrange(-percentage_change) %>%
-  mutate(percentage_change = round(percentage_change, 3)) %>%
-  dplyr::relocate(home_target, .after = LGA)
-
-target_df %>%
-  reactable(theme = sandstone(),
-            pagination = F,
-            columns = list(
-              percentage_point_change = colDef(show = F),
-              coverage_per_sqm = colDef(show = T, name = "Coverage/M^2 "),
-              initial_coverage = colDef(name = "Public Coverage After Targets (Ha)", show = F),
-              lost_coverage = colDef(name = "Lost Coverage (Ha)"),
-              final_coverage = colDef(name = "Public Coverage To Offset Density  (Ha)"),
-              percentage_change = colDef(name = "Percent Growth From Current Public Coverage"),
-              home_target = colDef(name = paste0(years,'yr Home Target'))
-            ))
-```
-
-# Zoning
-
-This section breaks down canopy coverage by zone type. As expected, low density residential and civic land (generally parks) top the list. Since the sample is restricted to only LGAs analysed in the Housing Targets Report, there are no greenfield units.
-```{r}
-#| echo: false
-coverage(exp = expression(!(zone_short %in% c('roads','other'))),group = 'zone_short') %>%
-  mutate(tree_percentage = round(tree_percentage, 1)) %>%
-  reactable(
-    defaultSorted = list('tree_percentage' = "desc"),
-    pagination = F,
-    theme = sandstone(),
-    columns = list(
-    tree_percentage = colDef(
-      name = 'Coverage %',
-      cell = data_bars(.,
-      text_position = "above",
-                       fill_color = c("#EDF8E9", "#006D2C"),
-                       #fill_gradient = TRUE,
-                       #fill_color_ref = viridi(5),
-                       background = "lightgrey",
-                       max_value = 100,
-                       brighten_text = FALSE,
-                       bar_height = 20
-    )),
-    coverage = colDef(show = F),
-    n = colDef(show = F),
-    total_area = colDef(show = F),
-    zone_short = colDef(name = 'Zone type')
-  ))
-
-```
-There is a lot of variance among zones. The below box plots uses SA2s as units of observation.
-```{r, warning=FALSE, message=FALSE}
-#| echo: false
-
-#wtf are you doing here??? im a genius
-lga_bplot <-  agg_df %>% filter( !(zone_short %in% c('roads','other')) ) %>%
-  group_by(sa2_name_2021, zone_short) %>%
-  summarise(mean_pc = sum(coverage) / sum(total_area)) %>%
-  ggplot(mapping = aes(x = reorder(zone_short, -mean_pc, FUN = median), y = mean_pc, text = sa2_name_2021)) + geom_boxplot(color = "#006D2C") + xlab('Zone Type') + ylab(' Coverage (%) ') +  theme_minimal() + theme(axis.text.x = element_text(angle = 45)) 
-  
-ggplotly(lga_bplot)
-
-```
-
-# Relationships & Additional Plots
-
-This section shows the interaction between public tree coverage and the cost of living in an area, depicted by both detached house prices, the prices of units, and median rents. Public tree coverage is defined as:
-
-$$
- \text{Public tree coverage} = \frac{\text{area of streets covered by trees + area of parks covered by trees}}{\text{area of streets + area of parks}}
-$$
-
-Data Note: Rents are using ABS data, which is only available in ranges. Therefore, median rents are defined as whatever bin the median observation falls into. Also note that the Census was in 2021, and therefore rents may be impacted by COVID, and may have changed since. This possibly explains the low rent numbers observed.
-
-House & unit prices are from Neoval.
 
 ```{r, message=FALSE, warning = FALSE}
 #| echo: false
@@ -658,18 +573,9 @@ public_coverage <- coverage(exp = expression( zone_code %in% c('PPRZ', 'PCRZ') |
 
 public_coverage_sa2 <- coverage(exp = expression( zone_code %in% c('PPRZ', 'PCRZ') | zone_short == 'roads'), type = 'public', group = 'sa2_code_2021') %>% select('sa2_code_2021', 'public_percentage')
 
-house_price_data = readxl::read_xls('../data/Median-House-Price-3rd-Quarter.xls', skip = 1)[-c(1:5),1:6] 
+# house_price_data = readxl::read_xls('../data/Median-House-Price-3rd-Quarter.xls', skip = 1)[-c(1:5),1:6] 
 
 combined_df = create_combined_df(grouping, grouping_sf)
-
-sa2_prices = readRDS('../r_objects/yimby.Rdata') %>%
-  filter(gcc_name == 'GREATER MELBOURNE') %>%
-  rename(sa2_code_2021 = "sa2_code") %>%
-  mutate(sa2_code_2021 = as.character(sa2_code_2021)) %>%
-  left_join(public_coverage_sa2, by = 'sa2_code_2021') %>%
-  left_join(rents, by = 'sa2_code_2021') %>%
-  left_join(sa2_sf, by = 'sa2_code_2021') %>%
-  mutate(within15 = ifelse(distance < 15000, T, F))
 
 # house_price_data = house_price_data %>%
 #   rowwise() %>%
@@ -722,22 +628,26 @@ rents_public_plot <- (ggplot(sa2_prices %>% filter(property_type == 'HOUSE'), ma
 
 ggplotly(sa2_public_plot_house)
 
-
-
 ```
 
-The above figure displays the relationship between house prices and public tree coverage. There is a tangible correlation between the two variables as SA2s with higher house prices tend to have more public tree coverage. This is not a statement of causation, merely correlation.
+We’ve also split the data into two groups to separate the price premium from proximity to the city and tree courage. These two groupings are:
 
-The data is further split into two groups: SA2s within 15 kilometres of the city, and SA2s outside the 15km range. This split reveals two distinct spatial patterns.
+- Areas within 15 kilometres of the city (blue dots), and 
 
-For 'inner' SA2s, the relationship is much steeper. For outer SA2s, the slope of a best fit line is much shallower.
+- Areas outside the 15km range (red dots). 
+
+Performing this split reveals two distinct spatial patterns. For ‘inner’ areas, the relationship between canopy and price is much steeper, while for outer areas, the slope of a best-fit line is much shallower.
+
+#### Unit prices and public tree coverage 
+
+Next, we explore the same relationship but on unit prices. While a positive correlation remains, the divergence between ‘inner’ and ‘outer’ areas does not seem to replicate in unit prices.
 
 ```{r}
 #| echo: false
 ggplotly(sa2_public_plot_unit)
 ```
 
-When looking at unit prices instead of detached homes, a positive pattern remains. However, the divergence between SA2s within 15km and outside of 15km does not seem to replicate in unit prices.
+#### Rents and public tree coverage
 
 ```{r}
 #| echo: false
@@ -773,71 +683,18 @@ ggplotly(rents_public_plot)
 
 
 ```
+
 The graph above displays the relationship between median rents and public tree coverage. It is not possible to fit a line of best fit, given the categorical nature of rents.
 
-A slight relationship is clear, as median public coverage is increasing with median rents until median rents hit 500. After the '500-524' band, public coverage drops and the relationship no longer holds, although this is mostly due to expensive regions located close to the CBD such as Carlton and Fitzroy. 
+A slight relationship is clear, as median public coverage is increasing with median rents until median rents hit $500. After the $500-524 band, public coverage drops and the relationship no longer holds, although this is mostly due to expensive, urbanised regions located close to the CBD such as Carlton and Fitzroy.
 
-```{r}
-#| echo: false
-# lot_df = house_price_data %>% filter(med_lot < 2000)
-# 
-# lotsize_street_plot <- ggplot(lot_df, mapping = aes(x = med_lot, y = street_percentage, text = SAL_NAME21), axe) + xlab('Average Lot Size') + ylab('Street Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
-# 
-# lotsize_residential_plot <- ggplot(lot_df, mapping = aes(x = med_lot, y = residential_percentage, text = SAL_NAME21), axe) + xlab('Average Lot Size') + ylab('Residential Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
+### Tree canopy & urban heat islands
 
+The discussion of tree canopy and equity should not be mistaken for mere politics of envy—rather we must focus on the tangible effect tree canopy coverage has on wellbeing. 
 
-#ggplotly(lotsize_street_plot)
-#ggplotly(lotsize_residential_plot)
+There are few stronger indicators of spatial inequality in our city than the urban heat island effect, which particularly impacts under-serviced areas of Melbourne. 
 
-#summary(lm(residential_percentage ~ med_lot, house_price_data)) 
-
-#summary(lm(street_percentage ~ med_lot, house_price_data))
-
-
-#summary(lm(public_percentage ~ med_lot + average_house_price + distance, lot_df))
-```
-
-# SEIFA Scores
-
-Shown below is the relationship between SEIFA scores against public tree coverage. SEIFA scores indicate how disadvantaged one area is compared to others, with a composite index of wealth, education and other variables, calculated by the ABS using Census data.
-
-``` {r, message = FALSE, warning = FALSE}
-#| echo: false
-# seifa_sa2 = readxl::read_xlsx('../data/seifa_sa2.xlsx', sheet = 'Table 1', skip = 5)
-#saveRDS(seifa_sa2, '../r_objects/seifa_sa2.Rdata')
-seifa_sa2 = readRDS('../r_objects/seifa_sa2.Rdata') %>%
-  rename(sa2_code_2021 = '2021 Statistical Area Level 2  (SA2) 9-Digit Code') %>%
-  rename(seifa_score = "Score...3") %>%
-  mutate(sa2_code_2021 = as.character(sa2_code_2021)) %>%
-  mutate(seifa_score = as.numeric(seifa_score)) %>%
-  left_join(sa2_prices, by = "sa2_code_2021") %>%
-  filter(!is.na(public_percentage), seifa_score > 800)
-
-seifa_plot <- ggplot(seifa_sa2, mapping = aes(x = seifa_score, y = public_percentage)) +
-  geom_point(color = "#006D2C") +
-  xlab('SEIFA Score') +
-  ylab('Tree Coverage of Public Areas (%)') +
-  labs(title = "SEIFA Scores against Public Tree Coverage") + 
-  theme_minimal() 
-
-ggplotly(seifa_plot)
-
-```
-Interestingly, the relationship is nearly linear when public tree coverage percentage is logged. This indicates diminishing marginal returns to tree coverage, in terms of SEIFA scores.
-```{r}
-#| echo: false
-seifa_log_plot <- ggplot(seifa_sa2, mapping = aes(x = seifa_score, y = log(public_percentage))) +
-  geom_point(color = "#006D2C") +
-  xlab('SEIFA Score') +
-  ylab('Log Tree Coverage of Public Areas (%)') +
-  labs(title = "SEIFA Scores against Log Public Tree Coverage") + 
-  theme_minimal() 
-
-ggplotly(seifa_log_plot)
-```
-
-
-# Urban heat island
+Combining the Victorian Government's 2018 urban heat dataset with our 2018–20 tree coverage dataset, we sought to determine the relationship between tree coverage and urban temperatures. 
 
 ```{r}
 #| echo: false
@@ -903,56 +760,146 @@ summary(ts)
 # 
 # hist(unlist(unch), xlab = "Difference (Paul - Vic)", main = "Difference between Paul's estimates and Victoria's for each SA1")
 
-
-
-
 ```
 
-# For a bit of fun
+The above analysis demonstrates a statistically significant correlation between tree canopy coverage and the urban heat island effect—with about 34% of the variation in heat able to be explained by variation in tree canopy coverage.
 
-Which suburbs are mostly streets?
+This will come as no surprise, of course—that areas with no shade are hotter than those without. But trees, the way they cool us, and the other benefits they provide go well beyond shade, and we will discuss each of these key benefits [later in this report](/benefits). 
 
-Note: see the [documentation](model.html) to learn how I define a 'street'.
+What is clear, though, is that the distribution of trees across our city is highly inequitable. As Melbourne densifies over the coming years, and more people are empowered to live where they want to live, we must ensure that these people are not shortchanged, and that new dense housing builds have access to a robust urban forest—just like the wealthiest Melburnians currently experience now.
+
+# Increasing street tree coverage while building Melbourne's Missing Middle 
+
+In early 2024 YIMBY Melbourne released its Missing Middle Housing Targets report, which used demand-based modelling to allocate housing targets for each council in metropolitan Melbourne. 
+
+The table below shows the calculations of how much tree canopy coverage might be lost when all the proposed capacity in the upzoned lots is realised and how many street trees would be needed to offset this loss. 
+
+
 ```{r}
 #| echo: false
+mm_lgas <- c('Brimbank', 'Merri-bek', 'Banyule', 'Darebin', 'Yarra', 'Moonee Valley', 'Manningham', 'Maribyrnong', 'Melbourne', 'Hobsons Bay', 'Port Phillip', 'Boroondara', 'Stonnington', 'Glen Eira', 'Bayside', 'Monash', 'Whitehorse', 'Maroondah', 'Manningham', 'Kingston')
 
 
-grouping = 'SAL_NAME21'
-grouping_sf = sal_sf
-pretty_group_name = 'Suburb'
+years <- 10
 
-streets <- coverage(exp = expression(zone_short == 'roads'), group = grouping) %>%
-  left_join(grouping_sf, by = grouping) %>%
+targets <- readRDS('../r_objects/targets.Rdata') %>%
+  as.data.frame() %>%
+  mutate(Target = sub(',', '', Target))
+
+target_df <- data.frame()
+
+for(lga in targets$LGA) {
+  home_target <- as.numeric((targets %>% filter(LGA == lga))$Target) * years
+ 
+  target_df <<- rbind(target_df, c( home_target ,lga_targets(lga, home_target)) ) 
+}
+
+colnames(target_df) = c('home_target','LGA', 'coverage_per_sqm', 'lost_coverage', 'initial_coverage', 'final_coverage')
+
+target_df <- target_df %>%
+  mutate(across(c('initial_coverage', 'final_coverage', 'lost_coverage'), ~ round(as.numeric(.x) / (10^4), 1) )) %>%
   rowwise() %>%
-  mutate(calc_area = st_area(geometry)) %>%
-  mutate(street_as_pc_of_total_area = total_area / calc_area) %>%
-  st_drop_geometry() %>%
-  dplyr::select(grouping, street_as_pc_of_total_area) %>%
-  arrange(desc(street_as_pc_of_total_area)) %>%
-  mutate(street_as_pc_of_total_area = round(100 * as.vector(street_as_pc_of_total_area), 1))
+  mutate(coverage_per_sqm = round(as.numeric(coverage_per_sqm), 3)) %>%
+  mutate(percentage_point_change = as.numeric(final_coverage) - as.numeric(initial_coverage),
+                                  percentage_change = ((as.numeric(final_coverage)/as.numeric(initial_coverage))-1)*100 ) %>%
+  arrange(-percentage_change) %>%
+  mutate(percentage_change = round(percentage_change, 3)) %>%
+  dplyr::relocate(home_target, .after = LGA)
 
-streets %>%
-  reactable(
-    defaultSorted = list('street_as_pc_of_total_area' = "desc"),
-    pagination = T,
-    theme = sandstone(),
-    columns = list(
-    street_as_pc_of_total_area = colDef(
-      name = 'Streets as a % of total area',
-      cell = data_bars(.,
-      text_position = "above",
-                       fill_color = c("#EDF8E9", "darkgrey"),
-                       #fill_gradient = TRUE,
-                       #fill_color_ref = viridi(5),
-                       background = "lightgrey",
-                       max_value = 50,
-                       brighten_text = FALSE,
-                       bar_height = 20
-    )),
-    SAL_NAME21 = colDef(name = 'Suburb', filterable = T)
-  ))
+target_df %>%
+  reactable(theme = sandstone(),
+            pagination = F,
+            columns = list(
+              percentage_point_change = colDef(show = F),
+              coverage_per_sqm = colDef(show = T, name = "Coverage/M^2 "),
+              initial_coverage = colDef(name = "Public Coverage After Targets (Ha)", show = F),
+              lost_coverage = colDef(name = "Lost Coverage (Ha)"),
+              final_coverage = colDef(name = "Public Coverage To Offset Density  (Ha)"),
+              percentage_change = colDef(name = "Percent Growth From Current Public Coverage"),
+              home_target = colDef(name = paste0(years,'yr Home Target'))
+            ))
+```
+
+## Replacing private tree canopy with public tree canopy
+
+Densification is the process of increasing the density on specific lots and building more homes where there is currently, typically, a single detached house. Most of these existing houses are built on lots with relatively large garden areas. Both the Neighbourhood Residential Zone (NRZ) and General Residential Zone (GRZ) have minimum mandated garden areas of 25–35% of the total lot area.
+
+Building Melbourne's Missing Middle will require building dense, six-storey housing on a large number of lots currently zoned NRZ and GRZ. This densification will likely require the removal of existing private tree canopy in order to make way for more homes where people want to live.
+
+But more homes for more Melburnians should not mean fewer trees for those selfsame Melburnians. In fact, Melbourne has the opportunity now to deliver more overall tree canopy, not less, and to deliver it all within public space, for the benefit of everyone. 
+
+Using publicly available tree canopy, planning, and other spatial data, we determine the estimated amount of tree canopy that may be removed from the private realm each year in order to meet our housing targets.
+
+We then [calculate the costs](/costs) of delivering the equivalent canopy within the public realm, providing a clear path to ensuring that a denser Melbourne is also a greener Melbourne, with the [benefits delivered for all](/benefits).
+
+## Street tree canopy is public infrastructure
+
+<TODO: Insert costing table>
+
+To maintain Melbourne's current total tree canopy while densifying Melbourne's missing middle, 57 new trees should be planted per 100 new homes, at a cost of $1,740.15 per dwelling. 
+
+However, we recommend taking this opportunity to not only maintain current canopy levels, but generate an overall increase in coverage across metropolitan Melbourne. 
+
+To generate a meaningful 10% overall increase in mature tree canopy, 62 trees per 100 dwellings should be planted, at a cost of $1,899.45 per dwelling.
+
+This significant urban greening project will have a total cost of $76 million per year. Funding could come from a combination of sources, including developer contributions, government grant programs, and general budgetary expenditure. We expand on this in the [costing section of this report](/costs#paying-for-street-trees).
+
+Finally, we note that all our calculations are based on the delivery of mature tree canopy. This means that the full [benefits](/benefits) of this model will not be delivered immediately, but progressively as trees grow over time. But because public trees within our model are only added and never removed, even upon establishment all new trees planted represent a material benefit for all Melburnians when measured against the status quo. 
+
+The best time to plant a tree was 20 years ago. The second best time is when building more homes where people want to live.
 
 
 
 
+
+
+# Interactions with Missing Middle
+
+YM recently released Housing Targets, a data-driven model which allocates housing targets by council.
+
+This page calculates how much tree cover might be lost in the upzoning of residential lots, and then calculating how to offset this loss by increasing coverage of street trees
+
+# Relationships & Additional Plots
+
+This section shows the interaction between public tree coverage and the cost of living in an area, depicted by both detached house prices, the prices of units, and median rents. Public tree coverage is defined as:
+
+$$
+ \text{Public tree coverage} = \frac{\text{area of streets covered by trees + area of parks covered by trees}}{\text{area of streets + area of parks}}
+$$
+
+Data Note: Rents are using ABS data, which is only available in ranges. Therefore, median rents are defined as whatever bin the median observation falls into. Also note that the Census was in 2021, and therefore rents may be impacted by COVID, and may have changed since. This possibly explains the low rent numbers observed.
+
+House & unit prices are from Neoval.
+
+
+The above figure displays the relationship between house prices and public tree coverage. There is a tangible correlation between the two variables as SA2s with higher house prices tend to have more public tree coverage. This is not a statement of causation, merely correlation.
+
+The data is further split into two groups: SA2s within 15 kilometres of the city, and SA2s outside the 15km range. This split reveals two distinct spatial patterns.
+
+For 'inner' SA2s, the relationship is much steeper. For outer SA2s, the slope of a best fit line is much shallower.
+
+When looking at unit prices instead of detached homes, a positive pattern remains. However, the divergence between SA2s within 15km and outside of 15km does not seem to replicate in unit prices.
+
+The graph above displays the relationship between median rents and public tree coverage. It is not possible to fit a line of best fit, given the categorical nature of rents.
+
+A slight relationship is clear, as median public coverage is increasing with median rents until median rents hit 500. After the '500-524' band, public coverage drops and the relationship no longer holds, although this is mostly due to expensive regions located close to the CBD such as Carlton and Fitzroy. 
+
+```{r}
+#| echo: false
+# lot_df = house_price_data %>% filter(med_lot < 2000)
+# 
+# lotsize_street_plot <- ggplot(lot_df, mapping = aes(x = med_lot, y = street_percentage, text = SAL_NAME21), axe) + xlab('Average Lot Size') + ylab('Street Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
+# 
+# lotsize_residential_plot <- ggplot(lot_df, mapping = aes(x = med_lot, y = residential_percentage, text = SAL_NAME21), axe) + xlab('Average Lot Size') + ylab('Residential Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
+
+
+#ggplotly(lotsize_street_plot)
+#ggplotly(lotsize_residential_plot)
+
+#summary(lm(residential_percentage ~ med_lot, house_price_data)) 
+
+#summary(lm(street_percentage ~ med_lot, house_price_data))
+
+
+#summary(lm(public_percentage ~ med_lot + average_house_price + distance, lot_df))
 ```

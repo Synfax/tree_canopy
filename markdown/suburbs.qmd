@@ -1,16 +1,145 @@
 ---
 title: "Suburbs"
 ---
+```{r}
+#| echo: false
+#| label: load-_common
+source("_common.R")
+```
 
+
+```{r, warning=FALSE, message=FALSE}
+#| echo: false
+#| label: setup-2
+grouping = 'SAL_NAME21'
+grouping_sf = sal_sf
+pretty_group_name = 'Suburb'
+
+
+sf_use_s2(FALSE)
+
+melbourne <- st_sfc(st_point(c(144.963115,-37.814175)), crs = 7844)
+
+# random_suburb <- grouping_sf[1:2,] %>% st_centroid() %>% select('centroid') %>% st_as_sfc()
+# 
+# p = c(melbourne, random_suburb)
+# 
+# lwgeom::st_geod_azimuth(p,)
+# 
+# random_suburb <- grouping_sf[1:1,] %>% st_centroid() %>% st_cast('POINT')
+# 
+# rs <- random_suburb %>%
+#   mutate(bearing = c(lwgeom::st_geod_azimuth(.), units::set_units(NA, 'degrees')))
+
+random_suburb <- grouping_sf %>% select('SAL_NAME21', 'geometry', 'distance') %>% st_centroid() %>%
+  rowwise() %>%
+  mutate(lat = st_coordinates(geometry)[1], lng = st_coordinates(geometry)[2])
+
+# 
+# point <- st_sfc(st_point(c(random_suburb$lat[1],random_suburb$lng[1])), crs = 7844)
+# g1 <- st_sfc(c( melbourne , point ))
+
+# lwgeom::st_geod_azimuth(g1)
+
+
+# g4 <- g3 %>% mutate(direction = case_when(
+#   bearing > 315 || bearing < 45 ~ "North",
+#   bearing > 45 && bearing < 135 ~ "East",
+#   bearing > 135 && bearing < 225 ~ "South",
+#   bearing > 225 && bearing < 315 ~ "West"
+# ))
+
+
+# directions <- random_suburb %>%
+#   rowwise() %>%
+#   mutate(pt = st_sfc(st_point(c(lat,lng)), crs = 7844)) %>%
+#   mutate(bearing = lwgeom::st_geod_azimuth( st_sfc(c(melbourne, pt)) )) %>%
+#   mutate(bearing = as.numeric(units::set_units(bearing, "degrees")) )%>%
+#   mutate(bearing = ifelse(bearing < 0, 360 + bearing, bearing)) %>%
+#   mutate(direction = case_when(
+#     bearing > 0 && bearing < 90 ~ "North East",
+#     bearing > 90 && bearing < 180 ~ "South East",
+#     bearing > 180 && bearing < 270 ~ "South West",
+#     bearing > 270 && bearing < 360 ~ "North West"
+#   )) %>%
+#   rowwise() %>%
+#   mutate(direction = ifelse(distance < 7500, "Inner", direction)) %>%
+#   select(SAL_NAME21, direction) %>%
+#   st_drop_geometry()
+
+```
+
+```{r, warning = FALSE}
+#| echo: false
+#| label: full-canopy-map
+
+trees_grouped <- coverage(group = grouping) %>%
+  left_join(grouping_sf, by = (grouping)) %>%
+  st_set_geometry('geometry') %>%
+  dplyr::select(grouping, tree_percentage,distance, geometry, n) %>%
+  filter( n > 10) %>%
+  rowwise() %>%
+  mutate(tree_percentage = round(tree_percentage, 1)) %>%
+  mutate(distance = distance / 1000) %>%
+  as('Spatial')
+
+grouping = 'sa1_code_2021'
+grouping_sf = sa1_sf 
+
+trees_grouped_sa1 <- coverage(group = grouping) %>%
+  left_join(grouping_sf, by = (grouping)) %>%
+  st_set_geometry('geometry') %>%
+  rowwise() %>%
+  mutate(tree_percentage = round(tree_percentage, 1)) %>%
+  mutate(distance = distance / 1000) %>%
+  filter(n > 10)
+
+grouping = 'SAL_NAME21'
+grouping_sf = sal_sf
+pretty_group_name = 'Suburb'
+
+#bar chart
+sd_map = SharedData$new(trees_grouped)
+sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupName())
+
+  #mapCoverage(trees_per_sa2_cw, trees_per_sa2_cw$data()$tree_percentage , 'Greens', 'Tree Coverage (%)')
+
+  #treePal <- colorNumeric(palette = 'Greens', domain = as.data.frame(sd_df$data())$tree_percentage)
+  treePal <- colorNumeric(palette = 'Greens', domain = trees_grouped_sa1$tree_percentage)
+  
+  map <- leaflet(trees_grouped_sa1) %>%
+    setView(lng = 144.963115, lat = -37.814175, zoom = 11) %>%
+    addProviderTiles('CartoDB.Positron') %>%
+    addPolygons(fillColor = ~treePal(tree_percentage),
+                fillOpacity = 0.5,
+                opacity = 0)  %>%
+    addLegend(position = "bottomright",
+              pal = treePal,
+              values = sd_df$data()$tree_percentage,
+              title = 'Tree Coverage (%)')
+  
+  sf_use_s2(F)
+  
+
+  
+  map
+  
+```
 
 # How does your suburb compare?
 
-Note: you can adjust the distance slider from both directions to remove distanct surburbs!
-  
+::: {.callout-caution collapse="true"}
+# About the suburbs dataset
+
+There may be inaccuracies in the street coverage data when using Suburbs as a grouping unit, as not all Statistical Area 1s fit uniquely within a suburb. 
+
+As such, SA1s are assigned to the suburb with which they have the highest overlap.
+:::
+
 ```{r}
 #| echo: false  
   
-  filter_slider("distance", "Distance to CBD", sd_df, ~distance, min = 0, max = max(sd_df$data()$distance) + 1, width = '75%')
+  # filter_slider("distance", "Distance to CBD", sd_df, ~distance, min = 0, max = max(sd_df$data()$distance) + 1, width = '75%')
   
   extra_cols = list()
   extra_cols[[grouping]] <- colDef(name = pretty_group_name, filterable = T)
@@ -40,5 +169,48 @@ Note: you can adjust the distance slider from both directions to remove distanct
 )
 
 
+
+```
+
+# Which suburbs are mostly streets?
+
+```{r}
+#| echo: false
+
+
+grouping = 'SAL_NAME21'
+grouping_sf = sal_sf
+pretty_group_name = 'Suburb'
+
+streets <- coverage(exp = expression(zone_short == 'roads'), group = grouping) %>%
+  left_join(grouping_sf, by = grouping) %>%
+  rowwise() %>%
+  mutate(calc_area = st_area(geometry)) %>%
+  mutate(street_as_pc_of_total_area = total_area / calc_area) %>%
+  st_drop_geometry() %>%
+  dplyr::select(grouping, street_as_pc_of_total_area) %>%
+  arrange(desc(street_as_pc_of_total_area)) %>%
+  mutate(street_as_pc_of_total_area = round(100 * as.vector(street_as_pc_of_total_area), 1))
+
+streets %>%
+  reactable(
+    defaultSorted = list('street_as_pc_of_total_area' = "desc"),
+    pagination = T,
+    theme = sandstone(),
+    columns = list(
+    street_as_pc_of_total_area = colDef(
+      name = 'Streets as a % of total area',
+      cell = data_bars(.,
+      text_position = "above",
+                       fill_color = c("#EDF8E9", "darkgrey"),
+                       #fill_gradient = TRUE,
+                       #fill_color_ref = viridi(5),
+                       background = "lightgrey",
+                       max_value = 50,
+                       brighten_text = FALSE,
+                       bar_height = 20
+    )),
+    SAL_NAME21 = colDef(name = 'Suburb', filterable = T)
+  ))
 
 ```

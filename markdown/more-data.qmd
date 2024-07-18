@@ -1,3 +1,79 @@
 ---
-title: "More data"
+title: "Additional data & analysis"
 ---
+```{r}
+#| echo: false
+#| label: load-_common
+source("_common.R")
+```
+
+# Zones and tree canopy coverage
+
+This section breaks down tree canopy coverage by type of zone.
+
+As expected, both civic and rural land are ranked among the highest, whilst the more restrictive the residential zone is, the higher the amount of tree coverage. 
+
+::: {.callout-caution collapse="true"}
+# Breakdown of zones included in each category
+
+Low density residential: Low Density Residential Zone (LDRZ)/
+
+Civic land:  Public Park and Recreation Zone (PPRZ) and Public Conservation and Resource Zone (PCRZ).
+
+Neighbourhood residential: Neighbourhood Residential Zone (NRZ).
+
+General residential: General Residential Zone (GRZ).
+
+Residential growth: Residential Growth Zone (RGZ).
+
+Commercial only: Commercial 1 Zone (C1Z) and Commercial 2 Zone (C2Z).
+
+Commonwealth land: Commonwealth Land (CA).
+
+Mixed use: Mixed Use Zone (MUZ) and Township Zone (TZ).
+:::
+
+
+```{r}
+#| echo: false
+coverage(exp = expression(!(zone_short %in% c('roads','other'))),group = 'zone_short') %>%
+  mutate(tree_percentage = round(tree_percentage, 1)) %>%
+  reactable(
+    defaultSorted = list('tree_percentage' = "desc"),
+    pagination = F,
+    theme = sandstone(),
+    columns = list(
+    tree_percentage = colDef(
+      name = 'Coverage %',
+      cell = data_bars(.,
+      text_position = "above",
+                       fill_color = c("#EDF8E9", "#006D2C"),
+                       #fill_gradient = TRUE,
+                       #fill_color_ref = viridi(5),
+                       background = "lightgrey",
+                       max_value = 100,
+                       brighten_text = FALSE,
+                       bar_height = 20
+    )),
+    coverage = colDef(show = F),
+    n = colDef(show = F),
+    total_area = colDef(show = F),
+    zone_short = colDef(name = 'Zone type')
+  ))
+
+```
+
+There is a lot of variance within zones. The box plots below use SA2s, which are typically the size of a suburb or locality, as units of observation. 
+
+```{r, warning=FALSE, message=FALSE}
+#| echo: false
+
+#wtf are you doing here??? im a genius
+lga_bplot <-  agg_df %>% filter( !(zone_short %in% c('roads','other')) ) %>%
+  group_by(sa2_name_2021, zone_short) %>%
+  summarise(mean_pc = sum(coverage) / sum(total_area)) %>%
+  ggplot(mapping = aes(x = reorder(zone_short, -mean_pc, FUN = median), y = mean_pc, text = sa2_name_2021)) + geom_boxplot(color = "#006D2C") + xlab('Zone Type') + ylab(' Coverage (%) ') +  theme_minimal() + theme(axis.text.x = element_text(angle = 45)) 
+  
+ggplotly(lga_bplot)
+
+```

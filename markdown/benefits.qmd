@@ -1,3 +1,68 @@
 ---
-title: "Benefits"
+title: "Benefits of street trees"
 ---
+
+[Colleen Peterson pull quote]
+
+
+## In praise of the street tree canopy
+
+Street trees are a remarkably popular piece of public infrastructure. They provide shade for humans, homes for native wildlife,  and, most importantly, a near-universally enjoyed benefit: immaculate vibes.
+
+While private residential trees predominantly provide benefits for individual homeowners, street trees provide broad public benefits. This is why, within this report, we have opted to focus specifically on making street trees abundant across all of Melbourne's missing middle. 
+
+This page outlines the benefits of a robust and expansive street tree canopy in some detail. For more details and several Melbourne-specific research examples, see the CRC for Water Sensitive Cities' 2017 report _[Trees for a Cool City](https://watersensitivecities.org.au/wp-content/uploads/2017/11/Trees-for-a-cool-city_Guidelines-for-optimised-tree-placement.pdf)_.
+
+
+### Street trees increase climate resilience through urban cooling
+
+[UHI / Street Tree chart]
+
+Modelling the Melbourne dataset, we can see a direct correlation between high street tree canopy coverage and a reduction in the urban heat island effect, aligning with [previous 2018 modelling of the city](https://journals.ametsoc.org/view/journals/apme/57/8/jamc-d-17-0243.1.xml). 
+
+This demonstrates an effective method of combating the urban heat island effect—planting more trees. This is crucial to ensure a liveable and resilient city, particularly in the context of failures to maintain temperatures [in Melbourne's scorching hot growth suburbs](https://vcoss.org.au/wp-content/uploads/2024/02/UrbanHeartVCOSS2023.pdf).
+
+Below we explore the two main mechanisms at play when it comes to the urban cooling effects of tree canopies: shading and evaporative cooling.
+
+
+#### Shading keeps streetscapes from getting hot
+
+The main urban cooling effect of street trees is somewhat obvious: keeping roads, footpaths, and other surfaces from heating up via shading. Broad canopies are beneficial because they keep large portions of the streetscape from capturing sunlight and releasing heat into the surrounding environment. 
+
+While it's true that tree canopy shade provides urban cooling effects, it is worth noting that there is nothing special about the kind of shade that trees provide. Shading sails, solar panels, and other shading provide [similar benefits](https://rmets.onlinelibrary.wiley.com/doi/10.1002/joc.2177). Medium-density buildings, at scales such as the six-storeys proposed within the [Missing Middle Zone](https://yimby.melbourne/missing-middle), also go a long way to provide improved thermal comfort to those within the city—[without affecting the ability of nearby trees to grow](https://www.sciencedirect.com/science/article/pii/S1618866723000316).  
+
+
+#### Evaporative cooling through tree leaves cools the air around the tree 
+
+Where both trees and buildings can provide shade, only trees can provide this second key urban cooling effect: evaporative cooling. This is the process by which water evaporates through a tree's leaves and cools the surrounding environment. 
+
+A 2021 study[ published in Urban Forestry & Urban Greening](https://www.sciencedirect.com/science/article/pii/S1618866720307871?ref=pdf_download&fr=RR-2&rr=89cb795bbc20a956#sec0110) found that evaporative cooling from well-watered urban trees could cool the air 2 metres below the tree canopy by between 3.1 and 5.8 °C during the summer periods measured. 
+
+This is good news, though the effect is reduced during heatwave events in dry climates. As trees undergo periods of extended heat stress, their pores close in order to retain water—and where there is no evaporation, there can be no evaporative cooling.
+
+This is why tree species selection is essential for climate resilience. While for the purposes of this report [we have selected 20 popular trees](#) from existing Melbourne stock, these may not be the ideal trees to plant in the context of Melbourne's climate future. Care should be taken to select trees that provide robust canopies, and which react best within the city's climate to ensure evaporative cooling effects remain strong when needed most. 
+
+
+### Street trees filter pollutants from stormwater
+
+
+
+<p id="gdcalert13" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image13.png). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert14">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
+
+
+![alt_text](images/image13.png "image_tooltip")
+ \
+Source: Rain garden tree pit program, [City of Melbourne](https://urbanwater.melbourne.vic.gov.au/projects/raingardens/little-collins-street-tree-pits/) 
+
+When street trees are installed in low-lying areas in rain garden tree pits or similar water-sensitive urban designs, they can help remove pollutants from stormwater and street runoff. They also slow the flow of water into the drainage system during heavy rain, increasing flash-flood resilience.
+
+Street tree pits are [already used all across the City of Melbourne](https://urbanwater.melbourne.vic.gov.au/projects/raingardens/little-collins-street-tree-pits/) and other councils.
+
+
+### Street trees reduce the intensity of wind tunnels
+
+While the medium density proposed within our model does not exceed six storeys and therefore does not create wind tunnels, it is worth noting that street trees play a role in reducing wind speed. 
+
+A 2012 _[Building and Environment study](https://www.sciencedirect.com/science/article/abs/pii/S0360132312000546)_ found that planting just four trees on the sidewalks of a given street could reduce wind speed within the canopy by around 50%. 
+
+Street trees therefore have the ability to reduce the effects of Melbourne's windiest days and, in high-density areas such as the CBD, can mitigate any wind tunnelling that may occur. This airflow reduction does have its downsides, however, and [can trap heat during the nighttime](https://www.sciencedirect.com/science/article/abs/pii/S0360132317300057?via%3Dihub). These tradeoffs should be considered when selecting species and establishing planting patterns on a per-area basis.
