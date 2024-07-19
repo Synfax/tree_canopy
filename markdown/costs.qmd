@@ -2,16 +2,14 @@
 title: "Selecting & costing street trees"
 ---
 
-## Selecting street trees 
+## Selecting street trees
 
 For our model and analysis, we utilise a 2006 list of Melbourne's 50 most populous street tree taxa, published in the Arboriculture & Urban Forestry journal in 2006, as part of _[An Analysis of the Street Tree Population of Greater Melbourne at the Beginning of the 21st Century](https://auf.isa-arbor.com/content/32/4/155)_. 
 
 From this list, we extracted the 20 most populous trees that met the following criteria: 
 
 - Is a native species,
-
 - Has an average mature height of at least 5 metres, and
-
 - Has an average mature canopy width of at least 5 metres
 
 <TODO: Foldable table >  
@@ -24,9 +22,7 @@ This resulted in a selection of 20 trees with an average canopy width of 8.775m,
 The City of Melbourne’s [Urban Forest Diversity Guidelines](https://www.melbourne.vic.gov.au/SiteCollectionDocuments/urban-forest-diversity-guidelines.pdf) recommend that by 2040:
 
 - No more than 5% trees be of any one species,
-
 - No more than 10% trees be of any one genus, 
-
 - No more than 20% trees be of any one Family. 
 
 This means that at least 20 species of tree will be required to meet the biodiversity measure. 
@@ -37,7 +33,7 @@ A whopping 16 of the 20 popular tree species that met our criteria are of the My
 
 It is also worth noting that while we narrowed our selection exclusively to natives, it is unlikely that a native-only population is the best choice for our city. Imported species, particularly those which are deciduous, will likely remain beneficial as part of our city's future tree population.
 
-But we are not arborists, and selected our set of trees for the dual purposes of data modelling and costing. We opted to ignore exotics to keep our modelling simple. As such, we rely on the future work of our city's arborists to ensure that robust biodiversity is established and maintained across metropolitan Melbourne. 
+But we are not arborists, and selected our set of trees for the dual purposes of data modelling and costing. We opted to ignore exotics to avoid any blunders related to invasive species. As such, we rely on the future work of our city's arborists to ensure that robust biodiversity is established and maintained across metropolitan Melbourne. 
 
 
 ## Costing street trees
@@ -46,16 +42,6 @@ But we are not arborists, and selected our set of trees for the dual purposes of
 <table>
   <tr>
    <td colspan="4" ><strong>Tree costing model</strong>
-   </td>
-  </tr>
-  <tr>
-   <td>
-   </td>
-   <td>
-   </td>
-   <td>
-   </td>
-   <td>
    </td>
   </tr>
   <tr>
@@ -101,7 +87,6 @@ $65.40</p>
    </td>
    <td><p style="text-align: right">
 5.00%</p>
-
    </td>
    <td>
    </td>
@@ -113,7 +98,6 @@ $65.40</p>
    </td>
    <td><p style="text-align: right">
 30</p>
-
    </td>
    <td>
    </td>
@@ -148,34 +132,28 @@ $6,646.05</p>
 
    </td>
   </tr>
+</table>
+<table>
   <tr>
    <td><strong>Canopy per tree (sqm)</strong>
    </td>
    <td><p style="text-align: right">
 12.42</p>
-
-   </td>
-   <td>
-   </td>
-   <td>
    </td>
   </tr>
   <tr>
-   <td><strong>New trees per dwelling</strong>
+   <td><strong>Trees per new dwelling</strong>
    </td>
    <td><p style="text-align: right">
 0.62</p>
-
-   </td>
-   <td>
-   </td>
-   <td>
    </td>
   </tr>
+</table>
+<table>
   <tr>
-   <td>
-   </td>
    <td colspan="3" ><strong>Costs</strong>
+   </td>
+   <td>
    </td>
   </tr>
   <tr>
@@ -257,15 +235,16 @@ $245.80</p>
 
 Our model of street tree costings is built off of up-to-date existing models and evidence. It also relies on a set of assumptions at its core, the key ones of which we detail below. 
 
+### Assumptions
 
-### We account for 30 years of tree maintenance costs 
+#### We account for 30 years of tree maintenance costs 
 
 Our model is informed primarily by 2023 analysis commissioned by [Living Melbourne](https://livingmelbourne.org.au/wp-content/uploads/2022/04/Priority-Urban-Greening-Analysis_FINAL-14_06_2023.pdf) using [Hort Innovation's tree costing modelling](https://www.horticulture.com.au/growers/help-your-business-grow/research-reports-publications-fact-sheets-and-more/tree-costing-tool-and-instruction-manual/), which calculated the establishment 30-year maintenance costs of new urban street trees. We also considered the [cost modelling published by Treenet](https://treenet.org/resource/developing-an-australian-street-tree-cost-model/#:~:text=Looking%20at%20the%20accumulated%20cost,associated%20with%20urban%20street%20trees), which calculates costs based on a 50-year model, and which also informs this project. 
 
 In both models, the cost of maintenance includes not only the basic per-tree requirements such as watering and fertilising, but also for the portion of trees which will fail to grow, and which may die prematurely. 
 
 
-### We know where the canopy is, but not where the trees are planted
+#### We know where the canopy is, but not where the trees are planted
 
 Because our dataset is built off satellite imagery and analysis, we know where the canopy is—but not where the trunks are. This means that while we can measure canopy, we can't count the trees, or know exactly where they are currently planted.
 
@@ -274,19 +253,19 @@ This introduces an issue where
 For simplicity's sake, we assume that 100% of private canopy is lost and 100% of nearby public canopy is retained when a given lot is redeveloped.
 
 
-### We overestimate establishment costs
+#### We overestimate establishment costs
 
 In order to account for any additional costs due to variances in planting processes required by a given infill development as Melbourne densifies, we overestimate establishment costs by 5%.
 
 
-### We underestimate each individual tree's canopy
+#### We underestimate each individual tree's canopy
 
 Of the select biodiverse trees our model considers as examples of trees suitable for inner-middle Melbourne, the average mature canopy area is 13.8 square metres. 
 
 To account for factors such as trimming around power lines and overlap between trees in the formation of a cohesive canopy, we reduce this by 10% to a final per-tree canopy area of 12.42 square metres.
 
 
-### We allocate rain garden planting to one in ten new trees
+#### We allocate rain garden planting to one in ten new trees
 
 An Australian study [published by Treenet in 2011](https://treenet.org/resource/the-use-of-trees-in-urban-stormwater-management/) found that rain gardens are most effective when strategically placed at low elevations where stormwater runoff can be directed. 
 
