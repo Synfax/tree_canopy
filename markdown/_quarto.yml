@@ -2,35 +2,16 @@ project:
   type: website
   output-dir: _site
   render:
-    - "*.qmd"
+    - "costs.qmd"
+    # - "*.qmd"
     - "!model.qmd" # temporarily exclude model.qmd
     - "!international_model.qmd" # temporarily exclude international_model.qmd
 
 website:
-  title: "Missing Middle Street Trees"
+  title: "Missing Middle Street Trees – YIMBY Melbourne"
   favicon: images/favicon.jpeg
-  sidebar:
-    style: "floating"
-    collapse-level: 1
-    contents:
-      - text: Missing Middle Tree Canopy
-        href: index.qmd
-      - text: Benefits of street trees
-        href: benefits.qmd
-      - text: Selecting & costing street trees
-        href: costs.qmd
-      - text: Your suburb's tree canopy
-        href: suburbs.qmd
-      - text: Additional data & analysis
-        href: more-data.qmd
-      # - section: "Model & methodology"
-      #   contents:
-      #     - text: Overview
-      #       href: model-overview.qmd
-      #     - text: Measuring Melbourne's street canopy
-      #       href: model.qmd
-      #     - text: Measuring international cities' tree canopy
-      #       href: international_model.qmd
+  navbar:
+    title: "Missing Middle Street Trees – YIMBY Melbourne"
     tools:
       - icon: twitter
         href: "#"
@@ -40,11 +21,35 @@ website:
         href: "#"
       - icon: github
         href: "#"
-      - icon: mail
+      - icon: envelope
         href: "mailto:contact@yimby.melbourne"
-  search:
-    location: sidebar
-    type: textbox
+    pinned: true
+    tools-collapse: true
+  sidebar:
+    title: "Missing Middle Street Trees"
+    logo: images/Tree-Cover-og.jpg
+    style: "floating"
+    collapse-level: 1
+    contents:
+      - text: Missing Middle Street Trees
+        href: index.qmd
+      - text: Benefits of street trees
+        href: benefits.qmd
+      - text: Selecting & costing street trees
+        href: costs.qmd
+      - text: Your suburb's tree canopy
+        href: suburbs.qmd
+      - text: Additional data & analysis
+        href: more-data.qmd
+    # - section: "Model & methodology"
+    #   contents:
+    #     - text: Overview
+    #       href: model-overview.qmd
+    #     - text: Measuring Melbourne's street canopy
+    #       href: model.qmd
+    #     - text: Measuring international cities' tree canopy
+    #       href: international_model.qmd
+  search: false
   open-graph:
     image: images/tree-canopy-og.png
     title: "Missing Middle Tree Canopy"
@@ -59,10 +64,15 @@ website:
 
 format:
   html:
-    theme: zephyr
-    css: styles.css
+    theme: theme.scss
+    # css: styles.scss
     toc: true
     toc-depth: 4
     fig-width: 8
     fig-height: 8
     code-fold: false
+  pdf:
+    toc: true
+    number-sections: true
+    colorlinks: true
+    pdf-engine: chromium
