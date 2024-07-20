@@ -337,6 +337,27 @@ div.sidebar-item-container .active {
   color: $red-base !important;
 }
 
+// Mobile breadcrumbs
+
+nav.quarto-page-breadcrumbs,
+li.breadcrumb-item,
+ol.breadcrumb,
+.quarto-secondary-nav nav.quarto-page-breadcrumbs a,
+.quarto-secondary-nav .quarto-btn-toggle {
+  color: #000 !important;
+}
+
+// @media screen and (max-width: 992px) {
+//   .navbar.navbar-expand-lg {
+//     padding-left: 0 !important;
+//   }
+//   .navbar-brand {
+//     margin-right: 0;
+//     padding-top: 1rem;
+//     margin-bottom: 1rem;
+//   }
+// }
+
 // TOC
 
 #TOC {
@@ -398,8 +419,38 @@ table tr {
 
 // Figures
 
+// Images
+
+.figure-img {
+  border: 2px solid #000 !important;
+  margin-bottom: 0;
+  // max-height: 50vh;
+}
+
+figcaption {
+  font-family: "Inter", sans-serif;
+  font-size: 0.8em;
+  color: #181818;
+}
+
+// GGPlot / Plotly
+
+// .plotly.html-widget {
+//   border: 2px solid #000;
+// }
+
+.cell-output-display {
+  border: 2px solid #000;
+}
+
 // Leaflet
 
 .leaflet.html-widget {
   border: 2px solid #000;
+}
+
+// ReactTables
+
+.ReactTable.Reactable {
+  background-color: none !important;
 }
