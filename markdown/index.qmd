@@ -1,14 +1,12 @@
 ---
 title: "Missing Middle Street Trees"
-subtitle: "The second best time for planting."
+subtitle: "A model for a greener, greater Melbourne."
 ---
 
 Over the next ten years:
 
 - Plant 62 new street trees per 100 new dwellings
-
 - Invest $1900 per dwelling in public greening
-
 - Grow 155 MCGs of new tree canopy 
 
 ```{r, results='hide', warning=FALSE,message=FALSE}
