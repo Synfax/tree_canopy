@@ -47,6 +47,10 @@ We first download the raster file using chmloader::download_chm, and provide the
     bounding = st_as_sfc(st_bbox(current_sa_sf)) %>%
       st_transform(crs = 4326)
     
+    if(!dir.exists(paste0('../rasters/',res,'res_sa1/'))) {
+      dir.create(paste0('../rasters/',res,'res_sa1/'))
+    }
+    
     file_name = paste0('../rasters/',res,'res_sa1/',sa,'.tif')
     
     if(file.exists(file_name)) {

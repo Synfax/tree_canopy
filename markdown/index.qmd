@@ -174,12 +174,17 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
   maplibre(style = mapgl::carto_style('positron'), center = c(144.963115,-37.814175), zoom = 9, pitch = 40) %>%
     add_fill_extrusion_layer(id = 'trees_grouped_sa1', source = trees_grouped_sa1,
                              fill_extrusion_opacity = 0.85,
-                             fill_extrusion_color = interpolate(
+                             fill_extrusion_color = mapgl::interpolate(
                                column = 'tree_percentage',
                                values = colValues,
                                stops = colCols
                              ),
-                             fill_extrusion_height = c("get", "x10") )
+                             fill_extrusion_height = c("get", "x10") ) %>%
+    mapgl::add_legend(
+    "Tree Coverage by SA1",
+    values = c(0,91.6),
+    colors = c(colCols[1], colCols[9])
+  )
   
 ```
 
