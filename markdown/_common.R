@@ -16,7 +16,7 @@ library(ggtext)
 library(DT)
 library(RColorBrewer)
 library(showtext)
-devtools::install_github("walkerke/mapgl", force = T)
+devtools::install_github("walkerke/mapgl")
 library(mapgl)
 library(shiny)
 library(shinyWidgets)
@@ -31,7 +31,7 @@ agg_df <- readRDS("../r_objects/agg_df.Rdata") %>%
 agg_df_filtered <- readRDS("../r_objects/agg_df_filtered.Rdata") %>%
   mutate(sa1_code_2021 = sa1)
 
-mm_lgas <- c('Brimbank', 'Merri-bek', 'Banyule', 'Darebin', 'Yarra', 'Moonee Valley', 'Manningham', 'Maribyrnong', 'Melbourne', 'Hobsons Bay', 'Port Phillip', 'Boroondara', 'Stonnington', 'Glen Eira', 'Bayside', 'Monash', 'Whitehorse', 'Maroondah', 'Manningham', 'Kingston')
+mm_lgas <- c("Brimbank", "Merri-bek", "Banyule", "Darebin", "Yarra", "Moonee Valley", "Manningham", "Maribyrnong", "Melbourne", "Hobsons Bay", "Port Phillip", "Boroondara", "Stonnington", "Glen Eira", "Bayside", "Monash", "Whitehorse", "Maroondah", "Manningham", "Kingston")
 
 
 sa2_sf <- readRDS("../r_objects/sa2_sf.Rdata") %>%
@@ -97,5 +97,5 @@ theme_yimby <- theme_minimal() +
     ),
     axis.title = element_text(face = "medium", family = "Inter"),
     axis.text = element_text(family = "Inter"),
-    plot.margin = unit(c(50, 50, 50, 50), "pt")
+    plot.margin = unit(c(50, 20, 50, 20), "pt")
   )
