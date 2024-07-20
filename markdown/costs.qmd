@@ -332,6 +332,8 @@ We then use a weighted average to arrive at a final per-tree costing.
 
 ### Canopy per tree
 
+We then estimate mature canopy per new tree planted.
+
 ```{=html}
 <table>
   <tr>
@@ -349,7 +351,9 @@ We then use a weighted average to arrive at a final per-tree costing.
 </table>
 ```
 
-### Required trees
+### Required trees & total costs
+
+Then, based on the modelling laid out on the [main page of the report](/index.html), we calculate the required trees and total costs.
 
 #### YIMBY Melbourne targets
 
@@ -374,10 +378,6 @@ We then use a weighted average to arrive at a final per-tree costing.
 </table>
 ```
 
-### Total costs
-
-#### YIMBY Melbourne targets
-
 ```{=html}
 <table>
   <tr>
@@ -387,24 +387,12 @@ We then use a weighted average to arrive at a final per-tree costing.
     <td><strong>Total</strong></td>
   </tr>
   <tr>
-    <td><strong>Per tree</strong></td>
-    <td>$1,447.80</td>
-    <td>$1,605.09</td>
-    <td>$3,052.89</td>
-  </tr>
-  <tr>
-    <td><strong>Per sqm canopy</strong></td>
-    <td>$116.57</td>
-    <td>$129.23</td>
-    <td>$245.80</td>
-  </tr>
-  <tr>
     <td><strong>Per new dwelling</strong></td>
     <td>
-      <strong>$873</strong>
+      $873
     </td>
     <td>
-      <strong>$967</strong>
+      $967
     </td>
     <td>
       <strong>$1,840</strong>
@@ -413,10 +401,10 @@ We then use a weighted average to arrive at a final per-tree costing.
   <tr>
     <td><strong>Per year (40k dwellings)</strong></td>
     <td>
-      <strong>$34,903,404</strong>
+      $34,903,404
     </td>
     <td>
-      <strong>$38,695,334</strong>
+      $38,695,334
     </td>
     <td>
       <strong>$73,598,738</strong>
@@ -424,6 +412,10 @@ We then use a weighted average to arrive at a final per-tree costing.
   </tr>
 </table>		
 ```
+
+#### Government draft targets
+
+
 
 ### Assumptions
 
@@ -477,3 +469,7 @@ The costing models upon which this research relies demonstrate the importance of
 As such, regardless of who's paying, both establishment and 30 years of ongoing maintenance costs should be paid up front, with the latter allocated to an ongoing tree maintenance capital fund, which can be topped up in the future if necessary.  
 
 This funding structure will enable responsible authorities to pay for ongoing costs, with any interest earned by the capital fund able to be spent on upgrades, or to account for climate shocks or disease outbreaks among Melbourne's street trees. 
+
+***
+
+**Next:** [Your suburb's tree canopy](/suburbs.html) 
