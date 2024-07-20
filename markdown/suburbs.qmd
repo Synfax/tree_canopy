@@ -1,7 +1,7 @@
 ---
 title: "Suburbs"
 ---
-```{r}
+```{r echo=FALSE}
 #| echo: false
 #| label: load-_common
 source("_common.R")
@@ -128,14 +128,15 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
 
 # How does your suburb compare?
 
-::: {.callout-caution collapse="true"}
+::: {.callout-tip collapse="true"}
 # About the suburbs dataset
 
 There may be inaccuracies in the street coverage data when using Suburbs as a grouping unit, as not all Statistical Area 1s fit uniquely within a suburb. 
 
-As such, SA1s are assigned to the suburb with which they have the highest overlap.
+SA1s are assigned to the suburb with which they have the highest overlap.
 :::
 
+## Total tree canopy coverage
 ```{r}
 #| echo: false  
   
@@ -172,7 +173,196 @@ As such, SA1s are assigned to the suburb with which they have the highest overla
 
 ```
 
-# Which suburbs are mostly streets?
+## Tree canopy coverage by land type
+
+```{r}
+#| echo: false
+#| label: fig-airquality
+#| fig-cap: "Tree coverage by SA2"
+#| warning: false
+
+grouping = 'SAL_NAME21'
+grouping_sf = sal_sf
+pretty_group_name = "Suburb"
+
+public_exp = expression( zone_code %in% c('PPRZ', 'PCRZ') )
+street_exp = expression(zone_short == 'roads')
+ resi_exp = expression(zone_short %in% c('General residential', 'Greenfield', 'Low density residential', 'Neighbourhood residential', 'Residential growth'))
+ 
+rural_exp = expression(zone_short == "Rural/regional")
+ 
+other_exp = expression( !(zone_short %in% c('General residential', 'Greenfield', 'Low density residential', 'Neighbourhood residential', 'Residential growth', 'roads', 'Rural/regional')) && !(zone_code %in% c('PPRZ', 'PCRZ') ))
+  
+
+create_combined_df <- function(grouping, grouping_sf) {
+  
+  
+  street_trees_grouped <- coverage(exp = street_exp, type = 'street', group = grouping) %>%
+  rename("street_tree_coverage" = coverage, "total_street_area" = total_area )
+
+  reserve_trees_grouped <- coverage(exp = public_exp, type = 'reserve', group = grouping)  %>%
+    rename("reserve_tree_coverage" = coverage, "total_reserve_area" = total_area ) 
+ 
+  resi_trees_grouped <- coverage(exp = resi_exp , type = 'residential', group = grouping)  %>%
+    rename("residential_tree_coverage" = coverage, "total_residential_area" = total_area )
+  
+  rural_trees_grouped <- coverage(exp = rural_exp , type = 'rural', group = grouping)  %>%
+    rename("rural_tree_coverage" = coverage, "total_rural_area" = total_area )
+  
+  
+  other_trees_grouped <- coverage(exp = other_exp, group = grouping, type = 'other') %>%
+    rename('other_tree_coverage' = coverage, 'total_other_area' = total_area)
+  
+  # street_agg =agg_df %>% filter(eval(street_exp)) %>% filter(lga_name_2022 == 'Banyule')
+  # resi_agg= agg_df %>% filter(eval(resi_exp))%>% filter(lga_name_2022 == 'Banyule') 
+  # public_agg= agg_df %>% filter(eval(public_exp))%>% filter(lga_name_2022 == 'Banyule')
+  # other_agg =agg_df %>% filter(eval(other_exp))%>% filter(lga_name_2022 == 'Manningham')
+  
+  
+  #xzz <- xz %>% left_join(trees_grouped_lga, by = 'lga_name_2022')
+  
+  # 
+  # frame <- bind_rows(
+  #   street_agg, resi_agg, public_agg,other_agg
+  # )
+  # 
+  # hasShared = function(df1, df2) {
+  #   
+  #   df1 = other_agg
+  #   df2 = public_agg
+  #   
+  #   df1n = nrow(df1)
+  #   df2n = nrow(df2)
+  #   
+  #   cmb = bind_rows(df1,df2)
+  #   
+  #   n_dist_cmb = n_distinct(cmb)
+  #   
+  #   bl = (n_dist_cmb != (df1n + df2n))
+  #   
+  #   if(bl) {
+  #     
+  #   }
+  #   
+  # }
+  # 
+ # agg_sf %>% 
+ #   group_by(lon, lat) %>%
+ #   filter(n() > 1) %>% st_write('fkd.shp')
+ # 
+ # agg_results %>% group_by(lon, lat) %>%
+ #   filter(n() > 1) %>% v()
+  
+  #combine into one and clean
+  combined_df <- street_trees_grouped %>%
+    left_join(reserve_trees_grouped, by = grouping) %>%
+    left_join(resi_trees_grouped, by = grouping) %>%
+    left_join(other_trees_grouped, by = grouping) %>%
+    left_join(rural_trees_grouped, by = grouping) %>%
+    replace(is.na(.), 0) %>%
+    group_by(!!as.name(grouping)) %>%
+    mutate(total_area =  sum(across(ends_with('_area'))))  %>%
+    mutate(total_coverage_area = sum(across(ends_with('_coverage')))) %>%
+    mutate(total_coverage_pc = total_coverage_area / total_area ) %>%
+    mutate( weighted_street_pc = (street_tree_coverage / total_coverage_area) * total_coverage_pc,
+            weighted_reserve_pc = (reserve_tree_coverage / total_coverage_area) * total_coverage_pc,
+            weighted_rural_pc = (rural_tree_coverage / total_coverage_area) * total_coverage_pc,
+            weighted_resi_pc = (residential_tree_coverage / total_coverage_area) * total_coverage_pc,
+            weighted_other_pc = (other_tree_coverage / total_coverage_area) * total_coverage_pc,
+          ) %>%
+    dplyr::select(c(grouping,'street_percentage', 'rural_percentage', 'reserve_percentage', 'residential_percentage', 'weighted_street_pc', 'weighted_reserve_pc', 'weighted_rural_pc', 'weighted_resi_pc', 'total_coverage_pc', 'other_percentage', 'weighted_other_pc')) %>%
+    left_join(grouping_sf %>% st_drop_geometry() %>% select(grouping, distance), by = grouping) %>%
+    rowwise() %>%
+    # mutate(distance = distance_map[as.character(as.name(grouping))]) %>%
+    mutate(distance = distance / 1000) %>%
+    ungroup() %>%
+    as.data.frame() %>%
+    return()
+    # mutate(across(where(is.numeric), ~ round(.x, 1))) %>%
+    # mutate(across(ends_with('percentage'), ~ ifelse(is.na(.x), 0, .x) )) %>%
+    
+}
+
+combined_df = create_combined_df(grouping, grouping_sf)
+
+
+sd_combined = SharedData$new((combined_df))
+
+```
+
+```{r}
+#| echo: false
+street_coverage = coverage(exp = street_exp, group = 'SAL_NAME21', type = 'street') %>%
+  arrange(desc(street_percentage)) %>%
+  slice_head(n = 10)
+
+
+#ggplot(street_coverage, mapping = aes(x = SAL_NAME21, y = street_percentage)) + geom_bar(stat = 'identity') + theme_minimal()
+
+grouping = 'SAL_NAME21'
+grouping_sf = sal_sf
+pretty_group_name = 'Suburb'
+
+extra_cols = list()
+extra_cols[[grouping]] <- colDef(name = pretty_group_name, filterable = T)
+
+
+# slider <- filter_slider("distance", "Distance to CBD", sd_combined, ~distance, min = 0, max = max(sd_combined$data()$distance), width = '75%')
+     
+#weird bubble plot  
+bubble <- reactable(sd_combined,
+          defaultSorted = list('street_percentage' = "desc"),
+          defaultColDef = colDef(
+            show = F,
+  cell = bubble_grid(combined_df, shape = 'circles', colors = c("#EDF8E9", "#006D2C")),
+  align = 'center',
+  vAlign = 'center'),
+  columns = c(list(
+                 street_percentage = colDef(name = 'Streets', show = T),
+                 reserve_percentage = colDef(name = 'Parks', show = T),
+                 residential_percentage = colDef(name = 'Residential'), show = T),extra_cols),
+  theme = sandstone(),
+  defaultSortOrder = 'desc')
+
+#bubble
+
+
+# Render a bar chart with a label on the left
+bar_chart <- function(label, width = "100%", height = "1rem", fill = "#00bfc4", background = NULL) {
+  bar <- div(style = list(background = fill, width = width, height = height))
+  chart <- div(style = list(flexGrow = 1, marginLeft = "0.5rem", background = background), bar)
+  div(style = list(display = "flex", alignItems = "center"), label, chart)
+}
+
+reactable(
+  sd_combined,
+  defaultSorted = list('street_percentage' = "desc"),
+  theme = sandstone(),
+  defaultColDef = colDef(show = F),
+  columns = list(
+    SAL_NAME21 = colDef(show = T, name = 'Suburb', filterable = T),
+    street_percentage = colDef(show = T,name = "Street Coverage (%)", align = "left", cell = function(value) {
+      width <- paste0(value / max(sd_combined$data()$street_percentage) * 100, "%")
+      bar_chart(round(value, 1), width = width, fill = "grey", background = "#e1e1e1")
+    }),
+    residential_percentage = colDef(show = T, name = "Residential Coverage (%)", align = "left", cell = function(value) {
+      width <- paste0(value / max(sd_combined$data()$residential_percentage) * 100, "%")
+      bar_chart(round(value, 1), width = width, fill = "#619CFF", background = "#e1e1e1")
+    }),
+    reserve_percentage = colDef(show = T, name = "Public Coverage (%)", align = "left", cell = function(value) {
+      width <- paste0(value / max(sd_combined$data()$reserve_percentage) * 100, "%")
+      bar_chart(round(value, 1), width = width, fill = "#7CAE00", background = "#e1e1e1")
+    }),
+    other_percentage = colDef(show = F, name = "Other Coverage (%)", align = "left", cell = function(value) {
+      width <- paste0(value / max(sd_combined$data()$other_percentage) * 100, "%")
+      bar_chart(round(value, 1), width = width, fill = "tomato", background = "#e1e1e1")
+    })
+  )
+) 
+
+```
+
+## Total proportion of your suburb made up of streets
 
 ```{r}
 #| echo: false
