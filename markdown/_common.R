@@ -21,6 +21,7 @@ library(shiny)
 library(shinyWidgets)
 library(reactable)
 library(crosstalk)
+library(scales)
 
 
 agg_df <- readRDS("../r_objects/agg_df.Rdata") %>%
@@ -74,3 +75,20 @@ lot_sizes <- agg_df %>%
   group_by(SAL_NAME21) %>%
   summarise(med_lot = median(lot_size, na.rm = TRUE), n = n()) %>%
   rowwise()
+
+
+# GGPlot theme
+theme_yimby <- theme_minimal() +
+  theme(
+    panel.background = element_rect(fill = "#fdffee"),
+    plot.background = element_rect(fill = "#fdffee"),
+    plot.title = element_text(
+      face = "bold",
+      color = "#10461B",
+      family = "Inter",
+      hjust = 0.5,
+    ),
+    axis.title = element_text(face = "medium", family = "Inter"),
+    axis.text = element_text(family = "Inter"),
+    plot.margin = unit(c(50, 50, 50, 50), "pt")
+  )
