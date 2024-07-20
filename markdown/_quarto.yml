@@ -2,8 +2,7 @@ project:
   type: website
   output-dir: _site
   render:
-    - "costs.qmd"
-    # - "*.qmd"
+    - "*.qmd"
     - "!model.qmd" # temporarily exclude model.qmd
     - "!international_model.qmd" # temporarily exclude international_model.qmd
 
@@ -71,8 +70,9 @@ format:
     fig-width: 8
     fig-height: 8
     code-fold: false
-  pdf:
-    toc: true
-    number-sections: true
-    colorlinks: true
-    pdf-engine: chromium
+  # pdf:
+  #   toc: true
+  #   number-sections: true
+  #   colorlinks: true
+  #   pdf-engine: xelatex
+  #   prefer-html: true
