@@ -901,3 +901,7 @@ A slight relationship is clear, as median public coverage is increasing with med
 
 #summary(lm(public_percentage ~ med_lot + average_house_price + distance, lot_df))
 ```
+
+***
+
+**Next:** [Benefits of street trees](/benefits.html) 
