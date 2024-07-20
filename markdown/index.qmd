@@ -1,6 +1,8 @@
 ---
 title: "Missing Middle Street Trees"
 subtitle: "A model for a greener, greater Melbourne."
+include-in-header: "header.html"
+include-after-body: "footer.html"
 ---
 
 Over the next ten years:
@@ -123,10 +125,10 @@ trees_grouped <- coverage(group = grouping) %>%
   as('Spatial')
 
 grouping = 'sa1_code_2021'
-grouping_sf = read_sf('../SA1_2021/SA1_2021_AUST_GDA2020.shp') %>%
+grouping_sf = read_sf('../r_objects/SA1_2021/SA1_2021_AUST_GDA2020.shp') %>%
   rename(sa1_code_2021 = SA1_CODE21)
 
-trees_grouped_sa1 <- coverage(group = grouping, df = agg_df_filtered) %>%
+trees_grouped_sa1 <- coverage(group = grouping, df = agg_df) %>%
   left_join(grouping_sf, by = (grouping)) %>%
   st_set_geometry('geometry') %>%
   rowwise() %>%
@@ -223,7 +225,7 @@ int_comp <- ggplot(big_df, mapping = aes(distance, cov, colour = city, group = c
   ylab("Mean Tree Coverage (%)") +
   labs(title = "Tree Coverage of Major Cities") +
   geom_smooth(method = 'loess') +
-  theme_minimal()
+  theme_yimby
 
 
 
@@ -394,7 +396,7 @@ stacked_chart <- ggplot(combined_longer, aes(fill=weights, y = test, x= reorder(
   scale_x_discrete(guide = guide_axis(angle = 0)) +
   scale_fill_manual( values = c('tomato', '#7CAE00', '#619CFF', 'purple', 'grey') ) +
   coord_flip() +
-  theme_minimal()
+  theme_yimby
 
 p1 <- plotly_build(stacked_chart)
 p1$x$data[[1]]$name = "Other"
@@ -424,7 +426,7 @@ stacked_chart_fill <- ggplot(combined_longer, aes(fill=weights, y = test, x= reo
   scale_x_discrete(guide = guide_axis(angle = 0)) +
    scale_fill_manual( values = c('tomato', '#7CAE00', '#619CFF', 'purple', 'grey') ) +
   coord_flip() +
-  theme_minimal()
+  theme_yimby
 
 p2 <- plotly_build(stacked_chart_fill)
 p2$x$data[[1]]$name = "Other"
@@ -555,7 +557,7 @@ seifa_plot <- ggplot(seifa_sa2, mapping = aes(x = seifa_score, y = public_percen
   xlab('SEIFA Score') +
   ylab('Tree Coverage of Public Areas (%)') +
   labs(title = "SEIFA Scores against Public Tree Coverage") + 
-  theme_minimal() 
+  theme_yimby 
 
 ggplotly(seifa_plot)
 
@@ -570,7 +572,7 @@ seifa_log_plot <- ggplot(seifa_sa2, mapping = aes(x = seifa_score, y = log(publi
   xlab('SEIFA Score') +
   ylab('Log Tree Coverage of Public Areas (%)') +
   labs(title = "SEIFA Scores against Log Public Tree Coverage") + 
-  theme_minimal() 
+  theme_yimby 
 
 ggplotly(seifa_log_plot)
 ```
@@ -642,14 +644,14 @@ combined_df = create_combined_df(grouping, grouping_sf)
 # 
 # price_residential_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = residential_percentage, text = SAL_NAME21), axe) + xlab('Average House Price ($m)') + ylab('Residential Area Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
 
-sa2_public_plot_house <- ggplot(sa2_prices %>% filter(property_type == 'HOUSE'), mapping = aes(x = arithmetic_mean, y = public_percentage, text = sa2_name, stroke = NA, fill = within15), axe) + xlab('Average Detached House Price ($m)') + ylab(' Tree Coverage of Public Areas (%)') + geom_point() + labs(caption = "Source: Neosec") +  theme_minimal()
+sa2_public_plot_house <- ggplot(sa2_prices %>% filter(property_type == 'HOUSE'), mapping = aes(x = arithmetic_mean, y = public_percentage, text = sa2_name, stroke = NA, fill = within15), axe) + xlab('Average Detached House Price ($m)') + ylab(' Tree Coverage of Public Areas (%)') + geom_point() + labs(caption = "Source: Neosec") +  theme_yimby
 
-sa2_public_plot_unit <- ggplot(sa2_prices %>% filter(property_type == 'UNIT'), mapping = aes(x = arithmetic_mean, y = public_percentage, text = sa2_name, stroke = NA, fill = within15), axe) + xlab('Average Unit Price ($m)') + ylab(' Tree Coverage of Public Areas (%)') + geom_point() + labs(caption = "Source: Neosec") +  theme_minimal()
+sa2_public_plot_unit <- ggplot(sa2_prices %>% filter(property_type == 'UNIT'), mapping = aes(x = arithmetic_mean, y = public_percentage, text = sa2_name, stroke = NA, fill = within15), axe) + xlab('Average Unit Price ($m)') + ylab(' Tree Coverage of Public Areas (%)') + geom_point() + labs(caption = "Source: Neosec") +  theme_yimby
 
 
-# price_public_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = public_percentage, text = SAL_NAME21, fill = within15, stroke = NA), axe) + xlab('Average Detached House Price ($m)') + ylab(' Tree Coverage of Public Areas (%)') + geom_point() + labs(caption = "Source: Housing Victoria") +  theme_minimal()
+# price_public_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = public_percentage, text = SAL_NAME21, fill = within15, stroke = NA), axe) + xlab('Average Detached House Price ($m)') + ylab(' Tree Coverage of Public Areas (%)') + geom_point() + labs(caption = "Source: Housing Victoria") +  theme_yimby
 
-rents_public_plot <- (ggplot(sa2_prices %>% filter(property_type == 'HOUSE'), mapping = aes(x = median_band, y = public_percentage, text = sa2_code_2021)) + geom_boxplot(color = "#006D2C") + xlab('Median Rent (2021 dollars)') + ylab("Tree Coverage of Public Areas (%)") +  theme_minimal() + labs(caption = "Source: 2021 Census (ABS)") +  theme(axis.text.x = element_text(angle = 45)) ) 
+rents_public_plot <- (ggplot(sa2_prices %>% filter(property_type == 'HOUSE'), mapping = aes(x = median_band, y = public_percentage, text = sa2_code_2021)) + geom_boxplot(color = "#006D2C") + xlab('Median Rent (2021 dollars)') + ylab("Tree Coverage of Public Areas (%)") +  theme_yimby + labs(caption = "Source: 2021 Census (ABS)") +  theme(axis.text.x = element_text(angle = 45)) ) 
 
 #bscols(widths = c(4,4), ggplotly(price_street_plot), ggplotly(price_residential_plot))
 #subplot(ggplotly(price_street_plot),ggplotly(price_residential_plot), titleY = T, titleX = T)
@@ -707,7 +709,7 @@ ggplotly(rents_public_plot)
 #colours <- brewer.pal(5, "Set1")
 #names(colours) <- levels(house_price_data$direction)
 
-#ggplot(house_price_data, mapping = aes(x = average_house_price, y = residential_percentage, color = direction, text = SAL_NAME21), axe) + xlab('Average House Price ($m)') + ylab('Residential Area Tree Coverage (%)') + geom_point() + scale_color_manual(name = "direction", values = colours) + theme_minimal()
+#ggplot(house_price_data, mapping = aes(x = average_house_price, y = residential_percentage, color = direction, text = SAL_NAME21), axe) + xlab('Average House Price ($m)') + ylab('Residential Area Tree Coverage (%)') + geom_point() + scale_color_manual(name = "direction", values = colours) + theme_yimby
 
 
 ```
@@ -774,7 +776,7 @@ uhi_plot <- ggplot(tt %>% filter(CHG_FLAG21 == 0), mapping = aes(x = ttl_cov, y 
   xlab('Tree Coverage (%)') +
   ylab('Urban Heat Island (deg)') +
   labs(title = "Urban heat island against street tree coverage per SA1") +
-  theme_minimal()
+  theme_yimby
 
 ggplotly(uhi_plot)
 
