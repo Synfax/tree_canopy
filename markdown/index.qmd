@@ -5,12 +5,6 @@ include-in-header: "header.html"
 include-after-body: "footer.html"
 ---
 
-Over the next ten years:
-
-- Plant 62 new street trees per 100 new dwellings
-- Invest $1900 per dwelling in public greening
-- Grow 155 MCGs of new tree canopy 
-
 ```{r, results='hide', warning=FALSE,message=FALSE}
 #| echo: false
 #| label: load-_common
@@ -78,32 +72,27 @@ random_suburb <- grouping_sf %>% select('SAL_NAME21', 'geometry', 'distance') %>
 
 ```
 
-## Executive summary
 
-Everyone loves trees. The year-round cooling and the shade in the summer, the organic form and the softening of the urban landscape. Not to mention the [real, tangible benefits](/benefits) that a strong tree canopy provides for our city and those who live here. 
 
-People love street trees in particular. Unlike the private trees confined to individual backyards, the benefits of street trees are distributed to everyone. Whether walking the dog, cycling to work, or sitting by the window in the winter sun with your morning coffee—the presence of a robust street tree canopy only improves the day to day of city life.
 
-And so, because street trees are good, YIMBY Melbourne believes we should have more of them. 
+```{=html}
+<br>
+<p class="intro-text">Over the next ten years:</p>
+```
 
-This report provides a pathway to increasing both the number of street trees and the overall tree canopy across our city. 
-
-This report has two key goals:
-
-1. To provide an overview of current tree distribution across Melbourne.
-2. To provide an evidence-based costing model for increasing tree canopy in the context of densifying Melbourne's missing middle.
-
-We also provide a brief literature review of street trees, informing the costs and considerations that underpin the model.
-
-### Policy context
-
-The Victorian Government is working to deliver around 400,000 new homes across Melbourne's missing middle over the coming decade. In our previous report, _[Missing Middle Housing Targets](https://targets.yimby.melbourne)_, we laid out a demand-driven model to determine where those homes ought to be built. 
-
-Our housing targets model is designed to be responsive to demand, and adjusted year by year—which is a [key difference between our model and the Victorian Government's](https://www.yimby.melbourne/post/housing-targets-aim-high-but-need-demand-to-back-them-up). In lieu of a crystal ball, this report assumes that 400,0000 homes will be delivered across Melbourne's Missing Middle at the 2024 rate for the full decade.  
-
-This report period of growth is exciting new opportunity for Melbourne to grow its street tree canopy, improving amenity and climate outcomes for both current and future residents, and making an important step toward the vision of a more liveable, sustainable, and affordable Melbourne as laid out in [our flagship report, Melbourne's Missing Middle](https://yimby.melbourne/missing-middle).
-
-## The current distribution of trees across Melbourne
+```{=html}
+<table>
+  <tr>
+    <td><strong>Plant 60 new street trees per 100 new dwellings</strong></td>
+  </tr>
+  <tr>
+    <td><strong>Invest $1840 per dwelling in public greening</strong></td>
+  </tr>
+  <tr>
+    <td><strong>Grow 136 MCGs of new tree canopy</strong></td>
+  </tr>
+</table>
+```
 
 ```{r, warning = FALSE}
 #| echo: false
@@ -173,7 +162,7 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
   colCols = c(brewer.pal(9, 'Greens'))
 
 
-  maplibre(style = mapgl::carto_style('positron'), center = c(144.963115,-37.814175), zoom = 9, pitch = 40) %>%
+  maplibre(style = mapgl::carto_style('positron'), center = c(145.063115,-37.814175), zoom = 9.5, pitch = 40) %>%
     add_fill_extrusion_layer(id = 'trees_grouped_sa1', source = trees_grouped_sa1,
                              fill_extrusion_opacity = 0.85,
                              fill_extrusion_color = mapgl::interpolate(
@@ -183,12 +172,40 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
                              ),
                              fill_extrusion_height = c("get", "x10") ) %>%
     mapgl::add_legend(
-    "Tree Coverage by SA1",
+    "Tree Coverage by SA1 (%)",
     values = c(0,91.6),
     colors = c(colCols[1], colCols[9])
+
   )
   
 ```
+
+## Executive summary
+
+Everyone loves trees. The year-round cooling and the shade in the summer, the organic form and the softening of the urban landscape. Not to mention the [real, tangible benefits](/benefits) that a strong tree canopy provides for our city and those who live here. 
+
+People love street trees in particular. Unlike the private trees confined to individual backyards, the benefits of street trees are distributed to everyone. Whether walking the dog, cycling to work, or sitting by the window in the winter sun with your morning coffee—the presence of a robust street tree canopy only improves the day to day of city life.
+
+And so, because street trees are good, YIMBY Melbourne believes we should have more of them. 
+
+This report provides a pathway to increasing both the number of street trees and the overall tree canopy across our city. 
+
+This report has two key goals:
+
+1. To provide an overview of current tree distribution across Melbourne.
+2. To provide an evidence-based costing model for increasing tree canopy in the context of densifying Melbourne's missing middle.
+
+We also provide a brief literature review of street trees, informing the costs and considerations that underpin the model.
+
+### Policy context
+
+The Victorian Government is working to deliver around 400,000 new homes across Melbourne's missing middle over the coming decade. In our previous report, _[Missing Middle Housing Targets](https://targets.yimby.melbourne)_, we laid out a demand-driven model to determine where those homes ought to be built. 
+
+Our housing targets model is designed to be responsive to demand, and adjusted year by year—which is a [key difference between our model and the Victorian Government's](https://www.yimby.melbourne/post/housing-targets-aim-high-but-need-demand-to-back-them-up). In lieu of a crystal ball, this report assumes that 400,0000 homes will be delivered across Melbourne's Missing Middle at the 2024 rate for the full decade.  
+
+This report period of growth is exciting new opportunity for Melbourne to grow its street tree canopy, improving amenity and climate outcomes for both current and future residents, and making an important step toward the vision of a more liveable, sustainable, and affordable Melbourne as laid out in [our flagship report, Melbourne's Missing Middle](https://yimby.melbourne/missing-middle).
+
+## The current distribution of trees across Melbourne
 
 Melbourne's densest tree canopy traces our rivers, creeks, and major parks. This makes sense: these are places where a broad and abundant canopy is able to grow. 
 
@@ -203,53 +220,54 @@ So what does canopy cover look like in the current list of top ten liveable citi
 
 ```{r, warning=FALSE, message=FALSE}
 #| echo: false
-#| fig-cap: "Note: this chart uses LOESS smoothing, as the scatter or line plots have significant variance. Grey bands denote a 95% confidence interval."
-cities = c('vienna', 'copenhagen', 'zurich', 'melbourne', 'calgary', 'geneva', 'sydney', 'vancouver', 'osaka', 'auckland')
+cities <- c("vienna", "copenhagen", "zurich", "melbourne", "calgary", "geneva", "sydney", "vancouver", "osaka", "auckland")
+
+custom_colors <- c(
+  "Vienna" = '#8FC49A', 
+  "Copenhagen" = '#F2DCA5', 
+  "Zurich" = '#C6A2A3', 
+  "Melbourne" = '#2C6F3A',
+  "Calgary" = '#D0D6FF', 
+  "Geneva" = "#9EA7E2", 
+  "Sydney" = "#C79E3E", 
+  "Vancouver" = "#E3BABB", 
+  "Osaka" = "#579A64", 
+  "Auckland" = "#D6EFDB"
+)
 
 big_df <- data.frame()
 
 walk(cities, loadFiles)
 
-# big_df = big_df %>%
-#   filter(med_cov != 0, mean_cov != 0)
+big_df <- big_df %>% as.data.frame()
 
-# big_df = big_df %>%
-#   mutate(med_cov = 100 * med_cov, mean_cov = 100 * mean_cov)
+big_df <- big_df %>% filter(cov < 1)
 
-big_df = big_df %>% as.data.frame()
+# Capitalize city names
+big_df <- big_df %>% mutate(city = str_to_title(city))
 
-big_df = big_df %>% filter(cov < 1)
 
-int_comp <- ggplot(big_df, mapping = aes(distance, cov, colour = city, group = city)) +
+int_comp <- ggplot(big_df, mapping = aes(distance, cov, group = city)) +
   xlab("Distance to Centre (m)") +
   ylab("Mean Tree Coverage (%)") +
-  labs(title = "Tree Coverage of Major Cities") +
-  geom_smooth(method = 'loess') +
-  theme_yimby
-
-
+  labs(
+    title = "Tree coverage of the most liveable cities (2024)",
+    color = "City"
+  ) +
+  geom_smooth(method = "loess", aes(colour = city), alpha = 0.1) +
+  theme_yimby +
+  scale_colour_manual(values = custom_colors) +
+  theme(legend.position = "bottom")
 
 ggplotly(int_comp)
-  
-# mean_plot <- ggplot(big_df, mapping = aes(distance, mean_cov, colour = city, group = city)) +
-#   xlab("Distance to Centre (m)") +
-#   ylab("Mean Tree Coverage (%)") +
-#   labs(title = "Tree Coverage of Major Cities") +
-#   geom_smooth(method = 'loess') +
-#   theme_minimal()
-# 
-# median_plot <- ggplot(big_df, mapping = aes(distance, med_cov, colour = city, group = city)) +
-#   xlab("Distance to Centre (m)") +
-#   ylab("Median Tree Coverage (%)") +
-#   labs(title = "Tree Coverage of Major Cities") +
-#   geom_smooth(method = 'loess') +
-#   theme_minimal()
-# 
-# ggplotly(mean_plot)
-# 
-# ggplotly(median_plot)
-
 ```
+
+::: {.callout-tip collapse="true"}
+## About these data
+
+This chart uses LOESS smoothing, as the scatter or line plots have significant variance. Grey bands denote a 95% confidence interval.
+:::
+
 This chart displays the tree canopy coverage of each city, in rings that start in the city centre and move out almost 15km. To see how this data was calculated, you can visit the [methodology page](/model). 
 
 Vienna and Zurich are the clear winners when it comes to tree canopy coverage. 
@@ -257,6 +275,7 @@ Vienna and Zurich are the clear winners when it comes to tree canopy coverage.
 Meanwhile, Calgary and Osaka have comparably little tree canopy coverage, and Melbourne sits around the middle of the pack. 
 
 But Melbourne deserves to be better than the middle of the pack, which is why this report lays out a model for increasing the city's tree canopy coverage by 10%—all while doubling our population.
+
 
 # Trees in Melbourne's Missing Middle
 
@@ -382,30 +401,74 @@ sd_combined = SharedData$new((combined_df))
 
 ```{r}
 #| echo: false
-#| 
-combined_longer <- pivot_longer(combined_df,
-                                cols = c('weighted_street_pc', 'weighted_reserve_pc', 'weighted_resi_pc', 'weighted_other_pc', 'weighted_rural_pc'),
-                                names_to = 'weights',
-                                values_to = "test")
+#| label: create-stacked-bars
+# Reshape data from wide to long format
+combined_longer <- combined_df %>%
+  pivot_longer(
+    cols = c('weighted_rural_pc', 'weighted_other_pc', 'weighted_reserve_pc', 'weighted_resi_pc', 'weighted_street_pc'),
+    names_to = 'land_type',
+    values_to = "coverage_percentage"
+  ) %>%
+  mutate(
+    land_type = case_when(
+      land_type == 'weighted_rural_pc' ~ 'Rural',
+      land_type == 'weighted_other_pc' ~ 'Other',
+      land_type == 'weighted_reserve_pc' ~ 'Public',
+      land_type == 'weighted_resi_pc' ~ 'Residential',
+      land_type == 'weighted_street_pc' ~ 'Streets'
+    )
+  )
 
-stacked_chart <- ggplot(combined_longer, aes(fill=weights, y = test, x= reorder(!!as.name(grouping), test) )) + 
-    geom_bar(position="stack", stat="identity") +
-  ylab('Total tree coverage (%)') +
-  xlab (pretty_group_name) +
-  labs( fill = 'Land type') +
-  scale_x_discrete(guide = guide_axis(angle = 0)) +
-  scale_fill_manual( values = c('tomato', '#7CAE00', '#619CFF', 'purple', 'grey') ) +
-  coord_flip() +
-  theme_yimby
+# Function to create the stacked bar chart
+create_stacked_chart <- function(data, position_type, title) {
+  ggplot(data, 
+         aes(fill = factor(land_type, levels = c('Rural', 'Other', 'Public', 'Residential', 'Streets')), 
+             y = coverage_percentage, 
+             x = reorder(!!as.name(grouping), coverage_percentage))) +
+    geom_bar(position = position_type, stat = "identity") +
+    labs(
+      y = 'Total tree coverage (%)',
+      x = pretty_group_name,
+      title = title,
+      fill = 'Land type'
+    ) +
+    scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+    scale_x_discrete(guide = guide_axis(angle = 0)) +
+    scale_fill_manual(values = c('#C6A2A3', '#F2DCA5', '#8FC49A', '#D0D6FF', '#2C6F3A')) +
+    coord_flip() +
+    theme_yimby
+}
 
-p1 <- plotly_build(stacked_chart)
-p1$x$data[[1]]$name = "Other"
-p1$x$data[[2]]$name = "Public"
-p1$x$data[[3]]$name = "Residential"
-p1$x$data[[4]]$name = 'Rural'
-p1$x$data[[5]]$name = 'Streets'
+# Create the first chart (stacked)
+stacked_chart <- create_stacked_chart(combined_longer, "stack", 'Total canopy coverage by land type')
 
+# Create the second chart (proportional)
+stacked_chart_fill <- create_stacked_chart(combined_longer, "fill", 'Proportional canopy coverage by land type')
 
+# Function to build and customize plotly object
+build_plotly <- function(chart, data) {
+  p <- ggplotly(chart, tooltip = c("x", "y", "fill"))
+  
+  # Customize hover text
+  for(i in seq_along(p$x$data)) {
+    p$x$data[[i]]$text <- paste0(
+      "Category: ", p$x$data[[i]]$name, "<br>",
+      "Percentage: ", sprintf("%.2f%%", p$x$data[[i]]$y)
+    )
+    p$x$data[[i]]$hoverinfo <- "text"
+  }
+  
+  return(p)
+}
+
+# Build the plotly objects
+p1 <- build_plotly(stacked_chart, combined_longer)
+p2 <- build_plotly(stacked_chart_fill, combined_longer)
+```
+
+```{r}
+#| echo: false
+#| label: Display stacked plot 1
 p1
 
 ```
@@ -417,24 +480,7 @@ Manningham's tree coverage is greatly inflated by the existence of the Warrandyt
 
 ```{r}
 #| echo: false
-
-stacked_chart_fill <- ggplot(combined_longer, aes(fill=weights, y = test, x= reorder(!!as.name(grouping), test) )) + 
-    geom_bar(position="fill", stat="identity") +
-  ylab('Total tree coverage (%)') +
-  xlab (pretty_group_name) +
-  labs( fill = 'Land type') +
-  scale_x_discrete(guide = guide_axis(angle = 0)) +
-   scale_fill_manual( values = c('tomato', '#7CAE00', '#619CFF', 'purple', 'grey') ) +
-  coord_flip() +
-  theme_yimby
-
-p2 <- plotly_build(stacked_chart_fill)
-p2$x$data[[1]]$name = "Other"
-p2$x$data[[2]]$name = "Public"
-p2$x$data[[3]]$name = "Residential"
-p2$x$data[[4]]$name = 'Rural'
-p2$x$data[[5]]$name = 'Streets'
-
+#| label: Display stacked plot 2
 p2
 
 ```
@@ -800,15 +846,24 @@ What is clear, though, is that the distribution of trees across our city is high
 
 # Increasing street tree coverage while building Melbourne's Missing Middle 
 
+## Replacing private tree canopy with public tree canopy
+
+Densification is the process of increasing the density on specific lots and building more homes where there is currently, typically, a single detached house. Most of these existing houses are built on lots with relatively large garden areas. Both the Neighbourhood Residential Zone (NRZ) and General Residential Zone (GRZ) have minimum mandated garden areas of 25–35% of the total lot area.
+
+Building Melbourne's Missing Middle will require building dense, six-storey housing on a large number of lots currently zoned NRZ and GRZ. This densification will likely require the removal of existing private tree canopy in order to make way for more homes where people want to live.
+
+But more homes for more Melburnians should not mean fewer trees for those selfsame Melburnians. In fact, Melbourne has the opportunity now to deliver more overall tree canopy, not less, and to deliver it all within public space, for the benefit of everyone. 
+
 In early 2024 YIMBY Melbourne released its Missing Middle Housing Targets report, which used demand-based modelling to allocate housing targets for each council in metropolitan Melbourne. 
+
+Using publicly available tree canopy, planning, and other spatial data, we determine the estimated amount of tree canopy that may be removed from the private realm each year in order to meet our housing targets.
 
 The table below shows the calculations of how much tree canopy coverage might be lost when all the proposed capacity in the upzoned lots is realised and how many street trees would be needed to offset this loss. 
 
 
 ::: {.panel-tabset}
 
-## Missing Middle Targets
-
+## YIMBY Melbourne Targets
 
 ```{r}
 #| echo: false
@@ -858,6 +913,62 @@ target_df %>%
             ))
 ```
 
+```{=html}
+<table>
+  <tr>
+    <td><strong>Residential canopy replaced per year (ha)</strong></td>
+    <td>27.2</td>
+  </tr>
+  <tr>
+    <td><strong>Replacement trees planted per year</strong></td>
+    <td>21,916</td>
+  </tr>
+  <tr>
+    <td><strong>Trees planted per new dwelling</strong></td>
+    <td>0.55</td>
+  </tr>
+  <tr>
+    <td><strong>Trees planted per new dwelling (10% total canopy increase)</strong></td>
+    <td>0.6</td>
+  </tr>
+</table>
+```
+
+```{=html}
+<table>
+  <tr>
+    <td></td>
+    <td><strong>Establishment</strong></td>
+    <td><strong>Maintenance</strong></td>
+    <td><strong>Total</strong></td>
+  </tr>
+  <tr>
+    <td><strong>Per new dwelling</strong></td>
+    <td>
+      $873
+    </td>
+    <td>
+      $967
+    </td>
+    <td>
+      <strong>$1,840</strong>
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Per year (40k dwellings)</strong></td>
+    <td>
+      $34,903,404
+    </td>
+    <td>
+      $38,695,334
+    </td>
+    <td>
+      <strong>$73,598,738</strong>
+    </td>
+  </tr>
+</table>		
+```
+
 ## Government Targets
 
 ```{r}
@@ -903,27 +1014,66 @@ target_df %>%
 
 ```
 
+```{=html}
+<table>
+  <tr>
+    <td><strong>Residential canopy replaced per year (ha)</strong></td>
+    <td>24.3</td>
+  </tr>
+  <tr>
+    <td><strong>Replacement trees planted per year</strong></td>
+    <td>19,565</td>
+  </tr>
+  <tr>
+    <td><strong>Trees planted per new dwelling</strong></td>
+    <td>0.49</td>
+  </tr>
+  <tr>
+    <td><strong>Trees planted per new dwelling (10% total canopy increase)</strong></td>
+    <td>0.54</td>
+  </tr>
+</table>
+```
+
+```{=html}
+<table>
+  <tr>
+    <td></td>
+    <td><strong>Establishment</strong></td>
+    <td><strong>Maintenance</strong></td>
+    <td><strong>Total</strong></td>
+  </tr>
+  <tr>
+    <td><strong>Per new dwelling</strong></td>
+    <td>
+      $779
+    </td>
+    <td>
+      $864
+    </td>
+    <td>
+      <strong>$1,643</strong>
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Per year (40k dwellings)</strong></td>
+    <td>
+      $31,159,174		
+    </td>
+    <td>
+      $34,544,328
+    </td>
+    <td>
+      <strong>$65,703,502</strong>
+    </td>
+  </tr>
+</table>		
+```
 :::
 
-
-
-
-
-## Replacing private tree canopy with public tree canopy
-
-Densification is the process of increasing the density on specific lots and building more homes where there is currently, typically, a single detached house. Most of these existing houses are built on lots with relatively large garden areas. Both the Neighbourhood Residential Zone (NRZ) and General Residential Zone (GRZ) have minimum mandated garden areas of 25–35% of the total lot area.
-
-Building Melbourne's Missing Middle will require building dense, six-storey housing on a large number of lots currently zoned NRZ and GRZ. This densification will likely require the removal of existing private tree canopy in order to make way for more homes where people want to live.
-
-But more homes for more Melburnians should not mean fewer trees for those selfsame Melburnians. In fact, Melbourne has the opportunity now to deliver more overall tree canopy, not less, and to deliver it all within public space, for the benefit of everyone. 
-
-Using publicly available tree canopy, planning, and other spatial data, we determine the estimated amount of tree canopy that may be removed from the private realm each year in order to meet our housing targets.
-
-We then [calculate the costs](/costs) of delivering the equivalent canopy within the public realm, providing a clear path to ensuring that a denser Melbourne is also a greener Melbourne, with the [benefits delivered for all](/benefits).
+We then [calculate the costs](/costs.html) of delivering the equivalent canopy within the public realm, providing a clear path to ensuring that a denser Melbourne is also a greener Melbourne, with the [benefits delivered for all](/benefits.html).
 
 ## Street tree canopy is public infrastructure
-
-<TODO: Insert costing table>
 
 To maintain Melbourne's current total tree canopy while densifying Melbourne's missing middle, 57 new trees should be planted per 100 new homes, at a cost of $1,740.15 per dwelling. 
 
@@ -936,62 +1086,6 @@ This significant urban greening project will have a total cost of $76 million pe
 Finally, we note that all our calculations are based on the delivery of mature tree canopy. This means that the full [benefits](/benefits) of this model will not be delivered immediately, but progressively as trees grow over time. But because public trees within our model are only added and never removed, even upon establishment all new trees planted represent a material benefit for all Melburnians when measured against the status quo. 
 
 The best time to plant a tree was 20 years ago. The second best time is when building more homes where people want to live.
-
-
-
-
-
-
-# Interactions with Missing Middle
-
-YM recently released Housing Targets, a data-driven model which allocates housing targets by council.
-
-This page calculates how much tree cover might be lost in the upzoning of residential lots, and then calculating how to offset this loss by increasing coverage of street trees
-
-# Relationships & Additional Plots
-
-This section shows the interaction between public tree coverage and the cost of living in an area, depicted by both detached house prices, the prices of units, and median rents. Public tree coverage is defined as:
-
-$$
- \text{Public tree coverage} = \frac{\text{area of streets covered by trees + area of parks covered by trees}}{\text{area of streets + area of parks}}
-$$
-
-Data Note: Rents are using ABS data, which is only available in ranges. Therefore, median rents are defined as whatever bin the median observation falls into. Also note that the Census was in 2021, and therefore rents may be impacted by COVID, and may have changed since. This possibly explains the low rent numbers observed.
-
-House & unit prices are from Neoval.
-
-
-The above figure displays the relationship between house prices and public tree coverage. There is a tangible correlation between the two variables as SA2s with higher house prices tend to have more public tree coverage. This is not a statement of causation, merely correlation.
-
-The data is further split into two groups: SA2s within 15 kilometres of the city, and SA2s outside the 15km range. This split reveals two distinct spatial patterns.
-
-For 'inner' SA2s, the relationship is much steeper. For outer SA2s, the slope of a best fit line is much shallower.
-
-When looking at unit prices instead of detached homes, a positive pattern remains. However, the divergence between SA2s within 15km and outside of 15km does not seem to replicate in unit prices.
-
-The graph above displays the relationship between median rents and public tree coverage. It is not possible to fit a line of best fit, given the categorical nature of rents.
-
-A slight relationship is clear, as median public coverage is increasing with median rents until median rents hit 500. After the '500-524' band, public coverage drops and the relationship no longer holds, although this is mostly due to expensive regions located close to the CBD such as Carlton and Fitzroy. 
-
-```{r}
-#| echo: false
-# lot_df = house_price_data %>% filter(med_lot < 2000)
-# 
-# lotsize_street_plot <- ggplot(lot_df, mapping = aes(x = med_lot, y = street_percentage, text = SAL_NAME21), axe) + xlab('Average Lot Size') + ylab('Street Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
-# 
-# lotsize_residential_plot <- ggplot(lot_df, mapping = aes(x = med_lot, y = residential_percentage, text = SAL_NAME21), axe) + xlab('Average Lot Size') + ylab('Residential Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
-
-
-#ggplotly(lotsize_street_plot)
-#ggplotly(lotsize_residential_plot)
-
-#summary(lm(residential_percentage ~ med_lot, house_price_data)) 
-
-#summary(lm(street_percentage ~ med_lot, house_price_data))
-
-
-#summary(lm(public_percentage ~ med_lot + average_house_price + distance, lot_df))
-```
 
 ***
 

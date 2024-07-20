@@ -357,7 +357,9 @@ We then estimate mature canopy per new tree planted.
 
 Then, based on the modelling laid out on the [main page of the report](/index.html), we calculate the required trees and total costs.
 
-#### YIMBY Melbourne targets
+::: {.panel-tabset}
+
+## YIMBY Melbourne targets
 
 ```{=html}
 <table>
@@ -415,9 +417,63 @@ Then, based on the modelling laid out on the [main page of the report](/index.ht
 </table>		
 ```
 
-#### Government draft targets
+## Government draft targets
 
+```{=html}
+<table>
+  <tr>
+    <td><strong>Residential canopy replaced per year (ha)</strong></td>
+    <td>24.3</td>
+  </tr>
+  <tr>
+    <td><strong>Replacement trees planted per year</strong></td>
+    <td>19,565</td>
+  </tr>
+  <tr>
+    <td><strong>Trees planted per new dwelling</strong></td>
+    <td>0.49</td>
+  </tr>
+  <tr>
+    <td><strong>Trees planted per new dwelling (10% total canopy increase)</strong></td>
+    <td>0.54</td>
+  </tr>
+</table>
+```
 
+```{=html}
+<table>
+  <tr>
+    <td></td>
+    <td><strong>Establishment</strong></td>
+    <td><strong>Maintenance</strong></td>
+    <td><strong>Total</strong></td>
+  </tr>
+  <tr>
+    <td><strong>Per new dwelling</strong></td>
+    <td>
+      $779
+    </td>
+    <td>
+      $864
+    </td>
+    <td>
+      <strong>$1,643</strong>
+    </td>
+  </tr>
+  <tr>
+    <td><strong>Per year (40k dwellings)</strong></td>
+    <td>
+      $31,159,174		
+    </td>
+    <td>
+      $34,544,328
+    </td>
+    <td>
+      <strong>$65,703,502</strong>
+    </td>
+  </tr>
+</table>		
+```
 
 ### Assumptions
 
