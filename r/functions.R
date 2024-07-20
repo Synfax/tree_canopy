@@ -1,5 +1,5 @@
-coverage = function(exp = expression(!is.na(zone_short)), type = 'tree', group = 'sa2_code_2021') {
-  return_df <- agg_df %>%
+coverage = function(exp = expression(!is.na(zone_short)), type = 'tree', group = 'sa2_code_2021', df = agg_df_filtered) {
+  return_df <- df %>%
     rowwise() %>%
     dplyr::filter(eval(exp)) %>%
     dplyr::filter(!is.na(!!as.name(group))) %>%
@@ -21,7 +21,7 @@ lga_targets <- function(lga_name, home_target) {
     filter(zoning_permits_housing == 'Housing permitted', feature_preventing_development == F, dwellings_est < 2) %>%
     summarise(across(c(coverage, total_area), sum)) %>%
     mutate(tree_percentage = (coverage/total_area) ) %>%
-    select(tree_percentage) %>%
+    dplyr::select(tree_percentage) %>%
     unlist() %>%
     as.vector()
   
