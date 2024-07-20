@@ -313,6 +313,7 @@ pre code {
 .sidebar-menu-container {
   padding-right: 1rem;
   padding-left: 1rem;
+  padding-bottom: 8px;
 }
 
 .pt-lg-2.mt-2.text-left.sidebar-header.sidebar-header-stacked {
@@ -322,6 +323,7 @@ pre code {
 
 .sidebar-logo {
   max-width: 100%;
+  padding: 0px;
 }
 
 .menu-text {
@@ -335,6 +337,41 @@ div.sidebar-item-container .active {
 
 .nav-link .active {
   color: $red-base !important;
+}
+
+div.sidebar-footer {
+  width: 100%;
+  border-top: 2px solid #000;
+  padding-top: 10px !important;
+}
+
+.quote-container {
+  margin-top: 0.5rem;
+  color: #000;
+}
+
+// .quote-text {
+//   font-family: "Inter", sans-serif;
+//   font-weight: 500;
+//   font-size: 0.9em;
+// }
+
+// .attribution {
+//   text-align: right;
+// }
+
+.quote-text {
+  color: #000 !important;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 0;
+}
+
+.attribution {
+  color: #000 !important;
+  text-align: right !important;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 // Mobile breadcrumbs
