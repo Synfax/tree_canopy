@@ -31,7 +31,8 @@ packages <- c(
   "mapgl",
   "crosstalk",
   "reactable",
-  "pacman"
+  "pacman",
+  "stars"
 )
 
 # Install packages
@@ -39,6 +40,9 @@ lapply(packages, install_if_missing)
 
 # Install specific GitHub version of leaflet
 devtools::install_github("dmurdoch/leaflet@crosstalk4")
+
+# Install chmloader
+devtools::install_github("TESS-Laboratory/chmloader")
 
 # Print message when done
 cat("All required packages have been installed.\n")
