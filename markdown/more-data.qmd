@@ -13,7 +13,7 @@ This section breaks down tree canopy coverage by type of zone.
 
 As expected, both civic and rural land are ranked among the highest, whilst the more restrictive the residential zone is, the higher the amount of tree coverage. 
 
-::: {.callout-caution collapse="true"}
+::: {.callout-tip collapse="true"}
 # Breakdown of zones included in each category
 
 Low density residential: Low Density Residential Zone (LDRZ)/

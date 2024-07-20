@@ -491,7 +491,7 @@ There is a clear relationship between public tree coverage and the cost of housi
 
 This section shows the interaction between public tree coverage and socioeconomic status. We do this through SEIFA scores and the cost of housing in an area, as depicted by both detached house and unit prices, and median rents. 
 
-::: {.callout-caution collapse="true"}
+::: {.callout-tip collapse="true"}
 # About these datasets
 
 Rents are using ABS data, which is only available in ranges. Therefore, median rents are defined as whatever bin the median observation falls into. 
