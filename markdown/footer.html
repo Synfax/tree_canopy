@@ -1,0 +1,30 @@
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const sidebar = document.getElementById("quarto-sidebar");
+
+    if (sidebar) {
+      const containerDiv = document.createElement("div");
+      containerDiv.className = "sidebar-footer";
+
+      const img = document.createElement("img");
+      img.src = "images/logo.png";
+      img.alt = "YIMBY Melbourne Logo";
+      img.style.maxWidth = "100%";
+      img.style.height = "auto";
+      img.style.display = "block";
+
+      // Quote
+      const quoteDiv = document.createElement("div");
+      quoteDiv.className = "quote-container";
+      quoteDiv.innerHTML =
+        '<p class="quote-text">\n    "I do something entirely good; I live on trees."</p>\n  <p class="attribution">— Italo Calvino,<br><em>The Baron in the Trees</em></p>';
+
+      // Append elements
+      containerDiv.appendChild(img);
+      containerDiv.appendChild(quoteDiv);
+      sidebar.appendChild(containerDiv);
+    } else {
+      console.error('Element with ID "quarto-sidebar" not found');
+    }
+  });
+</script>
