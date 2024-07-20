@@ -2,21 +2,97 @@
 title: "Benefits of street trees"
 ---
 
-[Colleen Peterson pull quote]
-
+```{r, results='hide', warning=FALSE,message=FALSE}
+#| echo: false
+#| label: load-_common
+source("_common.R")
+```
 
 ## In praise of the street tree canopy
 
-Street trees are a remarkably popular piece of public infrastructure. They provide shade for humans, homes for native wildlife,  and, most importantly, a near-universally enjoyed benefit: immaculate vibes.
+Street trees are a remarkably popular piece of public infrastructure. They provide shade for humans, homes for native wildlife, and, most importantly, a near-universally enjoyed benefit: immaculate vibes.
+
+Colleen Peterson, then-CEO of Ratio Consultants, talked at length at YIMBY Melbourne's Unbanning Beauty event about how intrinsic public street trees are to our understanding of ‘neighbourhood character’.
+
+![Charlotte and Elm Streets, street view.](images/CharlotteElm1.png)
+
+![Charlotte and Elm Streets, aerial view.](images/CharlotteElm2.png)
+
+Despite the streets being established at the same time, being of the same widths and having the same paths, they feel fundamentally different. This is in no small part due to the tree streets and nature strip. “It’s about the visual connection between the private and public realm," says Peterson. "Elm Grove has this in spades, but poor Charlotte is quite different.”
 
 While private residential trees predominantly provide benefits for individual homeowners, street trees provide broad public benefits. This is why, within this report, we have opted to focus specifically on making street trees abundant across all of Melbourne's missing middle. 
 
-This page outlines the benefits of a robust and expansive street tree canopy in some detail. For more details and several Melbourne-specific research examples, see the CRC for Water Sensitive Cities' 2017 report _[Trees for a Cool City](https://watersensitivecities.org.au/wp-content/uploads/2017/11/Trees-for-a-cool-city_Guidelines-for-optimised-tree-placement.pdf)_.
-
+This section of the report outlines the benefits of a robust and expansive street tree canopy in some detail. For more information and several Melbourne-specific research examples, see the CRC for Water Sensitive Cities' 2017 report _[Trees for a Cool City](https://watersensitivecities.org.au/wp-content/uploads/2017/11/Trees-for-a-cool-city_Guidelines-for-optimised-tree-placement.pdf)_.
 
 ### Street trees increase climate resilience through urban cooling
 
-[UHI / Street Tree chart]
+
+```{r}
+#| echo: false
+
+uhi_df = uhi %>%
+  st_drop_geometry() %>%
+  rename(MB_CODE21 = 'MB_CODE16')
+
+sa1s_downloaded = list.files('../rasters/1res_sa1') %>%
+  gsub(".tif", "", .)
+
+if(is_empty(sa1s_downloaded)) {
+  sa1s_downloaded = readRDS('../r_objects/sa1s_downloaded.RData')
+}
+
+mb = mesh_blocks %>%
+  filter(SA1_CODE21 %in% sa1s_downloaded) %>%
+  dplyr::select(c(MB_CODE21, SA2_CODE21,  AREASQKM21)) %>%
+  left_join(uhi_df, by = 'MB_CODE21') %>%
+  st_drop_geometry() %>%
+  rowwise() %>%
+  mutate(area_anytree = ((PERSHRBTRE)/100) *  AREASQKM21) %>%
+  group_by(SA1_MAIN16) %>%
+  summarise( total_uhi_cov = sum(area_anytree) / sum(AREASQKM21), uhi = first(UHI18_M), sa2 = first(SA2_CODE21) ) %>%
+  rename(sa1 = 'SA1_MAIN16')
+
+sa1_summary <- agg_df %>%
+  group_by(sa1) %>%
+  filter(zone_short == 'roads') %>%
+  summarise( ttl_cov = sum(coverage) / sum(total_area), ttl_cov_a = sum(coverage), ttl_area = sum(total_area)  )
+
+tt <- mb %>% 
+  left_join(sa1_summary, by = 'sa1') %>% 
+  left_join(sa1_sf %>%
+  dplyr::select(sa1_code_2021, CHG_FLAG21, SA2_CODE21, AREASQKM21) %>%
+  st_drop_geometry() %>%
+  rename(sa1 = 'sa1_code_2021'), by = 'sa1') %>%
+  mutate(ttl_uhi_cov_a = total_uhi_cov * ttl_area ) %>%
+  filter(!is.na(ttl_cov ))
+
+#agg to SA2 and then check diffs? sa1s gonna be noisy regardless
+
+s2_agg <- tt %>% group_by(SA2_CODE21) %>%
+  summarise( sa2_cov = sum(ttl_cov_a) / sum(ttl_area), sa2_uhi_cov = sum(ttl_uhi_cov_a) / sum(ttl_area) ) %>%
+  mutate(diff = sa2_cov - sa2_uhi_cov) 
+
+uhi_plot <- ggplot(tt %>% filter(CHG_FLAG21 == 0), aes(x = ttl_cov, y = uhi, text = paste("Street tree coverage: ", scales::percent(ttl_cov, accuracy = 1), "<br>UHI effect: ", round(uhi, digits = 2), "°C"))) +  
+  geom_point(color = "#006D2C") + 
+  xlab('Street tree coverage') +
+  ylab('Urban heat island effect (°C)') +
+  labs(title = "The urban heat island effect & street tree coverage") +
+  scale_x_continuous(labels = percent_format(accuracy = 1)) +
+  theme_yimby
+
+ggplotly(uhi_plot, tooltip = "text") 
+
+ts<- feols(uhi ~ ttl_cov, data = tt, vcov = 'hetero')
+
+summary(ts)
+# unch = tt %>%
+#   filter(CHG_FLAG21 == 0) %>%
+#   mutate(diff = ttl_cov - total_uhi_cov) %>%
+#   dplyr::select(diff) 
+# 
+# hist(unlist(unch), xlab = "Difference (Paul - Vic)", main = "Difference between Paul's estimates and Victoria's for each SA1")
+
+```
 
 Modelling the Melbourne dataset, we can see a direct correlation between high street tree canopy coverage and a reduction in the urban heat island effect, aligning with [previous 2018 modelling of the city](https://journals.ametsoc.org/view/journals/apme/57/8/jamc-d-17-0243.1.xml). 
 
@@ -36,7 +112,7 @@ While it's true that tree canopy shade provides urban cooling effects, it is wor
 
 Where both trees and buildings can provide shade, only trees can provide this second key urban cooling effect: evaporative cooling. This is the process by which water evaporates through a tree's leaves and cools the surrounding environment. 
 
-A 2021 study[ published in Urban Forestry & Urban Greening](https://www.sciencedirect.com/science/article/pii/S1618866720307871?ref=pdf_download&fr=RR-2&rr=89cb795bbc20a956#sec0110) found that evaporative cooling from well-watered urban trees could cool the air 2 metres below the tree canopy by between 3.1 and 5.8 °C during the summer periods measured. 
+A 2021 study [published in Urban Forestry & Urban Greening](https://www.sciencedirect.com/science/article/pii/S1618866720307871?ref=pdf_download&fr=RR-2&rr=89cb795bbc20a956#sec0110) found that evaporative cooling from well-watered urban trees could cool the air 2 metres below the tree canopy by between 3.1 and 5.8 °C during the summer periods measured. 
 
 This is good news, though the effect is reduced during heatwave events in dry climates. As trees undergo periods of extended heat stress, their pores close in order to retain water—and where there is no evaporation, there can be no evaporative cooling.
 
@@ -45,14 +121,7 @@ This is why tree species selection is essential for climate resilience. While fo
 
 ### Street trees filter pollutants from stormwater
 
-
-
-<p id="gdcalert13" ><span style="color: red; font-weight: bold">>>>>>  gd2md-html alert: inline image link here (to images/image13.png). Store image on your image server and adjust path/filename/extension if necessary. </span><br>(<a href="#">Back to top</a>)(<a href="#gdcalert14">Next alert</a>)<br><span style="color: red; font-weight: bold">>>>>> </span></p>
-
-
-![alt_text](images/image13.png "image_tooltip")
- \
-Source: Rain garden tree pit program, [City of Melbourne](https://urbanwater.melbourne.vic.gov.au/projects/raingardens/little-collins-street-tree-pits/) 
+![Source: Rain garden tree pit program, [City of Melbourne](https://urbanwater.melbourne.vic.gov.au/projects/raingardens/little-collins-street-tree-pits/)](images/RainGarden.jpeg)
 
 When street trees are installed in low-lying areas in rain garden tree pits or similar water-sensitive urban designs, they can help remove pollutants from stormwater and street runoff. They also slow the flow of water into the drainage system during heavy rain, increasing flash-flood resilience.
 
@@ -66,3 +135,7 @@ While the medium density proposed within our model does not exceed six storeys a
 A 2012 _[Building and Environment study](https://www.sciencedirect.com/science/article/abs/pii/S0360132312000546)_ found that planting just four trees on the sidewalks of a given street could reduce wind speed within the canopy by around 50%. 
 
 Street trees therefore have the ability to reduce the effects of Melbourne's windiest days and, in high-density areas such as the CBD, can mitigate any wind tunnelling that may occur. This airflow reduction does have its downsides, however, and [can trap heat during the nighttime](https://www.sciencedirect.com/science/article/abs/pii/S0360132317300057?via%3Dihub). These tradeoffs should be considered when selecting species and establishing planting patterns on a per-area basis.
+
+***
+
+**Next:** [Selecting & costing street trees](/costs.html) 
