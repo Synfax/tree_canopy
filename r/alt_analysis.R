@@ -90,7 +90,26 @@ lga_sf = lga_sf %>%
 #                                filter(distance < 20000) %>%
 #                                select(sa2_code_2021)) %>% unlist()
 
-mm_lgas <- c('Brimbank', 'Merri-bek', 'Banyule', 'Darebin', 'Yarra', 'Moonee Valley', 'Manningham', 'Maribyrnong', 'Melbourne', 'Hobsons Bay', 'Port Phillip', 'Boroondara', 'Stonnington', 'Glen Eira', 'Bayside', 'Monash', 'Whitehorse', 'Maroondah', 'Manningham', 'Kingston')
+mm_lgas <- c('Brimbank',
+             'Merri-bek',
+             'Banyule',
+             'Darebin', 
+             'Yarra', 
+             'Moonee Valley',
+             'Manningham', 
+             'Maribyrnong', 
+             'Melbourne', 
+             'Hobsons Bay', 
+             'Port Phillip',
+             'Boroondara',
+             'Stonnington', 
+             'Glen Eira',
+             'Bayside', 
+             'Monash', 
+             'Whitehorse',
+             'Maroondah',
+             'Manningham', 
+             'Kingston')
 
 metro_lgas <- c('Melbourne','Boroondara','Merri-bek',
                 'Brimbank',
@@ -114,20 +133,25 @@ metro_lgas <- c('Melbourne','Boroondara','Merri-bek',
                 'Maroondah')
 
 #filter to MM LGAS
-agg_df <- agg_df %>%
-  filter(lga_name_2022 %in% metro_lgas)
+agg_df_filtered <- agg_df %>%
+  filter(lga_name_2022 %in% mm_lgas)
 
-agg_sf <- agg_sf %>% 
-  filter(lga_name_2022 %in% metro_lgas)
+agg_sf_filtered <- agg_sf %>% 
+  filter(lga_name_2022 %in% mm_lgas)
 
 #saving objects for quarto to reach them
 saveRDS(agg_df, 'r_objects/agg_df.Rdata')
+saveRDS(agg_df_filtered, 'r_objects/agg_df_filtered.Rdata')
 saveRDS(agg_sf, 'r_objects/agg_sf.Rdata')
+saveRDS(agg_sf_filterd, 'r_objects/agg_sf_filtered.Rdata')
 saveRDS(sa2_sf, 'r_objects/sa2_sf.Rdata')
 saveRDS(sa1_sf, 'r_objects/sa1_sf.Rdata')
 saveRDS(sal_sf, 'r_objects/sal_sf.Rdata')
 saveRDS(lga_sf, 'r_objects/lga_sf.Rdata')
 
-dupes <- agg_df %>% group_by(lat,lon) %>% filter(n() > 1) %>% arrange(lat)
+dupes <- agg_df %>%
+  group_by(lat,lon) %>%
+  filter(n() > 1) %>%
+  arrange(lat)
 
 dp <- dupes[3:4,]

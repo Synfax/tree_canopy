@@ -18,10 +18,10 @@ source("_common.R")
 ```{r, warning=FALSE, message=FALSE}
 #| echo: false
 #| label: setup-2
+
 grouping = 'SAL_NAME21'
 grouping_sf = sal_sf
 pretty_group_name = 'Suburb'
-
 
 sf_use_s2(FALSE)
 
@@ -107,6 +107,11 @@ This report period of growth is exciting new opportunity for Melbourne to grow i
 #| echo: false
 #| label: full-canopy-map
 
+grouping = 'SAL_NAME21'
+grouping_sf = sal_sf
+pretty_group_name = 'Suburb'
+
+
 trees_grouped <- coverage(group = grouping) %>%
   left_join(grouping_sf, by = (grouping)) %>%
   st_set_geometry('geometry') %>%
@@ -118,15 +123,16 @@ trees_grouped <- coverage(group = grouping) %>%
   as('Spatial')
 
 grouping = 'sa1_code_2021'
-grouping_sf = sa1_sf 
+grouping_sf = read_sf('../SA1_2021/SA1_2021_AUST_GDA2020.shp') %>%
+  rename(sa1_code_2021 = SA1_CODE21)
 
-trees_grouped_sa1 <- coverage(group = grouping) %>%
+trees_grouped_sa1 <- coverage(group = grouping, df = agg_df_filtered) %>%
   left_join(grouping_sf, by = (grouping)) %>%
   st_set_geometry('geometry') %>%
   rowwise() %>%
   mutate(tree_percentage = round(tree_percentage, 1)) %>%
-  mutate(distance = distance / 1000) %>%
-  filter(n > 10)
+  filter(n > 10) %>%
+  ungroup()
 
 grouping = 'SAL_NAME21'
 grouping_sf = sal_sf
@@ -139,8 +145,10 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
   #mapCoverage(trees_per_sa2_cw, trees_per_sa2_cw$data()$tree_percentage , 'Greens', 'Tree Coverage (%)')
 
   #treePal <- colorNumeric(palette = 'Greens', domain = as.data.frame(sd_df$data())$tree_percentage)
+
+
   treePal <- colorNumeric(palette = 'Greens', domain = trees_grouped_sa1$tree_percentage)
-  
+
   map <- leaflet(trees_grouped_sa1) %>%
     setView(lng = 144.963115, lat = -37.814175, zoom = 11) %>%
     addProviderTiles('CartoDB.Positron') %>%
@@ -151,12 +159,27 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
               pal = treePal,
               values = sd_df$data()$tree_percentage,
               title = 'Tree Coverage (%)')
+
+  #map
   
   sf_use_s2(F)
   
 
-  
-  map
+  trees_grouped_sa1 = trees_grouped_sa1 %>% mutate(x10 = tree_percentage * 100)
+
+  colValues = seq(min(trees_grouped_sa1$tree_percentage), max(trees_grouped_sa1$tree_percentage), len = 9)
+  colCols = c(brewer.pal(9, 'Greens'))
+
+
+  maplibre(style = mapgl::carto_style('positron'), center = c(144.963115,-37.814175), zoom = 9, pitch = 40) %>%
+    add_fill_extrusion_layer(id = 'trees_grouped_sa1', source = trees_grouped_sa1,
+                             fill_extrusion_opacity = 0.85,
+                             fill_extrusion_color = interpolate(
+                               column = 'tree_percentage',
+                               values = colValues,
+                               stops = colCols
+                             ),
+                             fill_extrusion_height = c("get", "x10") )
   
 ```
 
@@ -374,6 +397,8 @@ p1$x$data[[2]]$name = "Public"
 p1$x$data[[3]]$name = "Residential"
 p1$x$data[[4]]$name = 'Rural'
 p1$x$data[[5]]$name = 'Streets'
+
+
 p1
 
 ```
@@ -773,21 +798,29 @@ In early 2024 YIMBY Melbourne released its Missing Middle Housing Targets report
 The table below shows the calculations of how much tree canopy coverage might be lost when all the proposed capacity in the upzoned lots is realised and how many street trees would be needed to offset this loss. 
 
 
+::: {.panel-tabset}
+
+## Missing Middle Targets
+
+
 ```{r}
 #| echo: false
-mm_lgas <- c('Brimbank', 'Merri-bek', 'Banyule', 'Darebin', 'Yarra', 'Moonee Valley', 'Manningham', 'Maribyrnong', 'Melbourne', 'Hobsons Bay', 'Port Phillip', 'Boroondara', 'Stonnington', 'Glen Eira', 'Bayside', 'Monash', 'Whitehorse', 'Maroondah', 'Manningham', 'Kingston')
 
+
+# tgs = read_csv('../data/tgts.csv')[,1:3] %>%
+#   rename(mm_targets = `Missing Middle Housing Target 2024`, gov_targets = `Govt Targets`)
+# 
+# saveRDS(tgs, '../r_objects/targets.Rdata')
 
 years <- 10
 
 targets <- readRDS('../r_objects/targets.Rdata') %>%
-  as.data.frame() %>%
-  mutate(Target = sub(',', '', Target))
+  as.data.frame()
 
 target_df <- data.frame()
 
 for(lga in targets$LGA) {
-  home_target <- as.numeric((targets %>% filter(LGA == lga))$Target) * years
+  home_target <- as.numeric((targets %>% filter(LGA == lga))$mm_target) * years
  
   target_df <<- rbind(target_df, c( home_target ,lga_targets(lga, home_target)) ) 
 }
@@ -817,6 +850,57 @@ target_df %>%
               home_target = colDef(name = paste0(years,'yr Home Target'))
             ))
 ```
+
+## Government Targets
+
+```{r}
+#| echo: false
+
+years <- 10
+
+targets <- readRDS('../r_objects/targets.Rdata') %>%
+  as.data.frame()
+
+target_df <- data.frame()
+
+for(lga in targets$LGA) {
+  home_target <- as.numeric((targets %>% filter(LGA == lga))$gov_target) * years
+ 
+  target_df <<- rbind(target_df, c( home_target ,lga_targets(lga, home_target)) ) 
+}
+
+colnames(target_df) = c('home_target','LGA', 'coverage_per_sqm', 'lost_coverage', 'initial_coverage', 'final_coverage')
+
+target_df <- target_df %>%
+  mutate(across(c('initial_coverage', 'final_coverage', 'lost_coverage'), ~ round(as.numeric(.x) / (10^4), 1) )) %>%
+  rowwise() %>%
+  mutate(coverage_per_sqm = round(as.numeric(coverage_per_sqm), 3)) %>%
+  mutate(percentage_point_change = as.numeric(final_coverage) - as.numeric(initial_coverage),
+                                  percentage_change = ((as.numeric(final_coverage)/as.numeric(initial_coverage))-1)*100 ) %>%
+  arrange(-percentage_change) %>%
+  mutate(percentage_change = round(percentage_change, 3)) %>%
+  dplyr::relocate(home_target, .after = LGA)
+
+target_df %>%
+  reactable(theme = sandstone(),
+            pagination = F,
+            columns = list(
+              percentage_point_change = colDef(show = F),
+              coverage_per_sqm = colDef(show = T, name = "Coverage/M^2 "),
+              initial_coverage = colDef(name = "Public Coverage After Targets (Ha)", show = F),
+              lost_coverage = colDef(name = "Lost Coverage (Ha)"),
+              final_coverage = colDef(name = "Public Coverage To Offset Density  (Ha)"),
+              percentage_change = colDef(name = "Percent Growth From Current Public Coverage"),
+              home_target = colDef(name = paste0(years,'yr Home Target'))
+            ))
+
+```
+
+:::
+
+
+
+
 
 ## Replacing private tree canopy with public tree canopy
 

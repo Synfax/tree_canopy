@@ -16,7 +16,8 @@ library(ggtext)
 library(DT)
 library(RColorBrewer)
 library(showtext)
-devtools::install_github("walkerke/mapgl")
+devtools::install_github("walkerke/mapgl", force = T)
+library(mapgl)
 library(shiny)
 library(shinyWidgets)
 library(reactable)
@@ -25,6 +26,12 @@ library(crosstalk)
 
 agg_df <- readRDS("../r_objects/agg_df.Rdata") %>%
   mutate(sa1_code_2021 = sa1)
+
+agg_df_filtered <- readRDS("../r_objects/agg_df_filtered.Rdata") %>%
+  mutate(sa1_code_2021 = sa1)
+
+mm_lgas <- c('Brimbank', 'Merri-bek', 'Banyule', 'Darebin', 'Yarra', 'Moonee Valley', 'Manningham', 'Maribyrnong', 'Melbourne', 'Hobsons Bay', 'Port Phillip', 'Boroondara', 'Stonnington', 'Glen Eira', 'Bayside', 'Monash', 'Whitehorse', 'Maroondah', 'Manningham', 'Kingston')
+
 
 sa2_sf <- readRDS("../r_objects/sa2_sf.Rdata") %>%
   # rename(sa2_code_2021 = "SA2_CODE21") %>%
