@@ -1,6 +1,9 @@
 ---
 title: "Your suburb's tree canopy"
+include-in-header: "header.html"
+include-after-body: "footer.html"
 ---
+
 ```{r echo=FALSE}
 #| echo: false
 #| label: load-_common

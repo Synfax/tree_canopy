@@ -1,5 +1,7 @@
 ---
 title: "Benefits of street trees"
+include-in-header: "header.html"
+include-after-body: "footer.html"
 ---
 
 ```{r, results='hide', warning=FALSE,message=FALSE}

@@ -1,5 +1,7 @@
 ---
 title: "Selecting & costing street trees"
+include-in-header: "header.html"
+include-after-body: "footer.html"
 ---
 
 ## Selecting street trees

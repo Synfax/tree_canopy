@@ -1,6 +1,9 @@
 ---
 title: "Additional data & analysis"
+include-in-header: "header.html"
+include-after-body: "footer.html"
 ---
+
 ```{r}
 #| echo: false
 #| label: load-_common
