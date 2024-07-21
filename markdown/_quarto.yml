@@ -3,8 +3,10 @@ project:
   output-dir: _site
   render:
     - "*.qmd"
+    # - "costs.qmd"
     - "!model.qmd" # temporarily exclude model.qmd
     - "!international_model.qmd" # temporarily exclude international_model.qmd
+    - "!_dump.qmd"
 
 website:
   title: "Missing Middle Street Trees – YIMBY Melbourne"
@@ -26,7 +28,7 @@ website:
     tools-collapse: true
   sidebar:
     title: "Missing Middle Street Trees"
-    logo: images/Tree-Cover-og.jpg
+    logo: images/street-tree-og.jpg
     style: "floating"
     collapse-level: 1
     contents:
@@ -50,11 +52,11 @@ website:
     #       href: international_model.qmd
   search: false
   open-graph:
-    image: images/tree-canopy-og.png
+    image: images/street-tree-og.png
     title: "Missing Middle Tree Canopy"
     description: "The best time to plant a tree is 20 years ago. The second best time is when building more homes where people want to live."
   twitter-card:
-    image: images/tree-canopy-og.png
+    image: images/street-tree-og.png
     title: "Missing Middle Tree Canopy"
     description: "The best time to plant a tree is 20 years ago. The second best time is when building more homes where people want to live."
     card-style: summary_large_image
