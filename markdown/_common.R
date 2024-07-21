@@ -84,6 +84,61 @@ lot_sizes <- agg_df %>%
   rowwise()
 
 
+
+create_combined_df <- function(grouping, grouping_sf) {
+  
+  
+  street_trees_grouped <- coverage(exp = street_exp, type = 'street', group = grouping) %>%
+  rename("street_tree_coverage" = coverage, "total_street_area" = total_area )
+
+  reserve_trees_grouped <- coverage(exp = public_exp, type = 'reserve', group = grouping)  %>%
+    rename("reserve_tree_coverage" = coverage, "total_reserve_area" = total_area ) 
+ 
+  resi_trees_grouped <- coverage(exp = resi_exp , type = 'residential', group = grouping)  %>%
+    rename("residential_tree_coverage" = coverage, "total_residential_area" = total_area )
+  
+  rural_trees_grouped <- coverage(exp = rural_exp , type = 'rural', group = grouping)  %>%
+    rename("rural_tree_coverage" = coverage, "total_rural_area" = total_area )
+  
+  
+  other_trees_grouped <- coverage(exp = other_exp, group = grouping, type = 'other') %>%
+    rename('other_tree_coverage' = coverage, 'total_other_area' = total_area)
+  
+  #combine into one and clean
+  combined_df <- street_trees_grouped %>%
+    left_join(reserve_trees_grouped, by = grouping) %>%
+    left_join(resi_trees_grouped, by = grouping) %>%
+    left_join(other_trees_grouped, by = grouping) %>%
+    left_join(rural_trees_grouped, by = grouping) %>%
+    replace(is.na(.), 0) %>%
+    group_by(!!as.name(grouping)) %>%
+    mutate(total_area =  sum(across(ends_with('_area'))))  %>%
+    mutate(total_coverage_area = sum(across(ends_with('_coverage')))) %>%
+    mutate(total_coverage_pc = total_coverage_area / total_area ) %>%
+    mutate( weighted_street_pc = (street_tree_coverage / total_coverage_area) * total_coverage_pc,
+            weighted_reserve_pc = (reserve_tree_coverage / total_coverage_area) * total_coverage_pc,
+            weighted_rural_pc = (rural_tree_coverage / total_coverage_area) * total_coverage_pc,
+            weighted_resi_pc = (residential_tree_coverage / total_coverage_area) * total_coverage_pc,
+            weighted_other_pc = (other_tree_coverage / total_coverage_area) * total_coverage_pc,
+          ) %>%
+    dplyr::select(c(grouping,'street_percentage', 'rural_percentage', 'reserve_percentage', 'residential_percentage', 'weighted_street_pc', 'weighted_reserve_pc', 'weighted_rural_pc', 'weighted_resi_pc', 'total_coverage_pc', 'other_percentage', 'weighted_other_pc')) %>%
+    left_join(grouping_sf %>% st_drop_geometry() %>% select(grouping, distance), by = grouping) %>%
+    rowwise() %>%
+    # mutate(distance = distance_map[as.character(as.name(grouping))]) %>%
+    mutate(distance = distance / 1000) %>%
+    ungroup() %>%
+    as.data.frame() %>%
+    return()
+    # mutate(across(where(is.numeric), ~ round(.x, 1))) %>%
+    # mutate(across(ends_with('percentage'), ~ ifelse(is.na(.x), 0, .x) )) %>%
+    
+}
+
+# Custom labeling function
+percent_format_no_multiply <- function(x) {
+  sprintf("%d%%", x)
+}
+
 # GGPlot theme
 theme_yimby <- theme_minimal() +
   theme(
@@ -95,7 +150,9 @@ theme_yimby <- theme_minimal() +
       family = "Inter",
       hjust = 0.5,
     ),
-    axis.title = element_text(face = "medium", family = "Inter"),
+    axis.title = element_text(face = "medium", family = "Inter", margin = margin(t = 10, r = 10, b = 10, l = 10)),
     axis.text = element_text(family = "Inter"),
+    axis.text.x = element_text(margin = margin(t = 5)),
+    axis.text.y = element_text(margin = margin(r = 5)),
     plot.margin = unit(c(50, 20, 50, 20), "pt")
   )
