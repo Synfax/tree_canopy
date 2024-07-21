@@ -71,12 +71,8 @@ random_suburb <- grouping_sf %>% select('SAL_NAME21', 'geometry', 'distance') %>
 #   st_drop_geometry()
 
 ```
-
-
-
-
+ 
 ```{=html}
-<br>
 <p class="intro-text">Over the next ten years:</p>
 ```
 
@@ -186,7 +182,7 @@ Everyone loves trees. The year-round cooling and the shade in the summer, the or
 
 People love street trees in particular. Unlike the private trees confined to individual backyards, the benefits of street trees are distributed to everyone. Whether walking the dog, cycling to work, or sitting by the window in the winter sun with your morning coffee—the presence of a robust street tree canopy only improves the day to day of city life.
 
-And so, because street trees are good, YIMBY Melbourne believes we should have more of them. 
+Melbourne urbanists have been at the forefront of this love affair, [as seen in their calls](https://streets-alive-yarra.org/better-for-trees/) for more street trees on residential streets, such as between parking bays. And so, because street trees are good, YIMBY Melbourne believes we should have more of them. 
 
 This report provides a pathway to increasing both the number of street trees and the overall tree canopy across our city. 
 
@@ -201,11 +197,71 @@ We also provide a brief literature review of street trees, informing the costs a
 
 The Victorian Government is working to deliver around 400,000 new homes across Melbourne's missing middle over the coming decade. In our previous report, _[Missing Middle Housing Targets](https://targets.yimby.melbourne)_, we laid out a demand-driven model to determine where those homes ought to be built. 
 
-Our housing targets model is designed to be responsive to demand, and adjusted year by year—which is a [key difference between our model and the Victorian Government's](https://www.yimby.melbourne/post/housing-targets-aim-high-but-need-demand-to-back-them-up). In lieu of a crystal ball, this report assumes that 400,0000 homes will be delivered across Melbourne's Missing Middle at the 2024 rate for the full decade.  
+Our housing targets model is designed to be responsive to demand, and adjusted year by year—which is a [key difference between our model and the Victorian Government's](https://www.yimby.melbourne/post/housing-targets-aim-high-but-need-demand-to-back-them-up). 
 
-This report period of growth is exciting new opportunity for Melbourne to grow its street tree canopy, improving amenity and climate outcomes for both current and future residents, and making an important step toward the vision of a more liveable, sustainable, and affordable Melbourne as laid out in [our flagship report, Melbourne's Missing Middle](https://yimby.melbourne/missing-middle).
+However, in lieu of a crystal ball, this report assumes that our model will deliver 400,0000 homes across Melbourne's Missing Middle at the 2024 rate for the full decade.
+
+We cost and model tree canopy distributions under both our targets and the Government's, with the understanding that neither set of numbers will represent the final targets to be confirmed as part of Plan for Victoria later in 2024.
+
+YIMBY Melbourne recognises that building more homes is not without tradeoffs. Densification of our city's underutilised land will require the removal of trees from private backyards in order to build new, denser buildings for people to live in. But this does not have to constitute an all-out loss: in fact, it grants us the opportunity to redistribute trees and their canopies into the public realm, for the benefit of all Melburnians.
+
+This report explores an exciting new opportunity for Melbourne to grow its street tree canopy, improving amenity and climate outcomes for both current and future residents, and making an important step toward the vision of a more liveable, sustainable, and affordable Melbourne we laid out in [our flagship report, _Melbourne's Missing Middle_](https://yimby.melbourne/missing-middle).
 
 ## The current distribution of trees across Melbourne
+```{r, warning = FALSE}
+#| echo: false
+
+trees_grouped <- coverage(group = grouping) %>%
+  left_join(grouping_sf, by = (grouping)) %>%
+  st_set_geometry('geometry') %>%
+  dplyr::select(grouping, tree_percentage,distance, geometry, n) %>%
+  filter( n > 10) %>%
+  rowwise() %>%
+  mutate(tree_percentage = round(tree_percentage, 1)) %>%
+  mutate(distance = distance / 1000) %>%
+  as('Spatial')
+
+grouping = 'sa1_code_2021'
+grouping_sf = sa1_sf 
+
+trees_grouped_sa1 <- coverage(group = grouping) %>%
+  left_join(grouping_sf, by = (grouping)) %>%
+  st_set_geometry('geometry') %>%
+  rowwise() %>%
+  mutate(tree_percentage = round(tree_percentage, 1)) %>%
+  mutate(distance = distance / 1000) %>%
+  filter(n > 10)
+
+grouping = 'SAL_NAME21'
+grouping_sf = sal_sf
+pretty_group_name = 'Suburb'
+
+#bar chart
+sd_map = SharedData$new(trees_grouped)
+sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupName())
+
+#mapCoverage(trees_per_sa2_cw, trees_per_sa2_cw$data()$tree_percentage , 'Greens', 'Tree Coverage (%)')
+
+#treePal <- colorNumeric(palette = 'Greens', domain = as.data.frame(sd_df$data())$tree_percentage)
+treePal <- colorNumeric(palette = 'Greens', domain = trees_grouped_sa1$tree_percentage)
+
+map <- leaflet(trees_grouped_sa1) %>%
+    setView(lng = 144.963115, lat = -37.814175, zoom = 10) %>%
+    addProviderTiles('CartoDB.Positron') %>%
+    addPolygons(fillColor = ~treePal(tree_percentage),
+                fillOpacity = 0.5,
+                opacity = 0)  %>%
+    addLegend(position = "bottomright",
+              pal = treePal,
+              values = sd_df$data()$tree_percentage,
+              title = 'Tree Coverage (%)')
+
+sf_use_s2(F)
+  
+
+map
+  
+```
 
 Melbourne's densest tree canopy traces our rivers, creeks, and major parks. This makes sense: these are places where a broad and abundant canopy is able to grow. 
 
@@ -246,20 +302,39 @@ big_df <- big_df %>% filter(cov < 1)
 # Capitalize city names
 big_df <- big_df %>% mutate(city = str_to_title(city))
 
+# Convert distance to kilometers
+big_df <- big_df %>% mutate(distance_km = distance / 1000)
 
-int_comp <- ggplot(big_df, mapping = aes(distance, cov, group = city)) +
-  xlab("Distance to Centre (m)") +
-  ylab("Mean Tree Coverage (%)") +
+int_comp <- ggplot(big_df, mapping = aes(distance_km, cov, group = city, color = city)) +
+  # geom_smooth(method = "loess", se = FALSE) +
+  geom_smooth(method = "loess", aes(colour = city), alpha = 0.1) +
   labs(
-    title = "Tree coverage of the most liveable cities (2024)",
+    x = "Distance to Centre (km)",
+    y = "Mean Tree Coverage",
+    title = "Tree canopy coverage of the most liveable cities (2024)",
     color = "City"
   ) +
-  geom_smooth(method = "loess", aes(colour = city), alpha = 0.1) +
   theme_yimby +
   scale_colour_manual(values = custom_colors) +
+  scale_x_continuous(labels = scales::number_format(accuracy = 1)) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
   theme(legend.position = "bottom")
 
-ggplotly(int_comp)
+# Convert to plotly
+p <- ggplotly(int_comp, tooltip = c("x", "y", "color"))
+
+# Customize hover text
+for (i in seq_along(p$x$data)) {
+  p$x$data[[i]]$text <- paste0(
+    "City: ", p$x$data[[i]]$name, "<br>",
+    "Distance: ", sprintf("%.1f km", p$x$data[[i]]$x), "<br>",
+    "Coverage: ", sprintf("%.1f%%", p$x$data[[i]]$y * 100)
+  )
+  p$x$data[[i]]$hoverinfo <- "text"
+}
+
+# Display the plot
+p
 ```
 
 ::: {.callout-tip collapse="true"}
@@ -300,96 +375,6 @@ street_exp = expression(zone_short == 'roads')
 rural_exp = expression(zone_short == "Rural/regional")
  
 other_exp = expression( !(zone_short %in% c('General residential', 'Greenfield', 'Low density residential', 'Neighbourhood residential', 'Residential growth', 'roads', 'Rural/regional')) && !(zone_code %in% c('PPRZ', 'PCRZ') ))
-  
-
-create_combined_df <- function(grouping, grouping_sf) {
-  
-  
-  street_trees_grouped <- coverage(exp = street_exp, type = 'street', group = grouping) %>%
-  rename("street_tree_coverage" = coverage, "total_street_area" = total_area )
-
-  reserve_trees_grouped <- coverage(exp = public_exp, type = 'reserve', group = grouping)  %>%
-    rename("reserve_tree_coverage" = coverage, "total_reserve_area" = total_area ) 
- 
-  resi_trees_grouped <- coverage(exp = resi_exp , type = 'residential', group = grouping)  %>%
-    rename("residential_tree_coverage" = coverage, "total_residential_area" = total_area )
-  
-  rural_trees_grouped <- coverage(exp = rural_exp , type = 'rural', group = grouping)  %>%
-    rename("rural_tree_coverage" = coverage, "total_rural_area" = total_area )
-  
-  
-  other_trees_grouped <- coverage(exp = other_exp, group = grouping, type = 'other') %>%
-    rename('other_tree_coverage' = coverage, 'total_other_area' = total_area)
-  
-  # street_agg =agg_df %>% filter(eval(street_exp)) %>% filter(lga_name_2022 == 'Banyule')
-  # resi_agg= agg_df %>% filter(eval(resi_exp))%>% filter(lga_name_2022 == 'Banyule') 
-  # public_agg= agg_df %>% filter(eval(public_exp))%>% filter(lga_name_2022 == 'Banyule')
-  # other_agg =agg_df %>% filter(eval(other_exp))%>% filter(lga_name_2022 == 'Manningham')
-  
-  
-  #xzz <- xz %>% left_join(trees_grouped_lga, by = 'lga_name_2022')
-  
-  # 
-  # frame <- bind_rows(
-  #   street_agg, resi_agg, public_agg,other_agg
-  # )
-  # 
-  # hasShared = function(df1, df2) {
-  #   
-  #   df1 = other_agg
-  #   df2 = public_agg
-  #   
-  #   df1n = nrow(df1)
-  #   df2n = nrow(df2)
-  #   
-  #   cmb = bind_rows(df1,df2)
-  #   
-  #   n_dist_cmb = n_distinct(cmb)
-  #   
-  #   bl = (n_dist_cmb != (df1n + df2n))
-  #   
-  #   if(bl) {
-  #     
-  #   }
-  #   
-  # }
-  # 
- # agg_sf %>% 
- #   group_by(lon, lat) %>%
- #   filter(n() > 1) %>% st_write('fkd.shp')
- # 
- # agg_results %>% group_by(lon, lat) %>%
- #   filter(n() > 1) %>% v()
-  
-  #combine into one and clean
-  combined_df <- street_trees_grouped %>%
-    left_join(reserve_trees_grouped, by = grouping) %>%
-    left_join(resi_trees_grouped, by = grouping) %>%
-    left_join(other_trees_grouped, by = grouping) %>%
-    left_join(rural_trees_grouped, by = grouping) %>%
-    replace(is.na(.), 0) %>%
-    group_by(!!as.name(grouping)) %>%
-    mutate(total_area =  sum(across(ends_with('_area'))))  %>%
-    mutate(total_coverage_area = sum(across(ends_with('_coverage')))) %>%
-    mutate(total_coverage_pc = total_coverage_area / total_area ) %>%
-    mutate( weighted_street_pc = (street_tree_coverage / total_coverage_area) * total_coverage_pc,
-            weighted_reserve_pc = (reserve_tree_coverage / total_coverage_area) * total_coverage_pc,
-            weighted_rural_pc = (rural_tree_coverage / total_coverage_area) * total_coverage_pc,
-            weighted_resi_pc = (residential_tree_coverage / total_coverage_area) * total_coverage_pc,
-            weighted_other_pc = (other_tree_coverage / total_coverage_area) * total_coverage_pc,
-          ) %>%
-    dplyr::select(c(grouping,'street_percentage', 'rural_percentage', 'reserve_percentage', 'residential_percentage', 'weighted_street_pc', 'weighted_reserve_pc', 'weighted_rural_pc', 'weighted_resi_pc', 'total_coverage_pc', 'other_percentage', 'weighted_other_pc')) %>%
-    left_join(grouping_sf %>% st_drop_geometry() %>% select(grouping, distance), by = grouping) %>%
-    rowwise() %>%
-    # mutate(distance = distance_map[as.character(as.name(grouping))]) %>%
-    mutate(distance = distance / 1000) %>%
-    ungroup() %>%
-    as.data.frame() %>%
-    return()
-    # mutate(across(where(is.numeric), ~ round(.x, 1))) %>%
-    # mutate(across(ends_with('percentage'), ~ ifelse(is.na(.x), 0, .x) )) %>%
-    
-}
 
 combined_df = create_combined_df(grouping, grouping_sf)
 
@@ -417,26 +402,29 @@ combined_longer <- combined_df %>%
       land_type == 'weighted_resi_pc' ~ 'Residential',
       land_type == 'weighted_street_pc' ~ 'Streets'
     )
+    # Remove the multiplication by 100 here
   )
 
 # Function to create the stacked bar chart
 create_stacked_chart <- function(data, position_type, title) {
-  ggplot(data, 
+  chart <- ggplot(data, 
          aes(fill = factor(land_type, levels = c('Rural', 'Other', 'Public', 'Residential', 'Streets')), 
              y = coverage_percentage, 
              x = reorder(!!as.name(grouping), coverage_percentage))) +
     geom_bar(position = position_type, stat = "identity") +
     labs(
-      y = 'Total tree coverage (%)',
+      y = ifelse(position_type == "stack", 'Total tree coverage', 'Proportion of total tree coverage'),
       x = pretty_group_name,
       title = title,
       fill = 'Land type'
     ) +
-    scale_y_continuous(labels = scales::percent_format(scale = 1)) +
     scale_x_discrete(guide = guide_axis(angle = 0)) +
     scale_fill_manual(values = c('#C6A2A3', '#F2DCA5', '#8FC49A', '#D0D6FF', '#2C6F3A')) +
     coord_flip() +
-    theme_yimby
+    theme_yimby +
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1))
+
+  return(chart)
 }
 
 # Create the first chart (stacked)
@@ -446,15 +434,22 @@ stacked_chart <- create_stacked_chart(combined_longer, "stack", 'Total canopy co
 stacked_chart_fill <- create_stacked_chart(combined_longer, "fill", 'Proportional canopy coverage by land type')
 
 # Function to build and customize plotly object
-build_plotly <- function(chart, data) {
+build_plotly <- function(chart, data, position_type) {
   p <- ggplotly(chart, tooltip = c("x", "y", "fill"))
   
   # Customize hover text
   for(i in seq_along(p$x$data)) {
-    p$x$data[[i]]$text <- paste0(
-      "Category: ", p$x$data[[i]]$name, "<br>",
-      "Percentage: ", sprintf("%.2f%%", p$x$data[[i]]$y)
-    )
+    if (position_type == "stack") {
+      p$x$data[[i]]$text <- paste0(
+        "Category: ", p$x$data[[i]]$name, "<br>",
+        "Percentage: ", sprintf("%.01f%%", p$x$data[[i]]$y)
+      )
+    } else {
+      p$x$data[[i]]$text <- paste0(
+        "Category: ", p$x$data[[i]]$name, "<br>",
+        "Proportion: ", sprintf("%.01f%%", p$x$data[[i]]$y)
+      )
+    }
     p$x$data[[i]]$hoverinfo <- "text"
   }
   
@@ -462,8 +457,8 @@ build_plotly <- function(chart, data) {
 }
 
 # Build the plotly objects
-p1 <- build_plotly(stacked_chart, combined_longer)
-p2 <- build_plotly(stacked_chart_fill, combined_longer)
+p1 <- build_plotly(stacked_chart, combined_longer, "stack")
+p2 <- build_plotly(stacked_chart_fill, combined_longer, "fill")
 ```
 
 ```{r}
@@ -494,6 +489,7 @@ Trees are not just nice to look at—they also provide tangible benefits for peo
 
 ```{r}
 #| echo: false
+#| label: leafy canopy chart
 
 street_coverage = coverage(exp = street_exp, group = 'SAL_NAME21', type = 'street') %>%
   arrange(desc(street_percentage)) %>%
@@ -522,8 +518,9 @@ bubble <- reactable(sd_combined,
   vAlign = 'center'),
   columns = c(list(
                  street_percentage = colDef(name = 'Streets', show = T),
+                 residential_percentage = colDef(name = 'Residential'), show = T),
                  reserve_percentage = colDef(name = 'Parks', show = T),
-                 residential_percentage = colDef(name = 'Residential'), show = T),extra_cols),
+                 extra_cols),
   theme = sandstone(),
   defaultSortOrder = 'desc')
 
@@ -543,22 +540,18 @@ reactable(
   theme = sandstone(),
   defaultColDef = colDef(show = F),
   columns = list(
-    lga_name_2022 = colDef(show = T, name = 'LGA'),
+    lga_name_2022 = colDef(show = T, name = 'LGA', width = 125),
     street_percentage = colDef(show = T,name = "Street Coverage (%)", align = "left", cell = function(value) {
       width <- paste0(value / max(sd_combined$data()$street_percentage) * 100, "%")
-      bar_chart(round(value, 1), width = width, fill = "grey", background = "#e1e1e1")
+      bar_chart(round(value, 1), width = width, fill = "#2C6F3A", background = "#e1e1e1")
     }),
     residential_percentage = colDef(show = T, name = "Residential Coverage (%)", align = "left", cell = function(value) {
       width <- paste0(value / max(sd_combined$data()$residential_percentage) * 100, "%")
-      bar_chart(round(value, 1), width = width, fill = "#619CFF", background = "#e1e1e1")
+      bar_chart(round(value, 1), width = width, fill = "#D0D6FF", background = "#e1e1e1")
     }),
     reserve_percentage = colDef(show = T, name = "Public Coverage (%)", align = "left", cell = function(value) {
       width <- paste0(value / max(sd_combined$data()$reserve_percentage) * 100, "%")
-      bar_chart(round(value, 1), width = width, fill = "#7CAE00", background = "#e1e1e1")
-    }),
-    other_percentage = colDef(show = F, name = "Other Coverage (%)", align = "left", cell = function(value) {
-      width <- paste0(value / max(sd_combined$data()$other_percentage) * 100, "%")
-      bar_chart(round(value, 1), width = width, fill = "tomato", background = "#e1e1e1")
+      bar_chart(round(value, 1), width = width, fill = "#8FC49A", background = "#e1e1e1")
     })
   )
 ) 
@@ -588,6 +581,7 @@ Using the ABS product [Socio-Economic Indexes for Areas (SEIFA)](https://www.abs
 
 ``` {r, message = FALSE, warning = FALSE}
 #| echo: false
+#| label: seifa
 # seifa_sa2 = readxl::read_xlsx('../data/seifa_sa2.xlsx', sheet = 'Table 1', skip = 5)
 #saveRDS(seifa_sa2, '../r_objects/seifa_sa2.Rdata')
 seifa_sa2 = readRDS('../r_objects/seifa_sa2.Rdata') %>%
@@ -603,7 +597,9 @@ seifa_plot <- ggplot(seifa_sa2, mapping = aes(x = seifa_score, y = public_percen
   xlab('SEIFA Score') +
   ylab('Tree Coverage of Public Areas (%)') +
   labs(title = "SEIFA Scores against Public Tree Coverage") + 
-  theme_yimby 
+  coord_flip() +
+  theme_yimby +
+  scale_y_continuous(labels = percent_format_no_multiply)
 
 ggplotly(seifa_plot)
 
@@ -613,12 +609,14 @@ The results above suggest that the relationship between the two is non-linear, m
 
 ```{r}
 #| echo: false
+#| label: seifa log
 seifa_log_plot <- ggplot(seifa_sa2, mapping = aes(x = seifa_score, y = log(public_percentage))) +
   geom_point(color = "#006D2C") +
   xlab('SEIFA Score') +
   ylab('Log Tree Coverage of Public Areas (%)') +
   labs(title = "SEIFA Scores against Log Public Tree Coverage") + 
-  theme_yimby 
+  coord_flip() +
+  theme_yimby
 
 ggplotly(seifa_log_plot)
 ```
@@ -632,72 +630,72 @@ Next, we’ll explore the relationship between detached house prices and public 
 
 ```{r, message=FALSE, warning = FALSE}
 #| echo: false
-lot_sizes <- agg_df %>%
-  filter(zoning_permits_housing == 'Housing permitted') %>%
-  group_by(SAL_NAME21) %>%
-  summarise(med_lot = median(lot_size, na.rm = TRUE), n = n()) %>%
-  rowwise()
+#| label: create prices and rents charts
 
+# Custom labeling function for percentages
+percent_format_no_multiply <- function(x) {
+  sprintf("%d%%", round(x))
+}
 
-rents = readRDS('../r_objects/rents.Rdata') %>%
-  manipulateRents(grouping = "sa2") %>%
-  rowwise() %>%
-  mutate(median_band = gsub('\\$', '', median_band)) %>%
-  rename(sa2_code_2021 = "sa2")
+# Custom colors and labels for within15
+within15_colors <- c("TRUE" = "#BA1B21", "FALSE" = "#283696")
+# within15_labels <- c("TRUE" = "Within 15km of CBD", "FALSE" = "Outside 15km of CBD")
 
-public_coverage <- coverage(exp = expression( zone_code %in% c('PPRZ', 'PCRZ') | zone_short == 'roads'), type = 'public', group = grouping) %>% select('SAL_NAME21', 'public_percentage')
+# sa2_prices$within15 <- factor(sa2_prices$within15, levels = c("TRUE", "FALSE"),
+#                               labels = c("Within 15km of CBD", "Outside 15km of CBD"))
 
-public_coverage_sa2 <- coverage(exp = expression( zone_code %in% c('PPRZ', 'PCRZ') | zone_short == 'roads'), type = 'public', group = 'sa2_code_2021') %>% select('sa2_code_2021', 'public_percentage')
+filtered_sa2_prices <- sa2_prices %>% 
+  filter(within15 %in% c("TRUE", "FALSE"))
 
-# house_price_data = readxl::read_xls('../data/Median-House-Price-3rd-Quarter.xls', skip = 1)[-c(1:5),1:6] 
+sa2_public_plot_house <- ggplot(filtered_sa2_prices %>% filter(property_type == 'HOUSE'), 
+                                mapping = aes(x = arithmetic_mean/1000000, y = public_percentage, 
+                                              text = sa2_name, stroke = NA, fill = within15)) + 
+  xlab('Average Detached House Price ($m)') + 
+  ylab('Tree Coverage of Public Areas') + 
+  labs(title = "House prices & public tree canopy") +
+  geom_point(shape = 21, size = 2) +  # Use filled circles
+  labs(caption = "Source: Neosec") + 
+  coord_flip() + 
+  theme_yimby +
+  scale_y_continuous(labels = percent_format_no_multiply) +
+  scale_fill_manual(values = within15_colors, 
+                    labels = c("Within 15km of CBD", "Outside 15km of CBD"),
+                    name = "Within 15km of CBD") +  # Change legend title
+  theme(legend.position = "bottom")  # Move legend to bottom
 
-combined_df = create_combined_df(grouping, grouping_sf)
-
-# house_price_data = house_price_data %>%
-#   rowwise() %>%
-#   mutate(avg = mean(as.numeric(
-#     c(`Jul - Sep 2022...2`,
-#       `Oct - Dec 2022`,
-#       `Jan - Mar 2023`,
-#       `Apr - Jun 2023...5`,
-#       `Jul - Sep 2023...6`)), na.rm = TRUE)) %>% 
-#   select(SUBURB, avg,) %>%
-#   rename(SAL_NAME21 = SUBURB) %>%
-#   mutate(SAL_NAME21 = str_to_title(SAL_NAME21)) %>%
-#   left_join(combined_df, by = grouping) %>%
-#   filter(!is.na(distance), !is.na(avg)) %>%
-#   rename(average_house_price = avg) %>%
-#   mutate(average_house_price = average_house_price / 10^6) %>%
-#   left_join(lot_sizes, by = 'SAL_NAME21') %>%
-#   left_join(rents, by = 'SAL_NAME21') %>%
-#   left_join(public_coverage, by = 'SAL_NAME21') %>%
-#   adf() %>%
-#   mutate(median_band = as.factor(median_band)) %>%
-#   mutate(within15 = ifelse(distance < 15, T, F))
-
-
-
-#house_price_data = house_price_data %>% left_join(directions, by = 'SAL_NAME21')
-
-#missing_suburbs = setdiff(combined_df$SAL_NAME21, house_price_data$SAL_NAME21)
-#wtf
-
-# house_interactable = SharedData$new(house_price_data)
-# 
-# filter_slider("distance", "Distance to CBD", house_interactable, max = 30, ~distance, width = '75%')
-
-# price_street_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = street_percentage, text = SAL_NAME21), axe) + xlab('Average House Price ($m)') + ylab('Street Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
-# 
-# price_residential_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = residential_percentage, text = SAL_NAME21), axe) + xlab('Average House Price ($m)') + ylab('Residential Area Tree Coverage (%)') + geom_point(color = "#006D2C") + theme_minimal()
-
-sa2_public_plot_house <- ggplot(sa2_prices %>% filter(property_type == 'HOUSE'), mapping = aes(x = arithmetic_mean, y = public_percentage, text = sa2_name, stroke = NA, fill = within15), axe) + xlab('Average Detached House Price ($m)') + ylab(' Tree Coverage of Public Areas (%)') + geom_point() + labs(caption = "Source: Neosec") +  theme_yimby
-
-sa2_public_plot_unit <- ggplot(sa2_prices %>% filter(property_type == 'UNIT'), mapping = aes(x = arithmetic_mean, y = public_percentage, text = sa2_name, stroke = NA, fill = within15), axe) + xlab('Average Unit Price ($m)') + ylab(' Tree Coverage of Public Areas (%)') + geom_point() + labs(caption = "Source: Neosec") +  theme_yimby
+sa2_public_plot_unit <- ggplot(filtered_sa2_prices %>% filter(property_type == 'UNIT'), 
+                               mapping = aes(x = arithmetic_mean/1000000, y = public_percentage, 
+                                             text = sa2_name, stroke = NA, fill = within15)) + 
+  xlab('Average Unit Price ($m)') + 
+  ylab('Public tree canopy coverage') + 
+  labs(title = "Unit prices & public tree canopy") +
+  geom_point(shape = 21, size = 2) +  # Use filled circles
+  labs(caption = "Source: Neosec") +
+  coord_flip() +
+  theme_yimby +
+  scale_y_continuous(labels = percent_format_no_multiply) +
+  scale_fill_manual(values = within15_colors, 
+                    labels = c("Within 15km of CBD", "Outside 15km of CBD"),
+                    name = "Within 15km of CBD") +  # Change legend title
+  theme(legend.position = "bottom")  # Move legend to bottom
+ 
+# Convert to plotly (if needed)
+# ggplotly(sa2_public_plot_house)
+# ggplotly(sa2_public_plot_unit)
 
 
 # price_public_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = public_percentage, text = SAL_NAME21, fill = within15, stroke = NA), axe) + xlab('Average Detached House Price ($m)') + ylab(' Tree Coverage of Public Areas (%)') + geom_point() + labs(caption = "Source: Housing Victoria") +  theme_yimby
 
-rents_public_plot <- (ggplot(sa2_prices %>% filter(property_type == 'HOUSE'), mapping = aes(x = median_band, y = public_percentage, text = sa2_code_2021)) + geom_boxplot(color = "#006D2C") + xlab('Median Rent (2021 dollars)') + ylab("Tree Coverage of Public Areas (%)") +  theme_yimby + labs(caption = "Source: 2021 Census (ABS)") +  theme(axis.text.x = element_text(angle = 45)) ) 
+rents_public_plot <- (ggplot(sa2_prices %>% filter(property_type == 'HOUSE'), mapping = aes(x = median_band, y = public_percentage, text = sa2_code_2021)) + 
+  geom_boxplot(color = "#006D2C") + 
+  xlab('Median Rent (2021 dollars)') + 
+  ylab("Public tree canopy coverage") + 
+  labs(title = "Rents & public tree canopy") +
+  coord_flip() + 
+  theme_yimby + 
+  labs(caption = "Source: 2021 Census (ABS)") + 
+  theme(axis.text.x = element_text()) ) +
+  scale_y_continuous(labels = percent_format_no_multiply) 
 
 #bscols(widths = c(4,4), ggplotly(price_street_plot), ggplotly(price_residential_plot))
 #subplot(ggplotly(price_street_plot),ggplotly(price_residential_plot), titleY = T, titleX = T)
@@ -714,12 +712,15 @@ We’ve also split the data into two groups to separate the price premium from p
 
 Performing this split reveals two distinct spatial patterns. For ‘inner’ areas, the relationship between canopy and price is much steeper, while for outer areas, the slope of a best-fit line is much shallower.
 
+In simple terms, this means that the price premium associated with tree canopy coverage is much higher for the inner-city than suburbs and peri-urban areas. 
+
 #### Unit prices and public tree coverage 
 
 Next, we explore the same relationship but on unit prices. While a positive correlation remains, the divergence between ‘inner’ and ‘outer’ areas does not seem to replicate in unit prices.
 
 ```{r}
 #| echo: false
+#| label: render-unit-prices
 ggplotly(sa2_public_plot_unit)
 ```
 
@@ -727,36 +728,8 @@ ggplotly(sa2_public_plot_unit)
 
 ```{r}
 #| echo: false
+#| label: render-rents
 ggplotly(rents_public_plot)
-
-# sal_w_rents <- sal_sf %>%
-#   left_join(rents, by = 'SAL_NAME21') %>%
-#   arrange(median_band) %>%
-#   mutate(median_band = as.factor(median_band))
-# 
-# cols = brewer.pal(4, 'RdBu' )
-# cols = colorRampPalette(cols)(18)
-# rentPal =  colorFactor( cols  , domain = sal_w_rents$median_band)
-
-# sal_w_rents %>%
-#   leaflet() %>%
-#   addProviderTiles('CartoDB.Positron') %>%
-#   addPolygons(fillColor = ~rentPal(median_band), fillOpacity = 1, opacity = 0) %>%
-#   addLegend(position = "bottomright",
-#               pal = rentPal,
-#               values =sal_w_rents$median_band,
-#               title = 'title')
-
-
-
-#plot( house_price_data$median_band, house_price_data$public_percentage)
-
-
-#colours <- brewer.pal(5, "Set1")
-#names(colours) <- levels(house_price_data$direction)
-
-#ggplot(house_price_data, mapping = aes(x = average_house_price, y = residential_percentage, color = direction, text = SAL_NAME21), axe) + xlab('Average House Price ($m)') + ylab('Residential Area Tree Coverage (%)') + geom_point() + scale_color_manual(name = "direction", values = colours) + theme_yimby
-
 
 ```
 
@@ -774,6 +747,7 @@ Combining the Victorian Government's 2018 urban heat dataset with our 2018–20 
 
 ```{r}
 #| echo: false
+#| label: uhi
 
 uhi_df = uhi %>%
   st_drop_geometry() %>%
@@ -802,7 +776,7 @@ sa1_summary <- agg_df %>%
   filter(zone_short == 'roads') %>%
   summarise( ttl_cov = sum(coverage) / sum(total_area), ttl_cov_a = sum(coverage), ttl_area = sum(total_area)  )
 
-tt <- mb %>%
+tt <- mb %>% 
   left_join(sa1_summary, by = 'sa1') %>% 
   left_join(sa1_sf %>%
   dplyr::select(sa1_code_2021, CHG_FLAG21, SA2_CODE21, AREASQKM21) %>%
@@ -815,20 +789,21 @@ tt <- mb %>%
 
 s2_agg <- tt %>% group_by(SA2_CODE21) %>%
   summarise( sa2_cov = sum(ttl_cov_a) / sum(ttl_area), sa2_uhi_cov = sum(ttl_uhi_cov_a) / sum(ttl_area) ) %>%
-  mutate(diff = sa2_cov - sa2_uhi_cov)
+  mutate(diff = sa2_cov - sa2_uhi_cov) 
 
-uhi_plot <- ggplot(tt %>% filter(CHG_FLAG21 == 0), mapping = aes(x = ttl_cov, y = uhi ) ) + 
-  geom_point(color = "#006D2C") +
-  xlab('Tree Coverage (%)') +
-  ylab('Urban Heat Island (deg)') +
-  labs(title = "Urban heat island against street tree coverage per SA1") +
+uhi_plot <- ggplot(tt %>% filter(CHG_FLAG21 == 0), aes(x = ttl_cov, y = uhi, text = paste("Street tree coverage: ", scales::percent(ttl_cov, accuracy = 1), "<br>UHI effect: ", round(uhi, digits = 2), "°C"))) +  
+  geom_point(color = "#006D2C") + 
+  xlab('Street tree canopy coverage') +
+  ylab('Urban heat island effect (°C)') +
+  labs(title = "The urban heat island effect & street tree coverage") +
+  scale_x_continuous(labels = percent_format(accuracy = 1)) +
   theme_yimby
 
-ggplotly(uhi_plot)
+ggplotly(uhi_plot, tooltip = "text") 
 
 ts<- feols(uhi ~ ttl_cov, data = tt, vcov = 'hetero')
 
-summary(ts)
+# summary(ts)
 # unch = tt %>%
 #   filter(CHG_FLAG21 == 0) %>%
 #   mutate(diff = ttl_cov - total_uhi_cov) %>%
@@ -858,7 +833,7 @@ In early 2024 YIMBY Melbourne released its Missing Middle Housing Targets report
 
 Using publicly available tree canopy, planning, and other spatial data, we determine the estimated amount of tree canopy that may be removed from the private realm each year in order to meet our housing targets.
 
-The table below shows the calculations of how much tree canopy coverage might be lost when all the proposed capacity in the upzoned lots is realised and how many street trees would be needed to offset this loss. 
+The table below shows the calculations of how much tree canopy coverage might be lost when all the proposed capacity in the upzoned lots is realised and how many street trees would be needed to offset this loss, assuming ten years of building and planting.
 
 
 ::: {.panel-tabset}
@@ -892,24 +867,26 @@ colnames(target_df) = c('home_target','LGA', 'coverage_per_sqm', 'lost_coverage'
 target_df <- target_df %>%
   mutate(across(c('initial_coverage', 'final_coverage', 'lost_coverage'), ~ round(as.numeric(.x) / (10^4), 1) )) %>%
   rowwise() %>%
-  mutate(coverage_per_sqm = round(as.numeric(coverage_per_sqm), 3)) %>%
+  mutate(coverage_per_sqm = round(as.numeric(coverage_per_sqm), 3) * 100) %>%
+  mutate(lost_coverage = lost_coverage/10) %>%
   mutate(percentage_point_change = as.numeric(final_coverage) - as.numeric(initial_coverage),
                                   percentage_change = ((as.numeric(final_coverage)/as.numeric(initial_coverage))-1)*100 ) %>%
   arrange(-percentage_change) %>%
-  mutate(percentage_change = round(percentage_change, 3)) %>%
+  mutate(percentage_change = round(percentage_change, 1)) %>%
   dplyr::relocate(home_target, .after = LGA)
+
 
 target_df %>%
   reactable(theme = sandstone(),
             pagination = F,
             columns = list(
               percentage_point_change = colDef(show = F),
-              coverage_per_sqm = colDef(show = T, name = "Coverage/M^2 "),
-              initial_coverage = colDef(name = "Public Coverage After Targets (Ha)", show = F),
-              lost_coverage = colDef(name = "Lost Coverage (Ha)"),
-              final_coverage = colDef(name = "Public Coverage To Offset Density  (Ha)"),
-              percentage_change = colDef(name = "Percent Growth From Current Public Coverage"),
-              home_target = colDef(name = paste0(years,'yr Home Target'))
+              initial_coverage = colDef(show = F),
+              coverage_per_sqm = colDef(show = T, name = "Current total tree canopy coverage (%)"),
+              lost_coverage = colDef(name = "Public canopy planted per year (Ha)"),
+              final_coverage = colDef(name = "Future total public canopy (Ha)"),
+              percentage_change = colDef(name = "Growth in public canopy coverage (%)"),
+              home_target = colDef(name = paste0(years,'-year housing target'), align = "right")
             ))
 ```
 
@@ -992,29 +969,31 @@ colnames(target_df) = c('home_target','LGA', 'coverage_per_sqm', 'lost_coverage'
 target_df <- target_df %>%
   mutate(across(c('initial_coverage', 'final_coverage', 'lost_coverage'), ~ round(as.numeric(.x) / (10^4), 1) )) %>%
   rowwise() %>%
-  mutate(coverage_per_sqm = round(as.numeric(coverage_per_sqm), 3)) %>%
+  mutate(coverage_per_sqm = round(as.numeric(coverage_per_sqm), 3) * 100) %>%
+  mutate(lost_coverage = lost_coverage/10) %>%
   mutate(percentage_point_change = as.numeric(final_coverage) - as.numeric(initial_coverage),
                                   percentage_change = ((as.numeric(final_coverage)/as.numeric(initial_coverage))-1)*100 ) %>%
   arrange(-percentage_change) %>%
-  mutate(percentage_change = round(percentage_change, 3)) %>%
+  mutate(percentage_change = round(percentage_change, 1)) %>%
   dplyr::relocate(home_target, .after = LGA)
+
 
 target_df %>%
   reactable(theme = sandstone(),
             pagination = F,
             columns = list(
               percentage_point_change = colDef(show = F),
-              coverage_per_sqm = colDef(show = T, name = "Coverage/M^2 "),
-              initial_coverage = colDef(name = "Public Coverage After Targets (Ha)", show = F),
-              lost_coverage = colDef(name = "Lost Coverage (Ha)"),
-              final_coverage = colDef(name = "Public Coverage To Offset Density  (Ha)"),
-              percentage_change = colDef(name = "Percent Growth From Current Public Coverage"),
-              home_target = colDef(name = paste0(years,'yr Home Target'))
+              initial_coverage = colDef(show = F),
+              coverage_per_sqm = colDef(show = T, name = "Current total tree canopy coverage (%)"),
+              lost_coverage = colDef(name = "Public canopy planted per year (Ha)"),
+              final_coverage = colDef(name = "Future total public canopy (Ha)"),
+              percentage_change = colDef(name = "Growth in public canopy coverage (%)"),
+              home_target = colDef(name = paste0(years,'-year housing target'), align = "right")
             ))
-
 ```
 
 ```{=html}
+
 <table>
   <tr>
     <td><strong>Residential canopy replaced per year (ha)</strong></td>
@@ -1069,21 +1048,22 @@ target_df %>%
   </tr>
 </table>		
 ```
+
 :::
 
 We then [calculate the costs](/costs.html) of delivering the equivalent canopy within the public realm, providing a clear path to ensuring that a denser Melbourne is also a greener Melbourne, with the [benefits delivered for all](/benefits.html).
 
 ## Street tree canopy is public infrastructure
 
-To maintain Melbourne's current total tree canopy while densifying Melbourne's missing middle, 57 new trees should be planted per 100 new homes, at a cost of $1,740.15 per dwelling. 
+To maintain Melbourne's current total tree canopy while densifying Melbourne's missing middle, 55 new trees should be planted per 100 new homes, at a cost of $1,680 per dwelling. 
 
 However, we recommend taking this opportunity to not only maintain current canopy levels, but generate an overall increase in coverage across metropolitan Melbourne. 
 
-To generate a meaningful 10% overall increase in mature tree canopy, 62 trees per 100 dwellings should be planted, at a cost of $1,899.45 per dwelling.
+To generate a meaningful 10% overall increase in mature tree canopy, 60 trees per 100 dwellings should be planted, at a cost of $1,840 per dwelling.
 
-This significant urban greening project will have a total cost of $76 million per year. Funding could come from a combination of sources, including developer contributions, government grant programs, and general budgetary expenditure. We expand on this in the [costing section of this report](/costs#paying-for-street-trees).
+This significant urban greening project will have a total cost of $73.6 million per year. Funding could come from a combination of sources, including developer contributions, government grant programs, and general budgetary expenditure. We expand on this in the [costing section of this report](/costs.html#paying-for-street-trees).
 
-Finally, we note that all our calculations are based on the delivery of mature tree canopy. This means that the full [benefits](/benefits) of this model will not be delivered immediately, but progressively as trees grow over time. But because public trees within our model are only added and never removed, even upon establishment all new trees planted represent a material benefit for all Melburnians when measured against the status quo. 
+Finally, we note that all our calculations are based on the delivery of mature tree canopy. This means that the full [benefits](/benefits.html) of this model will not be delivered immediately, but progressively as trees grow over time. But because public trees within our model are only added and never removed, even upon establishment all new trees planted represent a material benefit for all Melburnians when measured against the status quo. 
 
 The best time to plant a tree was 20 years ago. The second best time is when building more homes where people want to live.
 
