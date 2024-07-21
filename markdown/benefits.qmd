@@ -76,7 +76,7 @@ s2_agg <- tt %>% group_by(SA2_CODE21) %>%
 
 uhi_plot <- ggplot(tt %>% filter(CHG_FLAG21 == 0), aes(x = ttl_cov, y = uhi, text = paste("Street tree coverage: ", scales::percent(ttl_cov, accuracy = 1), "<br>UHI effect: ", round(uhi, digits = 2), "°C"))) +  
   geom_point(color = "#006D2C") + 
-  xlab('Street tree coverage') +
+  xlab('Street tree canopy coverage') +
   ylab('Urban heat island effect (°C)') +
   labs(title = "The urban heat island effect & street tree coverage") +
   scale_x_continuous(labels = percent_format(accuracy = 1)) +
@@ -86,7 +86,7 @@ ggplotly(uhi_plot, tooltip = "text")
 
 ts<- feols(uhi ~ ttl_cov, data = tt, vcov = 'hetero')
 
-summary(ts)
+# summary(ts)
 # unch = tt %>%
 #   filter(CHG_FLAG21 == 0) %>%
 #   mutate(diff = ttl_cov - total_uhi_cov) %>%
