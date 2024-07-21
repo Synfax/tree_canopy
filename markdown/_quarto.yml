@@ -52,12 +52,12 @@ website:
     #       href: international_model.qmd
   search: false
   open-graph:
-    image: images/street-tree-og.png
-    title: "Missing Middle Tree Canopy"
+    image: https://trees.yimby.melbourne/images/street-tree-og.png
+    title: "Missing Middle Street Trees"
     description: "The best time to plant a tree is 20 years ago. The second best time is when building more homes where people want to live."
   twitter-card:
-    image: images/street-tree-og.png
-    title: "Missing Middle Tree Canopy"
+    image: https://trees.yimby.melbourne/images/street-tree-og.png
+    title: "Missing Middle Street Trees"
     description: "The best time to plant a tree is 20 years ago. The second best time is when building more homes where people want to live."
     card-style: summary_large_image
     site: "@yimbymelbourne"
