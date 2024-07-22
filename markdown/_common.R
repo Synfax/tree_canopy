@@ -1,6 +1,6 @@
 # Setup for all markdown files
 devtools::install_github("dmurdoch/leaflet@crosstalk4")
-library(tidyverse)
+
 library(sf)
 library(leaflet)
 library(stringr)
@@ -23,7 +23,7 @@ library(shinyWidgets)
 library(reactable)
 library(crosstalk)
 library(scales)
-
+library(tidyverse)
 
 agg_df <- readRDS("../r_objects/agg_df.Rdata") %>%
   mutate(sa1_code_2021 = sa1)

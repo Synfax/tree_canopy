@@ -9,6 +9,11 @@ include-after-body: "footer.html"
 #| echo: false
 #| label: load-_common
 source("_common.R")
+
+if(!dir.exists('../exports/')) {
+  dir.create('../exports')
+}
+
 ```
 
 ```{r, warning=FALSE, message=FALSE}
@@ -110,16 +115,29 @@ trees_grouped <- coverage(group = grouping) %>%
   as('Spatial')
 
 grouping = 'sa1_code_2021'
-grouping_sf = read_sf('../r_objects/SA1_2021/SA1_2021_AUST_GDA2020.shp') %>%
-  rename(sa1_code_2021 = SA1_CODE21)
 
-trees_grouped_sa1 <- coverage(group = grouping, df = agg_df) %>%
+if(file.exists('../r_objects/SA1_2021/SA1_2021_AUST_GDA2020.shp')) {
+  grouping_sf <<- read_sf('../r_objects/SA1_2021/SA1_2021_AUST_GDA2020.shp') %>%
+  rename(sa1_code_2021 = SA1_CODE21)
+}
+if(file.exists('../SA1_2021/SA1_2021_AUST_GDA2020.shp')) {
+  grouping_sf <<- read_sf('../SA1_2021/SA1_2021_AUST_GDA2020.shp') %>%
+  rename(sa1_code_2021 = SA1_CODE21)
+}
+if(file.exists('../data/SA1_2021/SA1_2021_AUST_GDA2020.shp')) {
+  grouping_sf <<- read_sf('../data/SA1_2021/SA1_2021_AUST_GDA2020.shp') %>%
+  rename(sa1_code_2021 = SA1_CODE21)
+}
+
+trees_grouped_sa1 <- coverage(group = grouping, df = agg_df_filtered) %>%
   left_join(grouping_sf, by = (grouping)) %>%
   st_set_geometry('geometry') %>%
   rowwise() %>%
   mutate(tree_percentage = round(tree_percentage, 1)) %>%
   filter(n > 10) %>%
   ungroup()
+
+#write_sf(trees_grouped_sa1, '../exports/sa1_trees.shp', append = F)
 
 grouping = 'SAL_NAME21'
 grouping_sf = sal_sf
@@ -173,6 +191,8 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
     colors = c(colCols[1], colCols[9])
 
   )
+  
+  #write_sf(trees_grouped_sa1, '../exports/sa1_tree_coverage.csv')
   
 ```
 
@@ -305,6 +325,8 @@ big_df <- big_df %>% mutate(city = str_to_title(city))
 # Convert distance to kilometers
 big_df <- big_df %>% mutate(distance_km = distance / 1000)
 
+write_csv(big_df %>% as.data.frame(), '../exports/international_comparisons.csv')
+
 int_comp <- ggplot(big_df, mapping = aes(distance_km, cov, group = city, color = city)) +
   # geom_smooth(method = "loess", se = FALSE) +
   geom_smooth(method = "loess", aes(colour = city), alpha = 0.1) +
@@ -404,6 +426,8 @@ combined_longer <- combined_df %>%
     )
     # Remove the multiplication by 100 here
   )
+
+write_csv(combined_longer %>% as.data.frame(), '../exports/stacked_bar_chart.csv')
 
 # Function to create the stacked bar chart
 create_stacked_chart <- function(data, position_type, title) {
@@ -534,6 +558,8 @@ bar_chart <- function(label, width = "100%", height = "1rem", fill = "#00bfc4", 
   div(style = list(display = "flex", alignItems = "center"), label, chart)
 }
 
+write_csv(combined_df %>% dplyr::select(c(lga_name_2022, street_percentage, residential_percentage, reserve_percentage)) %>% as.data.frame(), '../exports/coverage_type_table.csv')
+
 reactable(
   sd_combined,
   defaultSorted = list('street_percentage' = "desc"),
@@ -592,6 +618,8 @@ seifa_sa2 = readRDS('../r_objects/seifa_sa2.Rdata') %>%
   left_join(sa2_prices, by = "sa2_code_2021") %>%
   filter(!is.na(public_percentage), seifa_score > 800)
 
+write_csv(seifa_sa2 %>% as.data.frame(), '../exports/seifa_sa2_scores.csv')
+
 seifa_plot <- ggplot(seifa_sa2, mapping = aes(x = seifa_score, y = public_percentage)) +
   geom_point(color = "#006D2C") +
   xlab('SEIFA Score') +
@@ -647,6 +675,8 @@ within15_colors <- c("TRUE" = "#BA1B21", "FALSE" = "#283696")
 filtered_sa2_prices <- sa2_prices %>% 
   filter(within15 %in% c("TRUE", "FALSE"))
 
+filtered_sa2_prices %>%  write_csv('../exports/sa2_house_unit_prices_plot.csv')
+
 sa2_public_plot_house <- ggplot(filtered_sa2_prices %>% filter(property_type == 'HOUSE'), 
                                 mapping = aes(x = arithmetic_mean/1000000, y = public_percentage, 
                                               text = sa2_name, stroke = NA, fill = within15)) + 
@@ -685,6 +715,8 @@ sa2_public_plot_unit <- ggplot(filtered_sa2_prices %>% filter(property_type == '
 
 
 # price_public_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = public_percentage, text = SAL_NAME21, fill = within15, stroke = NA), axe) + xlab('Average Detached House Price ($m)') + ylab(' Tree Coverage of Public Areas (%)') + geom_point() + labs(caption = "Source: Housing Victoria") +  theme_yimby
+
+write_csv(sa2_prices %>% as.data.frame(),'../exports/sa2_rents_plot.csv')
 
 rents_public_plot <- (ggplot(sa2_prices %>% filter(property_type == 'HOUSE'), mapping = aes(x = median_band, y = public_percentage, text = sa2_code_2021)) + 
   geom_boxplot(color = "#006D2C") + 
@@ -784,6 +816,8 @@ tt <- mb %>%
   rename(sa1 = 'sa1_code_2021'), by = 'sa1') %>%
   mutate(ttl_uhi_cov_a = total_uhi_cov * ttl_area ) %>%
   filter(!is.na(ttl_cov ))
+
+write_csv(tt %>% as.data.frame(),'../exports/urban_heat_island.csv')
 
 #agg to SA2 and then check diffs? sa1s gonna be noisy regardless
 
@@ -888,6 +922,9 @@ target_df %>%
               percentage_change = colDef(name = "Growth in public canopy coverage (%)"),
               home_target = colDef(name = paste0(years,'-year housing target'), align = "right")
             ))
+
+target_df %>% write_csv(.,'../exports/MM_table.csv')
+
 ```
 
 ```{=html}
@@ -990,6 +1027,9 @@ target_df %>%
               percentage_change = colDef(name = "Growth in public canopy coverage (%)"),
               home_target = colDef(name = paste0(years,'-year housing target'), align = "right")
             ))
+
+target_df %>% write_csv(.,'../exports/GOV_table.csv')
+
 ```
 
 ```{=html}

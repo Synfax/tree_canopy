@@ -30,3 +30,4 @@ tsgeojson.mbtiles
 markdown/fkd.dbf
 markdown/_site
 markdown/.quarto
+exports/

@@ -4,7 +4,7 @@ include-in-header: "header.html"
 include-after-body: "footer.html"
 ---
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 #| echo: false
 #| label: load-_common
 source("_common.R")
@@ -86,16 +86,16 @@ trees_grouped <- coverage(group = grouping) %>%
   mutate(distance = distance / 1000) %>%
   as('Spatial')
 
-grouping = 'sa1_code_2021'
-grouping_sf = sa1_sf 
-
-trees_grouped_sa1 <- coverage(group = grouping) %>%
-  left_join(grouping_sf, by = (grouping)) %>%
-  st_set_geometry('geometry') %>%
-  rowwise() %>%
-  mutate(tree_percentage = round(tree_percentage, 1)) %>%
-  mutate(distance = distance / 1000) %>%
-  filter(n > 10)
+# grouping = 'sa1_code_2021'
+# grouping_sf = sa1_sf 
+# 
+# trees_grouped_sa1 <- coverage(group = grouping) %>%
+#   left_join(grouping_sf, by = (grouping)) %>%
+#   st_set_geometry('geometry') %>%
+#   rowwise() %>%
+#   mutate(tree_percentage = round(tree_percentage, 1)) %>%
+#   mutate(distance = distance / 1000) %>%
+#   filter(n > 10)
 
 grouping = 'SAL_NAME21'
 grouping_sf = sal_sf
@@ -108,9 +108,9 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
   #mapCoverage(trees_per_sa2_cw, trees_per_sa2_cw$data()$tree_percentage , 'Greens', 'Tree Coverage (%)')
 
   #treePal <- colorNumeric(palette = 'Greens', domain = as.data.frame(sd_df$data())$tree_percentage)
-  treePal <- colorNumeric(palette = 'Greens', domain = trees_grouped_sa1$tree_percentage)
+  treePal <- colorNumeric(palette = 'Greens', domain = trees_grouped$tree_percentage)
   
-  map <- leaflet(trees_grouped_sa1) %>%
+  map <- leaflet(trees_grouped) %>%
     setView(lng = 144.963115, lat = -37.814175, zoom = 11) %>%
     addProviderTiles('CartoDB.Positron') %>%
     addPolygons(fillColor = ~treePal(tree_percentage),
@@ -147,6 +147,8 @@ SA1s are assigned to the suburb with which they have the highest overlap.
   
   extra_cols = list()
   extra_cols[[grouping]] <- colDef(name = pretty_group_name, filterable = T)
+  
+  write_csv(trees_grouped %>% as.data.frame(),'../exports/total_suburb_tree_coverage.csv')
          
   reactable(sd_df,
   defaultSorted = list('tree_percentage' = "desc"),
@@ -288,6 +290,8 @@ create_combined_df <- function(grouping, grouping_sf) {
 
 combined_df = create_combined_df(grouping, grouping_sf)
 
+write_csv(combined_df %>% as.data.frame(),'../exports/suburb_land_use_type_chart.csv')
+
 
 sd_combined = SharedData$new((combined_df))
 
@@ -384,6 +388,8 @@ streets <- coverage(exp = expression(zone_short == 'roads'), group = grouping) %
   dplyr::select(grouping, street_as_pc_of_total_area) %>%
   arrange(desc(street_as_pc_of_total_area)) %>%
   mutate(street_as_pc_of_total_area = round(100 * as.vector(street_as_pc_of_total_area), 1))
+
+write_csv(streets %>% as.data.frame() ,'../exports/streets_as_a_pc_of_suburb.csv')
 
 streets %>%
   reactable(
