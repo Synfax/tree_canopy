@@ -82,10 +82,10 @@ random_suburb <- grouping_sf %>% select('SAL_NAME21', 'geometry', 'distance') %>
     <td><strong>Plant 60 new street trees per 100 new dwellings</strong></td>
   </tr>
   <tr>
-    <td><strong>Invest $1840 per dwelling in public greening</strong></td>
+    <td><strong>Invest $1,840 per new dwelling in public greening</strong></td>
   </tr>
   <tr>
-    <td><strong>Grow 136 MCGs of new tree canopy</strong></td>
+    <td><strong>Grow 136 MCGs of new street tree canopy</strong></td>
   </tr>
 </table>
 ```
