@@ -1,5 +1,5 @@
 ---
-title: "Tree Data International Comparison Documentation"
+title: "Measuring international cities' tree canopy"
 include-in-header: "header.html"
 include-after-body: "footer.html"
 ---

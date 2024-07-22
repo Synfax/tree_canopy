@@ -1,5 +1,5 @@
 ---
-title: "Tree Data Documentation"
+title: "Measuring Melbourne's street tree canopy"
 ---
 
 ```{r, results='hide', warning=FALSE,message=FALSE}
@@ -30,9 +30,9 @@ This page will walk through a step by step version of the model used to determin
 #| echo: false
     #variables aren't loaded every routine, this is just for demo purposes :)
 
-    sa1_sf <- readRDS('../data/sa1_sf.Rdata')
-    road_network <- readRDS('../data/road_network.Rdata')
-    dwelling_data <- readRDS('../data/dwelling_data.Rdata')
+    sa1_sf <- readRDS('../r_objects/sa1_sf.Rdata')
+    road_network <- readRDS('../r_objects/road_network.Rdata')
+    dwelling_data <- readRDS('../r_objects/dwelling_data.Rdata')
     
     #hard coded for demo
     sa = 20601110623 
