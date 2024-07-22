@@ -9,11 +9,6 @@ include-after-body: "footer.html"
 #| echo: false
 #| label: load-_common
 source("_common.R")
-
-if(!dir.exists('../exports/')) {
-  dir.create('../exports')
-}
-
 ```
 
 ```{r, warning=FALSE, message=FALSE}
@@ -87,10 +82,10 @@ random_suburb <- grouping_sf %>% select('SAL_NAME21', 'geometry', 'distance') %>
     <td><strong>Plant 60 new street trees per 100 new dwellings</strong></td>
   </tr>
   <tr>
-    <td><strong>Invest $1840 per dwelling in public greening</strong></td>
+    <td><strong>Invest $1,840 per new dwelling in public greening</strong></td>
   </tr>
   <tr>
-    <td><strong>Grow 136 MCGs of new tree canopy</strong></td>
+    <td><strong>Grow 136 MCGs of new street tree canopy</strong></td>
   </tr>
 </table>
 ```
@@ -115,29 +110,16 @@ trees_grouped <- coverage(group = grouping) %>%
   as('Spatial')
 
 grouping = 'sa1_code_2021'
+grouping_sf = read_sf('../r_objects/SA1_2021/SA1_2021_AUST_GDA2020.shp') %>%
+  rename(sa1_code_2021 = SA1_CODE21)
 
-if(file.exists('../r_objects/SA1_2021/SA1_2021_AUST_GDA2020.shp')) {
-  grouping_sf <<- read_sf('../r_objects/SA1_2021/SA1_2021_AUST_GDA2020.shp') %>%
-  rename(sa1_code_2021 = SA1_CODE21)
-}
-if(file.exists('../SA1_2021/SA1_2021_AUST_GDA2020.shp')) {
-  grouping_sf <<- read_sf('../SA1_2021/SA1_2021_AUST_GDA2020.shp') %>%
-  rename(sa1_code_2021 = SA1_CODE21)
-}
-if(file.exists('../data/SA1_2021/SA1_2021_AUST_GDA2020.shp')) {
-  grouping_sf <<- read_sf('../data/SA1_2021/SA1_2021_AUST_GDA2020.shp') %>%
-  rename(sa1_code_2021 = SA1_CODE21)
-}
-
-trees_grouped_sa1 <- coverage(group = grouping, df = agg_df_filtered) %>%
+trees_grouped_sa1 <- coverage(group = grouping, df = agg_df) %>%
   left_join(grouping_sf, by = (grouping)) %>%
   st_set_geometry('geometry') %>%
   rowwise() %>%
   mutate(tree_percentage = round(tree_percentage, 1)) %>%
   filter(n > 10) %>%
   ungroup()
-
-#write_sf(trees_grouped_sa1, '../exports/sa1_trees.shp', append = F)
 
 grouping = 'SAL_NAME21'
 grouping_sf = sal_sf
@@ -191,8 +173,6 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
     colors = c(colCols[1], colCols[9])
 
   )
-  
-  #write_sf(trees_grouped_sa1, '../exports/sa1_tree_coverage.csv')
   
 ```
 
@@ -325,8 +305,6 @@ big_df <- big_df %>% mutate(city = str_to_title(city))
 # Convert distance to kilometers
 big_df <- big_df %>% mutate(distance_km = distance / 1000)
 
-write_csv(big_df %>% as.data.frame(), '../exports/international_comparisons.csv')
-
 int_comp <- ggplot(big_df, mapping = aes(distance_km, cov, group = city, color = city)) +
   # geom_smooth(method = "loess", se = FALSE) +
   geom_smooth(method = "loess", aes(colour = city), alpha = 0.1) +
@@ -342,21 +320,23 @@ int_comp <- ggplot(big_df, mapping = aes(distance_km, cov, group = city, color =
   scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
   theme(legend.position = "bottom")
 
-# Convert to plotly
-p <- ggplotly(int_comp, tooltip = c("x", "y", "color"))
+# # Convert to plotly
+# p <- ggplotly(int_comp, tooltip = c("x", "y", "color"))
 
-# Customize hover text
-for (i in seq_along(p$x$data)) {
-  p$x$data[[i]]$text <- paste0(
-    "City: ", p$x$data[[i]]$name, "<br>",
-    "Distance: ", sprintf("%.1f km", p$x$data[[i]]$x), "<br>",
-    "Coverage: ", sprintf("%.1f%%", p$x$data[[i]]$y * 100)
-  )
-  p$x$data[[i]]$hoverinfo <- "text"
-}
+# # Customize hover text
+# for (i in seq_along(p$x$data)) {
+#   p$x$data[[i]]$text <- paste0(
+#     "City: ", p$x$data[[i]]$name, "<br>",
+#     "Distance: ", sprintf("%.1f km", p$x$data[[i]]$x), "<br>",
+#     "Coverage: ", sprintf("%.1f%%", p$x$data[[i]]$y * 100)
+#   )
+#   p$x$data[[i]]$hoverinfo <- "text"
+# }
 
-# Display the plot
-p
+# # Display the plot
+# p
+
+print(int_comp)
 ```
 
 ::: {.callout-tip collapse="true"}
@@ -365,7 +345,7 @@ p
 This chart uses LOESS smoothing, as the scatter or line plots have significant variance. Grey bands denote a 95% confidence interval.
 :::
 
-This chart displays the tree canopy coverage of each city, in rings that start in the city centre and move out almost 15km. To see how this data was calculated, you can visit the [methodology page](/model). 
+This chart displays the tree canopy coverage of each city, in rings that start in the city centre and move out almost 15km. To see how this data was calculated, you can visit the [methodology page](/international-model.html). 
 
 Vienna and Zurich are the clear winners when it comes to tree canopy coverage. 
 
@@ -376,7 +356,7 @@ But Melbourne deserves to be better than the middle of the pack, which is why th
 
 # Trees in Melbourne's Missing Middle
 
-Local councils included in this analysis are the 19 included within our previous report: [Missing Middle Housing Targets](https://targets.yimby.melbourne). These are the LGAs where dense development is viable at scale, and where we will therefore need to focus our efforts on maintaining and improving our street tree canopy. 
+Local councils included in this analysis are the 19 included within our previous report: [_Missing Middle Housing Targets_](https://targets.yimby.melbourne). These are the LGAs where dense development is viable at scale, and where we will therefore need to focus our efforts on maintaining and improving our street tree canopy. 
 
 ## Coverage of streets, parks and residential areas
 
@@ -426,8 +406,6 @@ combined_longer <- combined_df %>%
     )
     # Remove the multiplication by 100 here
   )
-
-write_csv(combined_longer %>% as.data.frame(), '../exports/stacked_bar_chart.csv')
 
 # Function to create the stacked bar chart
 create_stacked_chart <- function(data, position_type, title) {
@@ -481,14 +459,15 @@ build_plotly <- function(chart, data, position_type) {
 }
 
 # Build the plotly objects
-p1 <- build_plotly(stacked_chart, combined_longer, "stack")
-p2 <- build_plotly(stacked_chart_fill, combined_longer, "fill")
+# p1 <- build_plotly(stacked_chart, combined_longer, "stack")
+# p2 <- build_plotly(stacked_chart_fill, combined_longer, "fill")
 ```
 
 ```{r}
 #| echo: false
 #| label: Display stacked plot 1
-p1
+# p1
+print(stacked_chart)
 
 ```
 
@@ -500,8 +479,8 @@ Manningham's tree coverage is greatly inflated by the existence of the Warrandyt
 ```{r}
 #| echo: false
 #| label: Display stacked plot 2
-p2
-
+# p2
+print(stacked_chart_fill)
 ```
 
 
@@ -557,8 +536,6 @@ bar_chart <- function(label, width = "100%", height = "1rem", fill = "#00bfc4", 
   chart <- div(style = list(flexGrow = 1, marginLeft = "0.5rem", background = background), bar)
   div(style = list(display = "flex", alignItems = "center"), label, chart)
 }
-
-write_csv(combined_df %>% dplyr::select(c(lga_name_2022, street_percentage, residential_percentage, reserve_percentage)) %>% as.data.frame(), '../exports/coverage_type_table.csv')
 
 reactable(
   sd_combined,
@@ -618,8 +595,6 @@ seifa_sa2 = readRDS('../r_objects/seifa_sa2.Rdata') %>%
   left_join(sa2_prices, by = "sa2_code_2021") %>%
   filter(!is.na(public_percentage), seifa_score > 800)
 
-write_csv(seifa_sa2 %>% as.data.frame(), '../exports/seifa_sa2_scores.csv')
-
 seifa_plot <- ggplot(seifa_sa2, mapping = aes(x = seifa_score, y = public_percentage)) +
   geom_point(color = "#006D2C") +
   xlab('SEIFA Score') +
@@ -629,7 +604,8 @@ seifa_plot <- ggplot(seifa_sa2, mapping = aes(x = seifa_score, y = public_percen
   theme_yimby +
   scale_y_continuous(labels = percent_format_no_multiply)
 
-ggplotly(seifa_plot)
+print(seifa_plot)
+# ggplotly(seifa_plot)
 
 ```
 
@@ -646,7 +622,8 @@ seifa_log_plot <- ggplot(seifa_sa2, mapping = aes(x = seifa_score, y = log(publi
   coord_flip() +
   theme_yimby
 
-ggplotly(seifa_log_plot)
+print(seifa_log_plot)
+# ggplotly(seifa_log_plot)
 ```
 
 This is backed up further by the relationship's near-linearity when charted logarithmically, indicating that an increase in public canopy coverage from 10% to 20% is associated with a much larger SEIFA score change than an increase from 40% to 50%.
@@ -674,8 +651,6 @@ within15_colors <- c("TRUE" = "#BA1B21", "FALSE" = "#283696")
 
 filtered_sa2_prices <- sa2_prices %>% 
   filter(within15 %in% c("TRUE", "FALSE"))
-
-filtered_sa2_prices %>%  write_csv('../exports/sa2_house_unit_prices_plot.csv')
 
 sa2_public_plot_house <- ggplot(filtered_sa2_prices %>% filter(property_type == 'HOUSE'), 
                                 mapping = aes(x = arithmetic_mean/1000000, y = public_percentage, 
@@ -716,8 +691,6 @@ sa2_public_plot_unit <- ggplot(filtered_sa2_prices %>% filter(property_type == '
 
 # price_public_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = public_percentage, text = SAL_NAME21, fill = within15, stroke = NA), axe) + xlab('Average Detached House Price ($m)') + ylab(' Tree Coverage of Public Areas (%)') + geom_point() + labs(caption = "Source: Housing Victoria") +  theme_yimby
 
-write_csv(sa2_prices %>% as.data.frame(),'../exports/sa2_rents_plot.csv')
-
 rents_public_plot <- (ggplot(sa2_prices %>% filter(property_type == 'HOUSE'), mapping = aes(x = median_band, y = public_percentage, text = sa2_code_2021)) + 
   geom_boxplot(color = "#006D2C") + 
   xlab('Median Rent (2021 dollars)') + 
@@ -732,7 +705,8 @@ rents_public_plot <- (ggplot(sa2_prices %>% filter(property_type == 'HOUSE'), ma
 #bscols(widths = c(4,4), ggplotly(price_street_plot), ggplotly(price_residential_plot))
 #subplot(ggplotly(price_street_plot),ggplotly(price_residential_plot), titleY = T, titleX = T)
 
-ggplotly(sa2_public_plot_house)
+print(sa2_public_plot_house)
+# ggplotly(sa2_public_plot_house)
 
 ```
 
@@ -753,7 +727,8 @@ Next, we explore the same relationship but on unit prices. While a positive corr
 ```{r}
 #| echo: false
 #| label: render-unit-prices
-ggplotly(sa2_public_plot_unit)
+print(sa2_public_plot_unit)
+# ggplotly(sa2_public_plot_unit)
 ```
 
 #### Rents and public tree coverage
@@ -761,7 +736,8 @@ ggplotly(sa2_public_plot_unit)
 ```{r}
 #| echo: false
 #| label: render-rents
-ggplotly(rents_public_plot)
+print(rents_public_plot)
+# ggplotly(rents_public_plot)
 
 ```
 
@@ -817,8 +793,6 @@ tt <- mb %>%
   mutate(ttl_uhi_cov_a = total_uhi_cov * ttl_area ) %>%
   filter(!is.na(ttl_cov ))
 
-write_csv(tt %>% as.data.frame(),'../exports/urban_heat_island.csv')
-
 #agg to SA2 and then check diffs? sa1s gonna be noisy regardless
 
 s2_agg <- tt %>% group_by(SA2_CODE21) %>%
@@ -827,15 +801,18 @@ s2_agg <- tt %>% group_by(SA2_CODE21) %>%
 
 uhi_plot <- ggplot(tt %>% filter(CHG_FLAG21 == 0), aes(x = ttl_cov, y = uhi, text = paste("Street tree coverage: ", scales::percent(ttl_cov, accuracy = 1), "<br>UHI effect: ", round(uhi, digits = 2), "°C"))) +  
   geom_point(color = "#006D2C") + 
-  xlab('Street tree canopy coverage') +
-  ylab('Urban heat island effect (°C)') +
-  labs(title = "The urban heat island effect & street tree coverage") +
+  labs(
+    x = 'Street tree canopy coverage',
+    y = 'Urban heat island effect (°C)',
+    title = "The urban heat island effect & street tree coverage"
+  ) +
   scale_x_continuous(labels = percent_format(accuracy = 1)) +
-  theme_yimby
+  theme_yimby 
+ 
+print(uhi_plot)
+# ggplotly(uhi_plot, tooltip = "text") 
 
-ggplotly(uhi_plot, tooltip = "text") 
-
-ts<- feols(uhi ~ ttl_cov, data = tt, vcov = 'hetero')
+# ts<- feols(uhi ~ ttl_cov, data = tt, vcov = 'hetero')
 
 # summary(ts)
 # unch = tt %>%
@@ -909,22 +886,55 @@ target_df <- target_df %>%
   mutate(percentage_change = round(percentage_change, 1)) %>%
   dplyr::relocate(home_target, .after = LGA)
 
+# Ensure numeric columns are actually numeric
+target_df <- target_df %>%
+  mutate(across(c(home_target, lost_coverage, final_coverage), as.numeric))
 
+# Create the reactable
 target_df %>%
-  reactable(theme = sandstone(),
-            pagination = F,
-            columns = list(
-              percentage_point_change = colDef(show = F),
-              initial_coverage = colDef(show = F),
-              coverage_per_sqm = colDef(show = T, name = "Current total tree canopy coverage (%)"),
-              lost_coverage = colDef(name = "Public canopy planted per year (Ha)"),
-              final_coverage = colDef(name = "Future total public canopy (Ha)"),
-              percentage_change = colDef(name = "Growth in public canopy coverage (%)"),
-              home_target = colDef(name = paste0(years,'-year housing target'), align = "right")
-            ))
-
-target_df %>% write_csv(.,'../exports/MM_table.csv')
-
+  reactable(
+    theme = sandstone(),
+    pagination = FALSE,
+    defaultSorted = list(LGA = "asc"),
+    columns = list(
+      LGA = colDef(
+        footer = "Total",
+        footerStyle = list(fontWeight = "bold")
+      ),
+      home_target = colDef(
+        name = paste0(years,'-year housing target'), 
+        align = "right",
+        footer = function(values) formatC(sum(values, na.rm = TRUE), format = "f", big.mark = ",", digits = 0),
+        footerStyle = list(fontWeight = "bold")
+      ),
+      coverage_per_sqm = colDef(
+        show = TRUE, 
+        name = "Current total tree canopy coverage (%)",
+        footer = NA,
+        footerStyle = list(fontWeight = "bold")
+      ),
+      lost_coverage = colDef(
+        name = "Public canopy planted per year (Ha)",
+        format = colFormat(digits = 1),
+        footer = function(values) format(sum(values, na.rm = TRUE), digits = 1, nsmall = 1),
+        footerStyle = list(fontWeight = "bold")
+      ),
+      final_coverage = colDef(
+        name = "Future total public canopy (Ha)",
+        format = colFormat(digits = 1),
+        footer = function(values) format(sum(values, na.rm = TRUE), digits = 1, nsmall = 1),
+        footerStyle = list(fontWeight = "bold")
+      ),
+      percentage_change = colDef(
+        name = "Growth in public canopy coverage (%)",
+        format = colFormat(digits = 1, suffix = "%"),
+        footer = NA,
+        footerStyle = list(fontWeight = "bold")
+      ),
+      percentage_point_change = colDef(show = FALSE),
+      initial_coverage = colDef(show = FALSE)
+    )
+  )
 ```
 
 ```{=html}
@@ -987,7 +997,6 @@ target_df %>% write_csv(.,'../exports/MM_table.csv')
 
 ```{r}
 #| echo: false
-
 years <- 10
 
 targets <- readRDS('../r_objects/targets.Rdata') %>%
@@ -1014,22 +1023,55 @@ target_df <- target_df %>%
   mutate(percentage_change = round(percentage_change, 1)) %>%
   dplyr::relocate(home_target, .after = LGA)
 
+# Ensure numeric columns are actually numeric
+target_df <- target_df %>%
+  mutate(across(c(home_target, lost_coverage, final_coverage), as.numeric))
 
+# Create the reactable
 target_df %>%
-  reactable(theme = sandstone(),
-            pagination = F,
-            columns = list(
-              percentage_point_change = colDef(show = F),
-              initial_coverage = colDef(show = F),
-              coverage_per_sqm = colDef(show = T, name = "Current total tree canopy coverage (%)"),
-              lost_coverage = colDef(name = "Public canopy planted per year (Ha)"),
-              final_coverage = colDef(name = "Future total public canopy (Ha)"),
-              percentage_change = colDef(name = "Growth in public canopy coverage (%)"),
-              home_target = colDef(name = paste0(years,'-year housing target'), align = "right")
-            ))
-
-target_df %>% write_csv(.,'../exports/GOV_table.csv')
-
+  reactable(
+    theme = sandstone(),
+    pagination = FALSE,
+    defaultSorted = list(LGA = "asc"),
+    columns = list(
+      LGA = colDef(
+        footer = "Total",
+        footerStyle = list(fontWeight = "bold")
+      ),
+      home_target = colDef(
+        name = paste0(years,'-year housing target'), 
+        align = "right",
+        footer = function(values) formatC(sum(values, na.rm = TRUE), format = "f", big.mark = ",", digits = 0),
+        footerStyle = list(fontWeight = "bold")
+      ),
+      coverage_per_sqm = colDef(
+        show = TRUE, 
+        name = "Current total tree canopy coverage (%)",
+        footer = NA,
+        footerStyle = list(fontWeight = "bold")
+      ),
+      lost_coverage = colDef(
+        name = "Public canopy planted per year (Ha)",
+        format = colFormat(digits = 1),
+        footer = function(values) format(sum(values, na.rm = TRUE), digits = 1, nsmall = 1),
+        footerStyle = list(fontWeight = "bold")
+      ),
+      final_coverage = colDef(
+        name = "Future total public canopy (Ha)",
+        format = colFormat(digits = 1),
+        footer = function(values) format(sum(values, na.rm = TRUE), digits = 1, nsmall = 1),
+        footerStyle = list(fontWeight = "bold")
+      ),
+      percentage_change = colDef(
+        name = "Growth in public canopy coverage (%)",
+        format = colFormat(digits = 1, suffix = "%"),
+        footer = NA,
+        footerStyle = list(fontWeight = "bold")
+      ),
+      percentage_point_change = colDef(show = FALSE),
+      initial_coverage = colDef(show = FALSE)
+    )
+  )
 ```
 
 ```{=html}

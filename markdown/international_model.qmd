@@ -1,5 +1,5 @@
 ---
-title: "Tree Data International Comparison Documentation"
+title: "Measuring international cities' tree canopy"
 include-in-header: "header.html"
 include-after-body: "footer.html"
 ---
@@ -11,14 +11,23 @@ This page attempts to show how the international comparison was performed, using
 The first step is to get a 20km by 20km radius around the city of choice, for logistical reasons this is a square.
 
 ```{r  warning=FALSE,message=FALSE}
+#| echo: false
 
 #build dataframes
 
+library(tidyverse)
 library(stars)
 library(raster)
 library(sf)
-library(dplyr)
+library(htmlwidgets)
+library(htmltools)
+library(showtext)
 library(leaflet)
+library(lwgeom)
+library(pacman)
+library(pak)
+pak::pkg_install("TESS-Laboratory/chmloader")
+library(chmloader)
 
 coordinates <- list(c(16.3713,48.2081 )) 
 
@@ -29,7 +38,7 @@ cities <- c( 'vienna')
 
 source('../r/functions.r')
 source('../r/mapping_functions.r')
-source('../themes/theme.r')
+#source('../themes/theme.r')
 
 #settings
 radius <- 10000
@@ -89,6 +98,7 @@ city_df = tibble(coords = coordinates, coordinateref = crss, city = cities) %>%
 We then need to find where the water is as to not disrupt the estimates with zeros. 
 
 ```{r,  warning=FALSE,message=FALSE}
+#| echo: false
 
   # water_bodies = st_transform(water_bodies_global, local_crs)
   # 
@@ -136,6 +146,7 @@ We then need to find where the water is as to not disrupt the estimates with zer
 After finding where the water is, we need to then cut up the city into a grid, each 1km by 1km. This gives us 400 'chunks' to perform the analysis. Now we take a look at an example grid square.
 
 ```{r warning=FALSE,message=FALSE}
+#| echo: false
   
   
   grid <- st_make_grid(bounding, cellsize = c(cell_size,cell_size), square = TRUE)
@@ -154,6 +165,7 @@ After finding where the water is, we need to then cut up the city into a grid, e
 First, find the bonding box for each grid square.
 
 ```{r,  warning=FALSE,message=FALSE}
+#| echo: false
 
   index = 272
   bbox = grid[index,]
@@ -177,9 +189,12 @@ First, find the bonding box for each grid square.
 Then we subtract the water layer.
 
 ```{r warning=FALSE,message=FALSE}
+#| echo: false
   
   if( !dir.exists( paste0('../rasters/international/',city, '/',  'rad', radius, 'cellsize',cell_size, res,'res/')) ) {
-    dir.create( paste0('../rasters/international/',city, '/',  'rad', radius, 'cellsize',cell_size, res,'res/') )
+    
+    dir.create( paste0('../rasters/international/',city, '/',  'rad', radius, 'cellsize',cell_size, res,'res/') , recursive = T)
+    
   }
   
   file_name = paste0('../rasters/international/',city, '/',  'rad', radius, 'cellsize',cell_size, res,'res/',index,'.tif')
@@ -222,6 +237,7 @@ Then we subtract the water layer.
 Then, we find the tree coverage for that square, excluding water. We can then calculate a simple percentage covering of the grid square. 
 
 ```{r}
+#| echo: false
   
   chm_simplified = st_intersection(wgs(chm_simplified), wgs(bbox_no_water))
   
@@ -232,6 +248,7 @@ Then, we find the tree coverage for that square, excluding water. We can then ca
 
 
 ```{r warning=FALSE,message=FALSE}
+#| echo: false
   
   
   no_water_area = st_area(bbox_no_water) %>%

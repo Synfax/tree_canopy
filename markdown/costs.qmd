@@ -475,6 +475,8 @@ Then, based on the modelling laid out on the [main page of the report](/index.ht
 </table>		
 ```
 
+:::
+
 ### Assumptions
 
 Our model of street tree costings is built off of up-to-date existing models and evidence. It also relies on a set of assumptions at its core, the key ones of which we detail below. 

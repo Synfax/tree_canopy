@@ -1,9 +1,9 @@
 ---
-title: "Tree Data Documentation"
+title: "Measuring Melbourne's street tree canopy"
 ---
 
 ```{r, results='hide', warning=FALSE,message=FALSE}
-
+#| echo: false
 
 
 library(tidyverse)
@@ -11,6 +11,9 @@ library(stars)
 library(sf)
 library(raster)
 library(leaflet)
+library(pak)
+pak::pkg_install("TESS-Laboratory/chmloader")
+library(chmloader)
 
 threshold <- 0
 union <- TRUE
@@ -24,11 +27,12 @@ This page will walk through a step by step version of the model used to determin
 ## Canopy Cover
 
 ```{r, warning=FALSE}
+#| echo: false
     #variables aren't loaded every routine, this is just for demo purposes :)
 
-    sa1_sf <- readRDS('../data/sa1_sf.Rdata')
-    road_network <- readRDS('../data/road_network.Rdata')
-    dwelling_data <- readRDS('../data/dwelling_data.Rdata')
+    sa1_sf <- readRDS('../r_objects/sa1_sf.Rdata')
+    road_network <- readRDS('../r_objects/road_network.Rdata')
+    dwelling_data <- readRDS('../r_objects/dwelling_data.Rdata')
     
     #hard coded for demo
     sa = 20601110623 
@@ -37,9 +41,11 @@ This page will walk through a step by step version of the model used to determin
 We first download the raster file using chmloader::download_chm, and provide the function the bounding box of the SA1 we are currently analysing. This returns a raster image, with each pixel having height about the canopy. Pixels with canopy heights below the threshold (default zero) are filtered out. The map below displays this cleaned raster.
 
 ```{r, warning=FALSE, message = FALSE}
+#| echo: false
+
     #filter for current sa
     current_sa_sf <- sa1_sf %>%
-      filter(SA1_CODE21 == sa)
+      filter(sa1_code_2021 == sa)
     
     dwellings_in_sa <- dwelling_data %>%
       st_intersection(current_sa_sf)
@@ -48,7 +54,7 @@ We first download the raster file using chmloader::download_chm, and provide the
       st_transform(crs = 4326)
     
     if(!dir.exists(paste0('../rasters/',res,'res_sa1/'))) {
-      dir.create(paste0('../rasters/',res,'res_sa1/'))
+      dir.create(paste0('../rasters/',res,'res_sa1/'), recursive = T)
     }
     
     file_name = paste0('../rasters/',res,'res_sa1/',sa,'.tif')
@@ -102,6 +108,7 @@ We first download the raster file using chmloader::download_chm, and provide the
 The raster is then simplified further into a single layer to remove the canopy heights themselves. The polygon is further refined by only selecting canopy coverage within the current SA1.
 
 ```{r, warning=FALSE, message=F}
+#| echo: false
     
     #cut it out
     #chm_simplified <- st_intersection(chm_simplified, current_sa_sf)
@@ -137,6 +144,7 @@ Now we turn our attention to the road network, which the state government does n
 Instead of polygons, the Victorian government provides linestrings along the centres of roads, but that does not give information about their width. Here is what that road lines looks like in the data.
 
 ```{r, warning=FALSE, message = F}
+#| echo: false
     
     sf_use_s2(FALSE)
     
@@ -153,6 +161,7 @@ Instead of polygons, the Victorian government provides linestrings along the cen
 As a best guess, I buffer out each of these strings by \~20 metres, which is too largefor small roads, and too small for large roads, however this buffered polygon should cover all road surfaces, despite inevitably covering private land as well. This 'buffered roads' polygon is our first estimate of where roads are.
 
 ```{r, warning=FALSE, message=FALSE}
+#| echo: false
     
     #make it wider
     buffered_roads = st_buffer(road_network_in_sa, 0.00035)
@@ -167,6 +176,7 @@ Another way of guessing where roads are is to look at where private dwellings ar
 Shown below is this difference.
 
 ```{r, warning=FALSE, message = FALSE}
+#| echo: false
     
     #guess where roads are (between lots)
     #there was an st_union before dwellings here - changing it with removing s2
@@ -178,6 +188,7 @@ Shown below is this difference.
 Now, we combine our two guesses for where roads are, and find a polygon that is the intersection of both our methods. In the end, our roads polygon is a) within 20 metres of a road linestring from the VicGov, and b) not overlapping with any property boundaries.
 
 ```{r, warning=FALSE, message= FALSE}
+#| echo: false
     #get the overlap between the guess and the buffer
     roads <- st_intersection(guess_of_roads, buffered_roads) %>%
       st_union()
@@ -197,6 +208,7 @@ Now, we combine our two guesses for where roads are, and find a polygon that is 
 Now, we also need to categorise dwellings into 'private land', or 'public land', which is done using the 'Feature Preventing Development' flag in the dwelling dataset.
 
 ```{r, warning = FALSE, message = FALSE}
+#| echo: false
 
 pal <- colorFactor("viridis", dwellings_in_sa$feature_preventing_development) 
     
@@ -216,6 +228,7 @@ pal <- colorFactor("viridis", dwellings_in_sa$feature_preventing_development)
 Now, with a polygon for trees, a polygon for dwellings, and a polygon for the road network, we can combine it into one map for visulaisation.
 
 ```{r, warning=FALSE, message = FALSE}
+#| echo: false
     
     other_land = st_geometry(current_sa_sf) %>%
       st_difference(st_geometry(roads)) %>%
@@ -251,6 +264,7 @@ Now, with a polygon for trees, a polygon for dwellings, and a polygon for the ro
 Now, with the map complete, we iterate through each lot in the SA1 and measure its overlap with the tree layer. This is then amended to the full database for further analysis.
 
 ```{r, warning=FALSE, message = FALSE}
+#| echo: false
     
     test_df <- dwellings_in_sa %>%
       bind_rows(roads) %>%
@@ -265,10 +279,10 @@ Now, with the map complete, we iterate through each lot in the SA1 and measure i
                as.numeric() %>%
                ifelse(purrr::is_empty(.), 0, .),
              sa1 = sa) %>%
-      dplyr::select(c(lat, lon, coverage, total_area, sa1, land_type))
+      dplyr::select(c(lat, lon, coverage, total_area, sa1, zone_short))
     
     #results_df <<- rbind(results_df, test_df)
 
 
-    (test_df[1:10,])
+    (test_df[1:10,]) %>% tibble()
 ```
