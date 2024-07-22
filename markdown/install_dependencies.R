@@ -32,7 +32,8 @@ packages <- c(
   "crosstalk",
   "reactable",
   "pacman",
-  "stars"
+  "stars", 
+  "pak"
 )
 
 # Install packages
