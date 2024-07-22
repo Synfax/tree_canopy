@@ -3,10 +3,11 @@ project:
   output-dir: _site
   render:
     - "*.qmd"
-    # - "costs.qmd"
-    - "!model.qmd" # temporarily exclude model.qmd
-    - "!international_model.qmd" # temporarily exclude international_model.qmd
-    - "!_dump.qmd"
+    # - "benefits.qmd"
+    # - "assets.qmd"
+    # - "model.qmd" # temporarily exclude model.qmd
+    # - "international_model.qmd" # temporarily exclude international_model.qmd
+    # - "!_dump.qmd"
 
 website:
   title: "Missing Middle Street Trees – YIMBY Melbourne"
@@ -30,7 +31,6 @@ website:
     title: "Missing Middle Street Trees"
     logo: images/street-tree-og.jpg
     style: "floating"
-    collapse-level: 1
     contents:
       - text: Missing Middle Street Trees
         href: index.qmd
@@ -42,14 +42,12 @@ website:
         href: suburbs.qmd
       - text: Additional data & analysis
         href: more-data.qmd
-    # - section: "Model & methodology"
-    #   contents:
-    #     - text: Overview
-    #       href: model-overview.qmd
-    #     - text: Measuring Melbourne's street canopy
-    #       href: model.qmd
-    #     - text: Measuring international cities' tree canopy
-    #       href: international_model.qmd
+      - section: "Models & methodology"
+        contents:
+          - text: Measuring Melbourne's street tree canopy
+            href: model.qmd
+          - text: Measuring international cities' tree canopy
+            href: international_model.qmd
   search: false
   open-graph:
     image: https://trees.yimby.melbourne/images/street-tree-og.jpg
@@ -66,11 +64,9 @@ website:
 format:
   html:
     theme: theme.scss
-    # css: styles.scss
     toc: true
-    toc-depth: 4
     fig-width: 8
-    fig-height: 8
+    fig-height: 6
     code-fold: false
   # pdf:
   #   toc: true
