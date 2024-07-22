@@ -6,6 +6,9 @@
       const containerDiv = document.createElement("div");
       containerDiv.className = "sidebar-footer";
 
+      const imgContainer = document.createElement("div");
+      imgContainer.className = "yimby-logo";
+
       const img = document.createElement("img");
       img.src = "images/logo.png";
       img.alt = "YIMBY Melbourne Logo";
@@ -17,14 +20,23 @@
       const quoteDiv = document.createElement("div");
       quoteDiv.className = "quote-container";
       quoteDiv.innerHTML =
-        '<p class="quote-text">\n    "I do something entirely good; I live on trees."</p>\n  <p class="attribution">— Italo Calvino,<br><em>The Baron in the Trees</em></p>';
+        '<p class="quote-text">\n"I do something entirely good; I live on trees."</p>\n  <p class="attribution">— Italo Calvino,<br><em>The Baron in the Trees</em></p>';
 
       // Append elements
-      containerDiv.appendChild(img);
+      imgContainer.appendChild(img);
+      containerDiv.appendChild(imgContainer);
       containerDiv.appendChild(quoteDiv);
       sidebar.appendChild(containerDiv);
     } else {
       console.error('Element with ID "quarto-sidebar" not found');
     }
+
+    // // Check if the sidebar exists and if it has the class to show it's open
+    // var sidebarToggle = document.querySelector(".sidebar-item-text");
+    // if (sidebarToggle) {
+    //   console.log("found it!");
+    //   // Trigger the sidebar toggle button
+    //   sidebarToggle.setAttribute("aria-expanded", "false");
+    // }
   });
 </script>

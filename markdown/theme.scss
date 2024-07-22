@@ -177,6 +177,9 @@ p,
 li {
   font-family: "Lato", sans-serif;
   font-size: 18px;
+  @media screen and (max-width: 1000px) {
+    font-size: 16px;
+  }
 }
 
 table {
@@ -219,7 +222,20 @@ pre code {
   white-space: inherit;
 }
 
-// Desktop structure
+// Mobile navbar
+
+.navbar.navbar-expand-lg {
+  padding-bottom: 0 !important;
+}
+
+.navbar-container.container-fluid {
+}
+
+.navbar-brand-container.mx-auto {
+  width: 100%;
+  max-width: 100% !important;
+  line-height: 1.4rem;
+}
 
 .navbar-title,
 .breadcrumb-item {
@@ -227,13 +243,32 @@ pre code {
   font-family: "Inter", sans-serif;
 }
 
+// .quarto-page-breadcrumbs {
+//   margin-left: 0 !important;
+//   padding-right: 0 !important;
+// }
+
+// .breadcrumb-item {
+//   text-align: center !important;
+// }
+
+// .quarto-secondary-nav {
+//   padding-left: 0 !important;
+// }
+
 .navbar-brand {
   overflow: visible;
+  text-wrap: wrap;
+  text-align: center;
+  padding-bottom: 0;
+  margin-right: 0;
 }
 
 .quarto-navbar-tools {
   display: none;
 }
+
+// Desktop structure
 
 @media (min-width: 992px) {
   body.floating .page-columns {
@@ -250,6 +285,10 @@ pre code {
       [body-content-end] 1fr [body-end] minmax(25px, 50px)
       [body-end-outset] minmax(50px, 150px) [page-end-inset] minmax(25px, 100px)
       [page-end] 0fr [screen-end-inset] 0em [screen-end];
+  }
+
+  .navbar.navbar-expand-lg {
+    padding-bottom: 8.5px !important;
   }
 
   .navbar-brand {
@@ -340,25 +379,23 @@ div.sidebar-item-container .active {
 }
 
 div.sidebar-footer {
-  width: 100%;
+  // display: block;
   border-top: 2px solid #000;
   padding-top: 10px !important;
+  overflow-x: auto;
+  position: relative !important;
+}
+
+@media screen and (max-width: 1000px) {
+  .yimby-logo {
+    margin-bottom: 20px;
+  }
 }
 
 .quote-container {
   margin-top: 0.5rem;
   color: #000;
 }
-
-// .quote-text {
-//   font-family: "Inter", sans-serif;
-//   font-weight: 500;
-//   font-size: 0.9em;
-// }
-
-// .attribution {
-//   text-align: right;
-// }
 
 .quote-text {
   color: #000 !important;
@@ -434,10 +471,27 @@ nav[role="doc-toc"] > ul li a {
   border-left-color: $red-base !important;
 }
 
+.sidebar-header.sidebar-header-stacked {
+  margin-left: 0;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #000;
+}
+
+//tables
+
 table {
   background-color: #fff;
   border: 2px solid #000 !important;
+  font-size: smaller;
   margin-bottom: 1rem;
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+table tbody {
+  display: table;
+  width: 100%;
 }
 
 table p,
@@ -449,10 +503,8 @@ table tr {
   margin-bottom: 0;
 }
 
-.sidebar-header.sidebar-header-stacked {
-  margin-left: 0;
-  padding-bottom: 20px;
-  border-bottom: 2px solid #000;
+table tr:last-child td {
+  border-bottom: none !important;
 }
 
 // Tabs
@@ -501,6 +553,15 @@ div.panel-tabset a.nav-link {
   border: 2px solid #000 !important;
   margin-bottom: 0;
   // max-height: 50vh;al
+}
+
+// Charts (since ggplot theme is shitting the bed)
+.cell .figure-img {
+  border: none !important;
+}
+
+figure {
+  margin: 0 0 0 0rem;
 }
 
 figcaption {
