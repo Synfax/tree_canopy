@@ -1,4 +1,5 @@
 # Setup for all markdown files
+library(devtools)
 devtools::install_github("dmurdoch/leaflet@crosstalk4")
 library(tidyverse)
 library(sf)
