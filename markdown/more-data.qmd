@@ -81,4 +81,4 @@ ggplotly(lga_bplot)
 
 ```
 
-**Next:** [Methodology](/model.html) 
+**Next:** [Measuring Melbourne's street tree canopy](/model.html) 

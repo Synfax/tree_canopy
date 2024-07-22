@@ -343,7 +343,7 @@ p
 This chart uses LOESS smoothing, as the scatter or line plots have significant variance. Grey bands denote a 95% confidence interval.
 :::
 
-This chart displays the tree canopy coverage of each city, in rings that start in the city centre and move out almost 15km. To see how this data was calculated, you can visit the [methodology page](/model). 
+This chart displays the tree canopy coverage of each city, in rings that start in the city centre and move out almost 15km. To see how this data was calculated, you can visit the [methodology page](/international-model.html). 
 
 Vienna and Zurich are the clear winners when it comes to tree canopy coverage. 
 
@@ -354,7 +354,7 @@ But Melbourne deserves to be better than the middle of the pack, which is why th
 
 # Trees in Melbourne's Missing Middle
 
-Local councils included in this analysis are the 19 included within our previous report: [Missing Middle Housing Targets](https://targets.yimby.melbourne). These are the LGAs where dense development is viable at scale, and where we will therefore need to focus our efforts on maintaining and improving our street tree canopy. 
+Local councils included in this analysis are the 19 included within our previous report: [_Missing Middle Housing Targets_](https://targets.yimby.melbourne). These are the LGAs where dense development is viable at scale, and where we will therefore need to focus our efforts on maintaining and improving our street tree canopy. 
 
 ## Coverage of streets, parks and residential areas
 
