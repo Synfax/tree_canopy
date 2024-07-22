@@ -110,8 +110,21 @@ trees_grouped <- coverage(group = grouping) %>%
   as('Spatial')
 
 grouping = 'sa1_code_2021'
-grouping_sf = read_sf('../r_objects/SA1_2021/SA1_2021_AUST_GDA2020.shp') %>%
+
+if(file.exists('../r_objects/SA1_2021/SA1_2021_AUST_GDA2020.shp') ) {
+  grouping_sf <<- read_sf('../r_objects/SA1_2021/SA1_2021_AUST_GDA2020.shp') %>%
   rename(sa1_code_2021 = SA1_CODE21)
+}
+if(file.exists('../data/SA1_2021/SA1_2021_AUST_GDA2020.shp') ) {
+  grouping_sf <<- read_sf('../data/SA1_2021/SA1_2021_AUST_GDA2020.shp') %>%
+  rename(sa1_code_2021 = SA1_CODE21)
+}
+if(file.exists('../SA1_2021/SA1_2021_AUST_GDA2020.shp') ) {
+  grouping_sf <<- read_sf('../SA1_2021/SA1_2021_AUST_GDA2020.shp') %>%
+  rename(sa1_code_2021 = SA1_CODE21)
+}
+
+
 
 trees_grouped_sa1 <- coverage(group = grouping, df = agg_df) %>%
   left_join(grouping_sf, by = (grouping)) %>%
@@ -158,7 +171,7 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
   colCols = c(brewer.pal(9, 'Greens'))
 
 
-  maplibre(style = mapgl::carto_style('positron'), center = c(145.063115,-37.814175), zoom = 9.5, pitch = 40) %>%
+  maplibre(style = mapgl::carto_style('positron')) %>%
     add_fill_extrusion_layer(id = 'trees_grouped_sa1', source = trees_grouped_sa1,
                              fill_extrusion_opacity = 0.85,
                              fill_extrusion_color = mapgl::interpolate(
@@ -171,8 +184,14 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
     "Tree Coverage by SA1 (%)",
     values = c(0,91.6),
     colors = c(colCols[1], colCols[9])
-
+  ) %>%  mapgl::add_fullscreen_control(position = "bottom-left") %>%
+    mapgl::add_navigation_control() %>%
+    mapgl::fly_to(
+      center = c(145.063115,-37.814175),
+    zoom = 9,
+    pitch = 40
   )
+
   
 ```
 
@@ -360,7 +379,7 @@ Local councils included in this analysis are the 19 included within our previous
 
 ## Coverage of streets, parks and residential areas
 
-```{r}
+```{r, warning=FALSE,message=FALSE}
 #| echo: false
 #| label: fig-airquality
 #| fig-cap: "Tree coverage by SA2"
@@ -386,7 +405,7 @@ sd_combined = SharedData$new((combined_df))
 ```
 
 
-```{r}
+```{r, warning=FALSE,message=FALSE}
 #| echo: false
 #| label: create-stacked-bars
 # Reshape data from wide to long format
@@ -463,7 +482,7 @@ build_plotly <- function(chart, data, position_type) {
 # p2 <- build_plotly(stacked_chart_fill, combined_longer, "fill")
 ```
 
-```{r}
+```{r, warning=FALSE,message=FALSE}
 #| echo: false
 #| label: Display stacked plot 1
 # p1
@@ -476,7 +495,7 @@ Here, we break down what proportion of a local government’s tree coverage is o
 
 Manningham's tree coverage is greatly inflated by the existence of the Warrandyte state park. Meanwhile, Brimbank has few trees on any one of its land classifications.
 
-```{r}
+```{r, warning=FALSE,message=FALSE}
 #| echo: false
 #| label: Display stacked plot 2
 # p2
@@ -490,7 +509,7 @@ Trees are not just nice to look at—they also provide tangible benefits for peo
 
 ### 'Leafy' is a euphemism for wealthy suburbs
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 #| echo: false
 #| label: leafy canopy chart
 

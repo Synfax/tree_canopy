@@ -79,7 +79,7 @@ results_df <- data.frame()
 robust_df <- data.frame()
 
 #run the model
-#run(parallel = F)
+run(parallel = F)
 
 #if the model has already been run, then you can just run the analysis part.
 

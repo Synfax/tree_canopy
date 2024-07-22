@@ -4,7 +4,7 @@ include-in-header: "header.html"
 include-after-body: "footer.html"
 ---
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 #| echo: false
 #| label: load-_common
 source("_common.R")
@@ -37,7 +37,7 @@ Mixed use: Mixed Use Zone (MUZ) and Township Zone (TZ).
 :::
 
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 #| echo: false
 coverage(exp = expression(!(zone_short %in% c('roads','other'))),group = 'zone_short') %>%
   mutate(tree_percentage = round(tree_percentage, 1)) %>%

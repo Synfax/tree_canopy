@@ -10,7 +10,7 @@ This page attempts to show how the international comparison was performed, using
 
 The first step is to get a 20km by 20km radius around the city of choice, for logistical reasons this is a square.
 
-```{r  warning=FALSE,message=FALSE}
+```{r,  warning=FALSE,message=FALSE}
 #| echo: false
 
 #build dataframes
@@ -145,7 +145,7 @@ We then need to find where the water is as to not disrupt the estimates with zer
 
 After finding where the water is, we need to then cut up the city into a grid, each 1km by 1km. This gives us 400 'chunks' to perform the analysis. Now we take a look at an example grid square.
 
-```{r warning=FALSE,message=FALSE}
+```{r, warning=FALSE,message=FALSE}
 #| echo: false
   
   
@@ -188,7 +188,7 @@ First, find the bonding box for each grid square.
 
 Then we subtract the water layer.
 
-```{r warning=FALSE,message=FALSE}
+```{r, warning=FALSE,message=FALSE}
 #| echo: false
   
   if( !dir.exists( paste0('../rasters/international/',city, '/',  'rad', radius, 'cellsize',cell_size, res,'res/')) ) {
@@ -236,7 +236,7 @@ Then we subtract the water layer.
 
 Then, we find the tree coverage for that square, excluding water. We can then calculate a simple percentage covering of the grid square. 
 
-```{r}
+```{r, warning=FALSE,message=FALSE}
 #| echo: false
   
   chm_simplified = st_intersection(wgs(chm_simplified), wgs(bbox_no_water))
@@ -247,7 +247,7 @@ Then, we find the tree coverage for that square, excluding water. We can then ca
 
 
 
-```{r warning=FALSE,message=FALSE}
+```{r, warning=FALSE,message=FALSE}
 #| echo: false
   
   
