@@ -143,17 +143,17 @@ percent_format_no_multiply <- function(x) {
 # GGPlot theme
 theme_yimby <- theme_minimal() +
   theme(
+    axis.line = element_blank(),
     panel.background = element_rect(fill = "#fdffee"),
-    plot.background = element_rect(fill = "#fdffee"),
+    plot.background = element_rect(fill = "#fdffee", color = NA),
     plot.title = element_text(
       face = "bold",
       color = "#10461B",
-      family = "Inter",
       hjust = 0.5,
     ),
-    axis.title = element_text(face = "medium", family = "Inter", margin = margin(t = 10, r = 10, b = 10, l = 10)),
-    axis.text = element_text(family = "Inter"),
-    axis.text.x = element_text(margin = margin(t = 5)),
-    axis.text.y = element_text(margin = margin(r = 5)),
-    plot.margin = unit(c(50, 20, 50, 20), "pt")
+    # plot.margin = unit(-10,"points"),
+    # axis.text.x = element_text(margin = margin(t = 10, b = 10)),  # Add buffer
+    # axis.text.y = element_text(margin = margin(l = 10, r = 10)),  # Add buffer
+    # plot.margin = unit(c(20, 20, 20, 20), "pt"),  # Add overall plot margin
+    legend.position = "bottom"
   )
