@@ -743,7 +743,7 @@ In simple terms, this means that the price premium associated with tree canopy c
 
 Next, we explore the same relationship but on unit prices. While a positive correlation remains, the divergence between ‘inner’ and ‘outer’ areas does not seem to replicate in unit prices.
 
-```{r}
+```{r, message=FALSE, warning = FALSE}
 #| echo: false
 #| label: render-unit-prices
 print(sa2_public_plot_unit)
@@ -752,7 +752,7 @@ print(sa2_public_plot_unit)
 
 #### Rents and public tree coverage
 
-```{r}
+```{r, message=FALSE, warning = FALSE}
 #| echo: false
 #| label: render-rents
 print(rents_public_plot)
@@ -772,7 +772,7 @@ There are few stronger indicators of spatial inequality in our city than the urb
 
 Combining the Victorian Government's 2018 urban heat dataset with our 2018–20 tree coverage dataset, we sought to determine the relationship between tree coverage and urban temperatures. 
 
-```{r}
+```{r, message=FALSE, warning = FALSE}
 #| echo: false
 #| label: uhi
 
@@ -870,7 +870,7 @@ The table below shows the calculations of how much tree canopy coverage might be
 
 ## YIMBY Melbourne Targets
 
-```{r}
+```{r, message=FALSE, warning = FALSE}
 #| echo: false
 
 
@@ -1014,7 +1014,7 @@ target_df %>%
 
 ## Government Targets
 
-```{r}
+```{r, message=FALSE, warning = FALSE}
 #| echo: false
 years <- 10
 
