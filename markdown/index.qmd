@@ -77,7 +77,7 @@ random_suburb <- grouping_sf %>% select('SAL_NAME21', 'geometry', 'distance') %>
 ```
 
 ```{=html}
-<table>
+<table class="table-intro">
   <tr>
     <td><strong>Plant 60 new street trees per 100 new dwellings</strong></td>
   </tr>
