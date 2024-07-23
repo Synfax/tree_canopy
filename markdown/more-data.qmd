@@ -39,7 +39,7 @@ Mixed use: Mixed Use Zone (MUZ) and Township Zone (TZ).
 
 ```{r, message=FALSE, warning=FALSE}
 #| echo: false
-coverage(exp = expression(!(zone_short %in% c('roads','other'))),group = 'zone_short', df = agg_df) %>%
+coverage(exp = expression(!(zone_short %in% c('roads','other'))),group = 'zone_short', df = agg_df_filtered) %>%
   mutate(tree_percentage = round(tree_percentage, 1)) %>%
   reactable(
     defaultSorted = list('tree_percentage' = "desc"),
@@ -66,13 +66,13 @@ coverage(exp = expression(!(zone_short %in% c('roads','other'))),group = 'zone_s
 
 ```
 
-There is a lot of variance within zones. The box plots below use SA2s, which are typically the size of a suburb or locality, as units of observation. 
+There is a lot of variance within zones. The box plots below use SA2s, which are typically the size of a suburb or locality, as units of observation.
 
 ```{r, warning=FALSE, message=FALSE}
 #| echo: false
 
 #wtf are you doing here??? im a genius
-lga_bplot <-  agg_df %>% filter( !(zone_short %in% c('roads','other')) ) %>%
+lga_bplot <-  agg_df_filtered %>% filter( !(zone_short %in% c('roads','other')) ) %>%
   group_by(sa2_name_2021, zone_short) %>%
   summarise(mean_pc = sum(coverage) / sum(total_area)) %>%
   ggplot(mapping = aes(x = reorder(zone_short, -mean_pc, FUN = median), y = mean_pc, text = sa2_name_2021)) + geom_boxplot(color = "#006D2C") + xlab('Zone Type') + ylab(' Coverage (%) ') +  theme_minimal() + theme(axis.text.x = element_text(angle = 45)) 
