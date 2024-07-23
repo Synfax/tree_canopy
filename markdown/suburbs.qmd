@@ -76,7 +76,7 @@ random_suburb <- grouping_sf %>% select('SAL_NAME21', 'geometry', 'distance') %>
 #| echo: false
 #| label: full-canopy-map
 
-trees_grouped <- coverage(group = grouping) %>%
+trees_grouped <- coverage(group = grouping, df = agg_df) %>%
   left_join(grouping_sf, by = (grouping)) %>%
   st_set_geometry('geometry') %>%
   dplyr::select(grouping, tree_percentage,distance, geometry, n) %>%
@@ -203,20 +203,20 @@ other_exp = expression( !(zone_short %in% c('General residential', 'Greenfield',
 create_combined_df <- function(grouping, grouping_sf) {
   
   
-  street_trees_grouped <- coverage(exp = street_exp, type = 'street', group = grouping) %>%
+  street_trees_grouped <- coverage(exp = street_exp, type = 'street', group = grouping, df = agg_df) %>%
   rename("street_tree_coverage" = coverage, "total_street_area" = total_area )
 
-  reserve_trees_grouped <- coverage(exp = public_exp, type = 'reserve', group = grouping)  %>%
+  reserve_trees_grouped <- coverage(exp = public_exp, type = 'reserve', group = grouping, df = agg_df)  %>%
     rename("reserve_tree_coverage" = coverage, "total_reserve_area" = total_area ) 
  
-  resi_trees_grouped <- coverage(exp = resi_exp , type = 'residential', group = grouping)  %>%
+  resi_trees_grouped <- coverage(exp = resi_exp , type = 'residential', group = grouping, df = agg_df)  %>%
     rename("residential_tree_coverage" = coverage, "total_residential_area" = total_area )
   
-  rural_trees_grouped <- coverage(exp = rural_exp , type = 'rural', group = grouping)  %>%
+  rural_trees_grouped <- coverage(exp = rural_exp , type = 'rural', group = grouping, df = agg_df)  %>%
     rename("rural_tree_coverage" = coverage, "total_rural_area" = total_area )
   
   
-  other_trees_grouped <- coverage(exp = other_exp, group = grouping, type = 'other') %>%
+  other_trees_grouped <- coverage(exp = other_exp, group = grouping, type = 'other', df = agg_df) %>%
     rename('other_tree_coverage' = coverage, 'total_other_area' = total_area)
   
   # street_agg =agg_df %>% filter(eval(street_exp)) %>% filter(lga_name_2022 == 'Banyule')
@@ -300,7 +300,7 @@ sd_combined = SharedData$new((combined_df))
 
 ```{r}
 #| echo: false
-street_coverage = coverage(exp = street_exp, group = 'SAL_NAME21', type = 'street') %>%
+street_coverage = coverage(exp = street_exp, group = 'SAL_NAME21', type = 'street', df = agg_df) %>%
   arrange(desc(street_percentage)) %>%
   slice_head(n = 10)
 
@@ -380,7 +380,7 @@ grouping = 'SAL_NAME21'
 grouping_sf = sal_sf
 pretty_group_name = 'Suburb'
 
-streets <- coverage(exp = expression(zone_short == 'roads'), group = grouping) %>%
+streets <- coverage(exp = expression(zone_short == 'roads'), group = grouping, df = agg_df) %>%
   left_join(grouping_sf, by = grouping) %>%
   rowwise() %>%
   mutate(calc_area = st_area(geometry)) %>%

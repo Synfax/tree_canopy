@@ -810,7 +810,7 @@ sa1_summary <- coverage(type = 'overall', group = 'sa1_code_2021') %>%
   coverage(exp = street_exp, type = 'street', group = 'sa1_code_2021')
   , by = 'sa1_code_2021') %>%
   left_join(
-    coverage(exp = public_exp, type = 'public', group = 'sa1_code_2021')
+    coverage(exp = resi_exp, type = 'residential', group = 'sa1_code_2021')
   , by = 'sa1_code_2021') %>%
   left_join(mb, by = 'sa1_code_2021') %>%
   left_join(sa1_sf, by = 'sa1_code_2021')
@@ -838,6 +838,8 @@ uhi_plot <- ggplot(sa1_summary %>% filter(CHG_FLAG21 == 0), aes(x = street_perce
     title = "The urban heat island effect & street tree coverage"
   ) +
   theme_yimby 
+
+# fixest::etable(feols(uhi ~ street_percentage, data = sa1_summary, vcov = 'hetero') , feols(uhi ~ street_percentage + overall_percentage, data = sa1_summary, vcov = 'hetero') , feols(uhi ~ street_percentage + overall_percentage + residential_percentage, data = sa1_summary, vcov = 'hetero'))
 
 #library(fixest)
 

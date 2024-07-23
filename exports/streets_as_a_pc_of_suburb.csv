@@ -21,9 +21,11 @@ Gardenvale,29
 Strathmore,27.8
 Kensington,27.4
 Albert Park,27
+Tullamarine,26.9
 St Kilda,26.3
 Richmond,26
 Huntingdale,25.6
+Dandenong North,25.6
 Oakleigh East,25.5
 Watsonia North,25.4
 Balaclava,25.3
@@ -74,9 +76,12 @@ Ringwood East,21.9
 Coburg,21.9
 Hawthorn East,21.8
 Cairnlea,21.7
+Doveton,21.7
+Roxburgh Park,21.7
 Sunshine,21.7
 Deepdene,21.6
 Bellfield (Banyule - Vic.),21.6
+Gladstone Park,21.5
 Kings Park,21.5
 Northcote,21.5
 Airport West,21.5
@@ -87,6 +92,7 @@ Carnegie,21.4
 Patterson Lakes,21.3
 Murrumbeena,21.3
 Caulfield North,21.3
+Wantirna,21.3
 Mentone,21.2
 Doncaster,21.1
 Kooyong,21
@@ -98,18 +104,24 @@ Hampton,20.8
 Williamstown,20.8
 Balwyn North,20.8
 Sunshine West,20.7
+Narre Warren,20.7
 St Albans,20.7
 Toorak,20.7
 Keilor East,20.6
 Sandringham,20.6
+Noble Park,20.6
 Nunawading,20.6
 Preston,20.5
 Sunshine North,20.5
 Doncaster East,20.4
 Highett,20.4
+Eumemmerring,20.4
 Keilor Downs,20.3
 Beaumaris,20.2
 Malvern,20.2
+Dandenong,20.2
+Hoppers Crossing,20.2
+Springvale South,20.2
 Mount Waverley,20.2
 Bentleigh East,20.1
 Forest Hill,20.1
@@ -122,8 +134,10 @@ Balwyn,19.9
 Burwood East,19.8
 West Footscray,19.8
 Ashburton,19.8
+Hallam,19.7
 Yarraville,19.7
 Rosanna,19.7
+Jacana,19.7
 Pascoe Vale,19.6
 Heidelberg,19.6
 Oak Park,19.5
@@ -131,26 +145,31 @@ McKinnon,19.5
 Heidelberg West,19.5
 Ascot Vale,19.5
 Templestowe Lower,19.4
+Dallas,19.4
 Avondale Heights,19.4
 Travancore,19.4
 Caulfield,19.4
 Glen Waverley,19.3
 Moorabbin,19.3
+Noble Park North,19.2
 Fawkner,19.2
 Wheelers Hill,19.2
 Delahey,19.1
 Box Hill,19.1
+Meadow Heights,19.1
 Newport,19
 Reservoir,19
 Niddrie,18.9
 Ringwood,18.9
 Briar Hill,18.9
+Heathmont,18.8
 Kingsbury,18.8
 Kew East,18.7
 Montmorency,18.6
 Mont Albert North,18.6
 Aberfeldie,18.5
 Kealba,18.5
+Ferntree Gully,18.5
 Albanvale,18.5
 Camberwell,18.4
 Canterbury,18.4
@@ -159,7 +178,6 @@ Blackburn,18.3
 Braybrook,18.3
 Mordialloc,18.3
 Vermont,18.2
-Heathmont,18.2
 Keilor Park,18.1
 Docklands,18.1
 Croydon Hills,18
@@ -168,8 +186,10 @@ Croydon South,18
 Hawthorn,17.9
 Deer Park,17.7
 Albion,17.7
+Bayswater,17.7
 Vermont South,17.6
 Glenroy,17.6
+Boronia,17.5
 Chelsea,17.3
 Croydon,17.3
 Cheltenham,17.2
@@ -181,48 +201,69 @@ Ivanhoe,16.8
 Macleod,16.7
 Edithvale,16.7
 Aspendale Gardens,16.6
+Laverton,16.6
+Endeavour Hills,16.6
 Eaglemont,16.6
 Burwood,16.5
 Spotswood,16.5
 Ivanhoe East,16.4
 Notting Hill,16.3
+Springvale,16.3
 Croydon North,16.3
+Berwick,16.2
 Parkville,16.2
 Clayton,16.1
+Broadmeadows,15.8
 Box Hill South,15.6
 Coburg North,15.2
+Westmeadows,15
 Alphington,15
+Williams Landing,15
 St Helena,14.8
+Rowville,14.7
+Wantirna South,14.6
 Maribyrnong,14.6
 Altona Meadows,14.5
 Greensborough,14.4
 Clarinda,14.4
 West Melbourne,14.3
 Caulfield East,14.3
+Bayswater North,14.2
 Gowanbrae,14.2
 Hadfield,14
-Bayswater North,13.9
+Knoxfield,13.9
 Donvale,13.8
 Oakleigh South,13.8
 Brooklyn,13.8
+Coolaroo,13.6
+Keysborough,13.5
 Warranwood,13.5
 Black Rock,13.3
+Craigieburn,13.2
 Essendon West,13.1
 Altona North,13
 Yallambie,13
+Campbellfield,12.9
+The Basin,12.6
 Clayton South,12.6
 Viewbank,12.5
-Tullamarine,12.5
 Keilor,12.3
+Upper Ferntree Gully,12.3
 Templestowe,12.2
 Derrimut,12.2
 Dingley Village,12.1
+Scoresby,11.8
 Flemington,11.5
-Laverton,11
+Werribee,11.3
+Point Cook,10.8
 Altona,10.7
 Kilsyth South,10.6
 Bonbeach,10.4
+Somerton,10.3
+Laverton North,10.3
 Park Orchards,9.5
+Tarneit,9.5
+Dandenong South,9.4
 Warrandyte,8.8
 Braeside,8.1
 Bundoora,8.1
@@ -230,11 +271,39 @@ Lower Plenty,8
 Essendon Fields,7.7
 Keilor North,7.7
 Heatherton,7.4
+Narre Warren North,7.2
+Bangholme,7
+Wyndham Vale,6.9
+Attwood,6.7
+Greenvale,5.8
 Tottenham,5.8
+Sunbury,5.7
 Calder Park,5.6
 Warrandyte South,5.3
 Eltham North,4.8
-Wonga Park,4.2
+Manor Lakes,4.5
+Lysterfield South,4.5
+Wonga Park,4.3
+Kalkallo,4.1
+Harkaway,3.8
+Werribee South,3.7
+Diggers Rest,3.7
+Melbourne Airport,3.7
+Bulla,3.4
+Lysterfield,3.3
+Truganina,3
+Mickleham,2.9
+Yuroke,2.7
 Moorabbin Airport,2.2
+Wildwood,2.2
+Little River,1.8
+Quandong,1.7
+Beaconsfield,1.4
 Kilsyth,1.4
+Oaklands Junction,1.2
 Hillside (Melton - Vic.),1.1
+Eynesbury,1
+Cocoroc,1
+Mount Cottrell,0.9
+Narre Warren South,0.5
+Mambourin,0.1

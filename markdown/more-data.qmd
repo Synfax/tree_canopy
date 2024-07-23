@@ -39,7 +39,7 @@ Mixed use: Mixed Use Zone (MUZ) and Township Zone (TZ).
 
 ```{r, message=FALSE, warning=FALSE}
 #| echo: false
-coverage(exp = expression(!(zone_short %in% c('roads','other'))),group = 'zone_short') %>%
+coverage(exp = expression(!(zone_short %in% c('roads','other'))),group = 'zone_short', df = agg_df) %>%
   mutate(tree_percentage = round(tree_percentage, 1)) %>%
   reactable(
     defaultSorted = list('tree_percentage' = "desc"),
