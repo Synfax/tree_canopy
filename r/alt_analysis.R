@@ -25,12 +25,14 @@ agg_df <- agg_sf %>%
   st_drop_geometry() %>%
   as.data.frame()
 
-xy <- sa1_sf %>%
-  rename( sa2_code_2021 = SA2_CODE21) %>%
-  st_join(sal_sf, largest = TRUE) %>%
-  filter(!is.na(SAL_CODE21))
+xy = readRDS('r_objects/xy.Rdata')
 
-saveRDS(xy,'r_objects/xy.Rdata')
+# xy <- sa1_sf %>%
+#   rename( sa2_code_2021 = SA2_CODE21) %>%
+#   st_join(sal_sf, largest = TRUE) %>%
+#   filter(!is.na(SAL_CODE21))
+# 
+# saveRDS(xy,'r_objects/xy.Rdata')
 
 #create dictionaries between sa1 and sa2/lga to fill in missing values for 'roads' and 'other' land uses
 sa1_sa2_map =  with(agg_df, setNames(sa2_code_2021, sa1_code_2021))

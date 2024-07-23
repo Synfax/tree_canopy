@@ -15,6 +15,7 @@ Essendon North,30.6
 Keilor Lodge,30
 Southbank,29.9
 Clifton Hill,29.7
+Caroline Springs,29.4
 Kingsville,29.1
 Windsor,29.1
 Gardenvale,29
@@ -22,7 +23,9 @@ Strathmore,27.8
 Kensington,27.4
 Albert Park,27
 Tullamarine,26.9
+Taylors Hill,26.8
 St Kilda,26.3
+Burnside Heights,26.1
 Richmond,26
 Huntingdale,25.6
 Dandenong North,25.6
@@ -55,6 +58,7 @@ Elsternwick,23.2
 Oakleigh,23.1
 Glen Huntly,23
 Port Melbourne,23
+Lalor,23
 Strathmore Heights,22.9
 Hughesdale,22.8
 Seabrook,22.7
@@ -92,7 +96,9 @@ Carnegie,21.4
 Patterson Lakes,21.3
 Murrumbeena,21.3
 Caulfield North,21.3
+Thomastown,21.3
 Wantirna,21.3
+Mill Park,21.2
 Mentone,21.2
 Doncaster,21.1
 Kooyong,21
@@ -159,12 +165,15 @@ Box Hill,19.1
 Meadow Heights,19.1
 Newport,19
 Reservoir,19
+Melton South,18.9
 Niddrie,18.9
+Hillside (Melton - Vic.),18.9
 Ringwood,18.9
 Briar Hill,18.9
 Heathmont,18.8
 Kingsbury,18.8
 Kew East,18.7
+Hopetoun Park,18.6
 Montmorency,18.6
 Mont Albert North,18.6
 Aberfeldie,18.5
@@ -208,6 +217,7 @@ Burwood,16.5
 Spotswood,16.5
 Ivanhoe East,16.4
 Notting Hill,16.3
+Burnside,16.3
 Springvale,16.3
 Croydon North,16.3
 Berwick,16.2
@@ -219,10 +229,12 @@ Coburg North,15.2
 Westmeadows,15
 Alphington,15
 Williams Landing,15
+Aintree,14.8
 St Helena,14.8
 Rowville,14.7
 Wantirna South,14.6
 Maribyrnong,14.6
+Bundoora,14.5
 Altona Meadows,14.5
 Greensborough,14.4
 Clarinda,14.4
@@ -239,6 +251,7 @@ Coolaroo,13.6
 Keysborough,13.5
 Warranwood,13.5
 Black Rock,13.3
+Epping,13.2
 Craigieburn,13.2
 Essendon West,13.1
 Altona North,13
@@ -247,40 +260,61 @@ Campbellfield,12.9
 The Basin,12.6
 Clayton South,12.6
 Viewbank,12.5
+South Morang,12.5
 Keilor,12.3
 Upper Ferntree Gully,12.3
 Templestowe,12.2
 Derrimut,12.2
 Dingley Village,12.1
+Melton West,11.9
 Scoresby,11.8
 Flemington,11.5
 Werribee,11.3
+Brookfield,11.1
 Point Cook,10.8
+Kurunjang,10.8
+Grangefields,10.7
 Altona,10.7
 Kilsyth South,10.6
 Bonbeach,10.4
 Somerton,10.3
 Laverton North,10.3
+Rockbank,10.2
+Thornhill Park,10
+Cobblebank,9.8
+Melton,9.6
 Park Orchards,9.5
 Tarneit,9.5
 Dandenong South,9.4
 Warrandyte,8.8
+Mernda,8.3
+Doreen,8.3
 Braeside,8.1
-Bundoora,8.1
+Weir Views,8.1
 Lower Plenty,8
+Harkness,7.9
 Essendon Fields,7.7
 Keilor North,7.7
+Bonnie Brook,7.6
+Upper Plenty,7.4
 Heatherton,7.4
 Narre Warren North,7.2
 Bangholme,7
 Wyndham Vale,6.9
+Strathtulloh,6.8
 Attwood,6.7
+Deanside,6.4
 Greenvale,5.8
 Tottenham,5.8
 Sunbury,5.7
 Calder Park,5.6
+Wollert,5.3
 Warrandyte South,5.3
+Humevale,5.1
+Coimadai,5
 Eltham North,4.8
+Beveridge,4.7
+Eden Park,4.5
 Manor Lakes,4.5
 Lysterfield South,4.5
 Wonga Park,4.3
@@ -289,21 +323,29 @@ Harkaway,3.8
 Werribee South,3.7
 Diggers Rest,3.7
 Melbourne Airport,3.7
+Fraser Rise,3.4
+Ravenhall,3.4
+Mount Cottrell,3.4
 Bulla,3.4
 Lysterfield,3.3
-Truganina,3
+Eynesbury,3.2
+Toolern Vale,3.2
+Truganina,3.1
 Mickleham,2.9
 Yuroke,2.7
+Wallan,2.6
 Moorabbin Airport,2.2
 Wildwood,2.2
+Yan Yean,1.9
+Whittlesea,1.8
 Little River,1.8
 Quandong,1.7
+Donnybrook,1.6
+Parwan,1.6
 Beaconsfield,1.4
 Kilsyth,1.4
+Woodstock,1.2
 Oaklands Junction,1.2
-Hillside (Melton - Vic.),1.1
-Eynesbury,1
 Cocoroc,1
-Mount Cottrell,0.9
 Narre Warren South,0.5
 Mambourin,0.1
