@@ -49,6 +49,7 @@ website:
           - text: Measuring international cities' tree canopy
             href: international_model.qmd
   search: false
+  site-url: https://trees.yimby.melbourne/
   open-graph:
     image: https://trees.yimby.melbourne/images/street-tree-og.jpg
     title: "Missing Middle Street Trees"
