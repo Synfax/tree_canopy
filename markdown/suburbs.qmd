@@ -138,7 +138,7 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
     addLegend(position = "bottomright",
               pal = treePal,
               values = sd_df$data()$tree_percentage,
-              title = 'title')
+              title = 'Tree Coverage (%)')
   
 ```
 
@@ -156,7 +156,7 @@ SA1s are assigned to the suburb with which they have the highest overlap.
 ```{r}
 #| echo: false  
   
-  filter_slider("distance", "Distance to CBD", sd_df, ~distance, min = 0, max = max(sd_df$data()$distance) + 1, width = '75%')
+  filter_slider("distance", "Distance to CBD", sd_df, ~distance, min = 0, max = 33, width = '75%')
   
   extra_cols = list()
   extra_cols[[grouping]] <- colDef(name = pretty_group_name, filterable = T)
