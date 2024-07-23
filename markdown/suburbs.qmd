@@ -139,25 +139,17 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
               pal = treePal,
               values = sd_df$data()$tree_percentage,
               title = 'Tree Coverage (%)')
+
+filter_slider("distance", "Distance to CBD", sd_df, ~distance, min = 0, max = 33, width = '75%')
   
 ```
 
 # How does your suburb compare?
 
-::: {.callout-tip collapse="true"}
-# About the suburbs dataset
-
-There may be inaccuracies in the street coverage data when using Suburbs as a grouping unit, as not all Statistical Area 1s fit uniquely within a suburb. 
-
-SA1s are assigned to the suburb with which they have the highest overlap.
-:::
-
 ## Total tree canopy coverage
 ```{r}
 #| echo: false  
-  
-  filter_slider("distance", "Distance to CBD", sd_df, ~distance, min = 0, max = 33, width = '75%')
-  
+    
   extra_cols = list()
   extra_cols[[grouping]] <- colDef(name = pretty_group_name, filterable = T)
   
@@ -426,6 +418,15 @@ streets %>%
   ))
 
 ```
+::: {.callout-tip collapse="true"}
+# About the suburbs dataset
+
+There may be inaccuracies in the street coverage data when using Suburbs as a grouping unit, as not all Statistical Area 1s fit uniquely within a suburb. 
+
+SA1s are assigned to the suburb with which they have the highest overlap.
+:::
+
+
 ***
 
 **Next:** [Additional data & analysis](/more-data.html) 
