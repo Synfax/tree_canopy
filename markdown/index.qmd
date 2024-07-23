@@ -796,37 +796,52 @@ mb = mesh_blocks %>%
   mutate(area_anytree = ((PERSHRBTRE)/100) *  AREASQKM21) %>%
   group_by(SA1_MAIN16) %>%
   summarise( total_uhi_cov = sum(area_anytree) / sum(AREASQKM21), uhi = first(UHI18_M), sa2 = first(SA2_CODE21) ) %>%
-  rename(sa1 = 'SA1_MAIN16')
+  rename(sa1_code_2021 = 'SA1_MAIN16') 
 
-sa1_summary <- agg_df %>%
-  group_by(sa1) %>%
-  filter(zone_short == 'roads') %>%
-  summarise( ttl_cov = sum(coverage) / sum(total_area), ttl_cov_a = sum(coverage), ttl_area = sum(total_area)  )
+# sa1_summary_old <- agg_df_filtered %>%
+#   group_by(sa1) %>%
+#   filter(zone_short == 'roads') %>%
+#   summarise( ttl_cov = sum(coverage) / sum(total_area), ttl_cov_a = sum(coverage), ttl_area = sum(total_area)  )
+# # 
+# sa1_public <- agg_df
 
-tt <- mb %>% 
-  left_join(sa1_summary, by = 'sa1') %>% 
-  left_join(sa1_sf %>%
-  dplyr::select(sa1_code_2021, CHG_FLAG21, SA2_CODE21, AREASQKM21) %>%
-  st_drop_geometry() %>%
-  rename(sa1 = 'sa1_code_2021'), by = 'sa1') %>%
-  mutate(ttl_uhi_cov_a = total_uhi_cov * ttl_area ) %>%
-  filter(!is.na(ttl_cov ))
+sa1_summary <- coverage(type = 'overall', group = 'sa1_code_2021') %>%
+  left_join(
+  coverage(exp = street_exp, type = 'street', group = 'sa1_code_2021')
+  , by = 'sa1_code_2021') %>%
+  left_join(
+    coverage(exp = public_exp, type = 'public', group = 'sa1_code_2021')
+  , by = 'sa1_code_2021') %>%
+  left_join(mb, by = 'sa1_code_2021') %>%
+  left_join(sa1_sf, by = 'sa1_code_2021')
+
+# tt <- mb %>%
+#   left_join(sa1_summary, by = 'sa1') %>%
+#   left_join(sa1_sf %>%
+#   dplyr::select(sa1_code_2021, CHG_FLAG21, SA2_CODE21, AREASQKM21) %>%
+#   st_drop_geometry() %>%
+#   rename(sa1 = 'sa1_code_2021'), by = 'sa1') %>%
+#   mutate(ttl_uhi_cov_a = total_uhi_cov * ttl_area ) %>%
+#   filter(!is.na(ttl_cov ))
 
 #agg to SA2 and then check diffs? sa1s gonna be noisy regardless
 
-s2_agg <- tt %>% group_by(SA2_CODE21) %>%
-  summarise( sa2_cov = sum(ttl_cov_a) / sum(ttl_area), sa2_uhi_cov = sum(ttl_uhi_cov_a) / sum(ttl_area) ) %>%
-  mutate(diff = sa2_cov - sa2_uhi_cov) 
+# s2_agg <- tt %>% group_by(SA2_CODE21) %>%
+#   summarise( sa2_cov = sum(ttl_cov_a) / sum(ttl_area), sa2_uhi_cov = sum(ttl_uhi_cov_a) / sum(ttl_area) ) %>%
+#   mutate(diff = sa2_cov - sa2_uhi_cov) 
 
-uhi_plot <- ggplot(tt %>% filter(CHG_FLAG21 == 0), aes(x = ttl_cov, y = uhi, text = paste("Street tree coverage: ", scales::percent(ttl_cov, accuracy = 1), "<br>UHI effect: ", round(uhi, digits = 2), "°C"))) +  
+uhi_plot <- ggplot(sa1_summary %>% filter(CHG_FLAG21 == 0), aes(x = street_percentage, y = uhi, text = paste("Street tree coverage: ", scales::percent(street_percentage, accuracy = 1), "<br>UHI effect: ", round(uhi, digits = 2), "°C"))) +  
   geom_point(color = "#006D2C") + 
   labs(
     x = 'Street tree canopy coverage',
     y = 'Urban heat island effect (°C)',
     title = "The urban heat island effect & street tree coverage"
   ) +
-  scale_x_continuous(labels = percent_format(accuracy = 1)) +
   theme_yimby 
+
+#library(fixest)
+
+#feols(uhi ~ street_percentage, data = sa1_summary)
  
 print(uhi_plot)
 # ggplotly(uhi_plot, tooltip = "text") 

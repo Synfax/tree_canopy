@@ -120,7 +120,7 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
               pal = treePal,
               values = sd_df$data()$tree_percentage,
               title = 'Tree Coverage (%)',
-              labFormat = labelFormat(prefix = ":", between = "",  ))
+              labFormat = labelFormat(prefix = "", between = "" ))
   
   sf_use_s2(F)
   
