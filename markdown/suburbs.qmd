@@ -119,7 +119,8 @@ sd_df = SharedData$new(as.data.frame(trees_grouped@data), group = sd_map$groupNa
     addLegend(position = "bottomright",
               pal = treePal,
               values = sd_df$data()$tree_percentage,
-              title = 'Tree Coverage (%)')
+              title = 'Tree Coverage (%)',
+              labFormat = labelFormat(prefix = ":", between = "",  ))
   
   sf_use_s2(F)
   

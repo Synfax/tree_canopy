@@ -4,7 +4,7 @@ run_for_sa1_alt <- function(sa , return_type = 'df') {
       filter(SA1_CODE21 == sa)
     
     dwellings_in_sa <- dwelling_data_current %>%
-      filter(sa1_code_21 == sa)
+      filter(sa1_code_2021 == sa)
     
     # clusterExport(cl, "current_sa_sf")
     # clusterExport(cl, "road_network_in_sa3")

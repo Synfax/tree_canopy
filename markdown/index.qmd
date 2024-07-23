@@ -678,7 +678,7 @@ sa2_public_plot_house <- ggplot(filtered_sa2_prices %>% filter(property_type == 
   ylab('Tree Coverage of Public Areas') + 
   labs(title = "House prices & public tree canopy") +
   geom_point(shape = 21, size = 2) +  # Use filled circles
-  labs(caption = "Source: Neosec") + 
+  labs(caption = "Source: Neoval") + 
   coord_flip() + 
   theme_yimby +
   scale_y_continuous(labels = percent_format_no_multiply) +
@@ -694,7 +694,7 @@ sa2_public_plot_unit <- ggplot(filtered_sa2_prices %>% filter(property_type == '
   ylab('Public tree canopy coverage') + 
   labs(title = "Unit prices & public tree canopy") +
   geom_point(shape = 21, size = 2) +  # Use filled circles
-  labs(caption = "Source: Neosec") +
+  labs(caption = "Source: Neoval") +
   coord_flip() +
   theme_yimby +
   scale_y_continuous(labels = percent_format_no_multiply) +
@@ -710,16 +710,16 @@ sa2_public_plot_unit <- ggplot(filtered_sa2_prices %>% filter(property_type == '
 
 # price_public_plot <- ggplot(house_interactable, mapping = aes(x = average_house_price, y = public_percentage, text = SAL_NAME21, fill = within15, stroke = NA), axe) + xlab('Average Detached House Price ($m)') + ylab(' Tree Coverage of Public Areas (%)') + geom_point() + labs(caption = "Source: Housing Victoria") +  theme_yimby
 
-rents_public_plot <- (ggplot(sa2_prices %>% filter(property_type == 'HOUSE'), mapping = aes(x = median_band, y = public_percentage, text = sa2_code_2021)) + 
+rents_public_plot <- ggplot(sa2_prices %>% filter(property_type == 'HOUSE'), mapping = aes(x = median_band, y = public_percentage, text = public_percentage)) + 
   geom_boxplot(color = "#006D2C") + 
   xlab('Median Rent (2021 dollars)') + 
   ylab("Public tree canopy coverage") + 
+  coord_flip() +
   labs(title = "Rents & public tree canopy") +
-  coord_flip() + 
-  theme_yimby + 
   labs(caption = "Source: 2021 Census (ABS)") + 
-  theme(axis.text.x = element_text()) ) +
-  scale_y_continuous(labels = percent_format_no_multiply) 
+theme(axis.text.x = element_text())  +
+  scale_y_continuous(labels = percent_format_no_multiply) +
+  theme_yimby
 
 #bscols(widths = c(4,4), ggplotly(price_street_plot), ggplotly(price_residential_plot))
 #subplot(ggplotly(price_street_plot),ggplotly(price_residential_plot), titleY = T, titleX = T)
@@ -928,7 +928,7 @@ target_df %>%
       ),
       coverage_per_sqm = colDef(
         show = TRUE, 
-        name = "Current total tree canopy coverage (%)",
+        name = "Average coverage on lots suitable for upzoning (%)",
         footer = NA,
         footerStyle = list(fontWeight = "bold")
       ),
@@ -1065,7 +1065,7 @@ target_df %>%
       ),
       coverage_per_sqm = colDef(
         show = TRUE, 
-        name = "Current total tree canopy coverage (%)",
+        name = "Average coverage on lots suitable for upzoning (%)",
         footer = NA,
         footerStyle = list(fontWeight = "bold")
       ),

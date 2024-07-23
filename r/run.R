@@ -12,6 +12,11 @@ run <- function(parallel = F) {
   
   sa3_list = sa3_sf$SA3_CODE21
   
+  downloaded_sa3s = list.files('sa3_results/1res/', pattern = '.Rdata')
+  downloaded_sa3s = stringr::str_replace(downloaded_sa3s, pattern = ".Rdata", "")
+  
+  sa3_list = setdiff(sa3_list, downloaded_sa3s)
+  
   # existing_files = list.files('sa3_results', pattern = '.Rdata')
   # 
   # existing_files =  gsub("\\.Rdata", "", existing_files)

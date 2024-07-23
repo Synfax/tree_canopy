@@ -63,9 +63,13 @@ rents <- readRDS("../r_objects/rents.Rdata") %>%
   mutate(median_band = gsub("\\$", "", median_band)) %>%
   rename(sa2_code_2021 = "sa2")
 
-public_coverage <- coverage(exp = expression(zone_code %in% c("PPRZ", "PCRZ") | zone_short == "roads"), type = "public", group = "SAL_NAME21") %>% select("SAL_NAME21", "public_percentage")
+public_coverage <- coverage(exp = expression(zone_code %in% c("PPRZ", "PCRZ") | zone_short == "roads"), type = "public", group = "SAL_NAME21") %>%
+  filter(n > 5) %>%
+  select("SAL_NAME21", "public_percentage")
 
-public_coverage_sa2 <- coverage(exp = expression(zone_code %in% c("PPRZ", "PCRZ") | zone_short == "roads"), type = "public", group = "sa2_code_2021") %>% select("sa2_code_2021", "public_percentage")
+public_coverage_sa2 <- coverage(exp = expression(zone_code %in% c("PPRZ", "PCRZ") | zone_short == "roads"), type = "public", group = "sa2_code_2021") %>%
+  filter(n > 5) %>%
+  select("sa2_code_2021", "public_percentage")
 
 
 sa2_prices <- readRDS("../r_objects/yimby.Rdata") %>%
