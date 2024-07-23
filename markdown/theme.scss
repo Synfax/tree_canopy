@@ -507,6 +507,11 @@ table tr:last-child td {
   border-bottom: none !important;
 }
 
+.table-intro {
+  max-width: 100%;
+  text-wrap: wrap;
+}
+
 // Tabs
 
 div.panel-tabset a.nav-link {
